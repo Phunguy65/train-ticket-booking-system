@@ -1,0 +1,3 @@
+# Linting files before commit
+pnpm exec lint-staged
+

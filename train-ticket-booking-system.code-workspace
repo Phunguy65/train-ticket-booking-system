@@ -1,0 +1,46 @@
+{
+	"folders": [
+		{
+			"path": ".",
+			"name": "root"
+		},
+		{
+			"path": "backend",
+			"name": "backend"
+		},
+		{
+			"path": "frontend/admin",
+			"name": "admin-ui"
+		},
+		{
+			"path": "frontend/client",
+			"name": "client-ui"
+		},
+		{
+			"path": "database",
+			"name": "database"
+		}
+	],
+	"settings": {
+		"editor.fontFamily": "JetBrains Mono, Fira Code, Consolas, 'Courier New', monospace",
+		"editor.fontLigatures": true,
+		"editor.tabSize": 4,
+		"editor.indentSize": "tabSize",
+		"editor.detectIndentation": false,
+		"editor.formatOnSave": true,
+        "[scminput]": {
+            "editor.rulers": [72, 80],
+            "editor.wordWrap": "wordWrapColumn",
+            "editor.wordWrapColumn": 80
+        },
+		"[csharp]": {
+			"editor.maxTokenizationLineLength": 2500,
+			"editor.formatOnPaste": true,
+			"editor.formatOnType": true,
+			"editor.defaultFormatter": "JetBrains.resharper-code"
+		},
+		"[typescript][javascript][typescriptreact][javascriptreact]": {
+			"editor.defaultFormatter": "biomejs.biome"
+		}
+	}
+}
