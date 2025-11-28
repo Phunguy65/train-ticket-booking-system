@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+    ttbs-database:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        container_name: ttbs-database
+        environment:
+            - ACCEPT_EULA=Y
+            - SA_PASSWORD=user
+        ports:
+            - '${DB_PORT:-8666}:1433'
+        volumes:
+            - ./sql:/docker-entrypoint-initdb.d
+            - ttbs-db-data:/var/opt/mssql
+        networks:
+            - ttbs-network
+networks:
+    ttbs-network:
+        name: ttbs-network
+volumes:
+    ttbs-db-data:
+        name: ttbs-db-data
