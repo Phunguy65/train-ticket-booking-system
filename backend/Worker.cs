@@ -1,24 +1,41 @@
+using backend.Presentation;
+
 namespace backend
 {
+    /// <summary>
+    /// Background service that hosts the TCP server for client connections.
+    /// Manages the lifecycle of the TCP server and ensures graceful shutdown.
+    /// </summary>
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
+        private readonly TcpServer _tcpServer;
 
-        public Worker(ILogger<Worker> logger)
+        public Worker(ILogger<Worker> logger, TcpServer tcpServer)
         {
             _logger = logger;
+            _tcpServer = tcpServer;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            _logger.LogInformation("Worker starting TCP Server...");
+
+            try
             {
-                if (_logger.IsEnabled(LogLevel.Information))
-                {
-                    _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                }
-                await Task.Delay(1000, stoppingToken);
+                await _tcpServer.StartAsync(stoppingToken);
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in Worker while running TCP Server.");
+            }
+        }
+
+        public override async Task StopAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Worker stopping TCP Server...");
+            await _tcpServer.StopAsync();
+            await base.StopAsync(cancellationToken);
         }
     }
 }
