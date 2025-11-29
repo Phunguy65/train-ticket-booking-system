@@ -16,6 +16,10 @@
 			"path": "frontend/client",
 			"name": "client-ui"
 		},
+        {
+            "path": "frontend/sdk-client",
+            "name": "sdk-client"
+        },
 		{
 			"path": "database",
 			"name": "database"
