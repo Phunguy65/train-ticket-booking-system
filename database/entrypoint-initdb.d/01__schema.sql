@@ -1,3 +1,22 @@
+USE master;
+
+GO
+GO IF NOT EXISTS (
+	SELECT
+		*
+	FROM
+		sys.databases
+	WHERE
+		name = 'TrainTicketBooking'
+) BEGIN
+CREATE DATABASE TrainTicketBooking;
+
+PRINT 'Created database TrainTicketBooking';
+
+END ELSE BEGIN PRINT 'Database TrainTicketBooking already exists';
+
+END
+GO
 -- Bảng người dùng
 CREATE TABLE [User] (
 	UserId INT IDENTITY(1, 1) NOT NULL,

@@ -5,11 +5,11 @@ services:
         container_name: ttbs-database
         environment:
             - ACCEPT_EULA=Y
-            - SA_PASSWORD=user
+            - SA_PASSWORD=My$tr0ngP@ssw0rd!
         ports:
             - '${DB_PORT:-8666}:1433'
         volumes:
-            - ./sql:/docker-entrypoint-initdb.d
+            - ./entrypoint-initdb.d:/docker-entrypoint-initdb.d
             - ttbs-db-data:/var/opt/mssql
         networks:
             - ttbs-network
