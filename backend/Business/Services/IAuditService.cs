@@ -8,9 +8,10 @@ namespace backend.Business.Services;
 /// </summary>
 public interface IAuditService
 {
-	Task LogAsync(int? userId, string action, string? entityType, int? entityId, string? details);
-	Task<IEnumerable<AuditLog>> GetAuditLogsByUserIdAsync(int userId);
-	Task<IEnumerable<AuditLog>> GetAuditLogsByDateRangeAsync(DateTime startDate, DateTime endDate);
-	Task<IEnumerable<AuditLog>> GetAllAuditLogsAsync();
+    Task LogAsync(int? userId, string action, string? entityType, int? entityId, string? details);
+    Task<IEnumerable<AuditLog>> GetAuditLogsByUserIdAsync(int userId);
+    Task<IEnumerable<AuditLog>> GetAuditLogsByDateRangeAsync(DateTime startDate, DateTime endDate);
+    Task<IEnumerable<AuditLog>> GetAllAuditLogsAsync();
+    Task<PagedResult<AuditLog>> GetAllAuditLogsAsync(int pageNumber, int pageSize);
 }
 

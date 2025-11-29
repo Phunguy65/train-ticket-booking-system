@@ -8,10 +8,11 @@ namespace backend.DataAccess.Repositories;
 /// </summary>
 public interface IAuditLogRepository
 {
-	Task<AuditLog?> GetByIdAsync(int logId);
-	Task<IEnumerable<AuditLog>> GetByUserIdAsync(int userId);
-	Task<IEnumerable<AuditLog>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
-	Task<IEnumerable<AuditLog>> GetAllAsync();
-	Task<int> CreateAsync(AuditLog auditLog);
+    Task<AuditLog?> GetByIdAsync(int logId);
+    Task<IEnumerable<AuditLog>> GetByUserIdAsync(int userId);
+    Task<IEnumerable<AuditLog>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
+    Task<IEnumerable<AuditLog>> GetAllAsync();
+    Task<(IEnumerable<AuditLog> Items, int TotalCount)> GetAllAsync(int pageNumber, int pageSize);
+    Task<int> CreateAsync(AuditLog auditLog);
 }
 

@@ -8,13 +8,18 @@ namespace backend.DataAccess.Repositories;
 /// </summary>
 public interface ITrainRepository
 {
-	Task<Train?> GetByIdAsync(int trainId);
-	Task<Train?> GetByTrainNumberAsync(string trainNumber);
-	Task<IEnumerable<Train>> GetAllAsync();
-	Task<IEnumerable<Train>> SearchAsync(string? departureStation, string? arrivalStation, DateTime? departureDate);
-	Task<int> CreateAsync(Train train);
-	Task<bool> UpdateAsync(Train train);
-	Task<bool> DeleteAsync(int trainId);
-	Task<bool> UpdateStatusAsync(int trainId, string status);
+    Task<Train?> GetByIdAsync(int trainId);
+    Task<Train?> GetByTrainNumberAsync(string trainNumber);
+    Task<IEnumerable<Train>> GetAllAsync();
+    Task<(IEnumerable<Train> Items, int TotalCount)> GetAllAsync(int pageNumber, int pageSize);
+    Task<IEnumerable<Train>> SearchAsync(string? departureStation, string? arrivalStation, DateTime? departureDate);
+
+    Task<(IEnumerable<Train> Items, int TotalCount)> SearchAsync(string? departureStation, string? arrivalStation,
+        DateTime? departureDate, int pageNumber, int pageSize);
+
+    Task<int> CreateAsync(Train train);
+    Task<bool> UpdateAsync(Train train);
+    Task<bool> DeleteAsync(int trainId);
+    Task<bool> UpdateStatusAsync(int trainId, string status);
 }
 

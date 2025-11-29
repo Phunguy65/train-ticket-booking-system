@@ -148,6 +148,25 @@ public class BookingHandler
             return new Response { Success = false, ErrorMessage = "Admin access required." };
         }
 
+        var pageNumber = data["PageNumber"]?.Value<int>();
+        var pageSize = data["PageSize"]?.Value<int>();
+
+        if (pageNumber.HasValue && pageSize.HasValue)
+        {
+            if (pageNumber.Value < 1 || pageSize.Value < 1 || pageSize.Value > 100)
+            {
+                return new Response
+                {
+                    Success = false,
+                    ErrorMessage =
+                        "Invalid pagination parameters. PageNumber must be >= 1, PageSize must be between 1 and 100."
+                };
+            }
+
+            var pagedBookings = await _bookingService.GetAllBookingsAsync(pageNumber.Value, pageSize.Value);
+            return new Response { Success = true, Data = pagedBookings };
+        }
+
         var bookings = await _bookingService.GetAllBookingsAsync();
         return new Response { Success = true, Data = bookings };
     }

@@ -8,9 +8,13 @@ namespace backend.Business.Services;
 /// </summary>
 public interface IUserService
 {
-	Task<User?> GetUserByIdAsync(int userId);
-	Task<IEnumerable<User>> GetAllUsersAsync();
-	Task<(bool Success, string Message)> UpdateUserProfileAsync(int userId, string? fullName, string? email, string? phoneNumber);
-	Task<(bool Success, string Message)> LockUnlockUserAsync(int userId, bool isActive);
+    Task<User?> GetUserByIdAsync(int userId);
+    Task<IEnumerable<User>> GetAllUsersAsync();
+    Task<PagedResult<User>> GetAllUsersAsync(int pageNumber, int pageSize);
+
+    Task<(bool Success, string Message)> UpdateUserProfileAsync(int userId, string? fullName, string? email,
+        string? phoneNumber);
+
+    Task<(bool Success, string Message)> LockUnlockUserAsync(int userId, bool isActive);
 }
 

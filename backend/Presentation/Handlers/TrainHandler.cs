@@ -11,177 +11,220 @@ namespace backend.Presentation.Handlers;
 /// </summary>
 public class TrainHandler
 {
-	private readonly ITrainService _trainService;
+    private readonly ITrainService _trainService;
 
-	public TrainHandler(ITrainService trainService)
-	{
-		_trainService = trainService;
-	}
+    public TrainHandler(ITrainService trainService)
+    {
+        _trainService = trainService;
+    }
 
-	public async Task<Response> HandleAsync(string action, JObject? data)
-	{
-		return action switch
-		{
-			"GetAllTrains" => await HandleGetAllTrainsAsync(),
-			"GetTrainById" => await HandleGetTrainByIdAsync(data),
-			"SearchTrains" => await HandleSearchTrainsAsync(data),
-			"CreateTrain" => await HandleCreateTrainAsync(data),
-			"UpdateTrain" => await HandleUpdateTrainAsync(data),
-			"DeleteTrain" => await HandleDeleteTrainAsync(data),
-			"UpdateTrainStatus" => await HandleUpdateTrainStatusAsync(data),
-			_ => new Response { Success = false, ErrorMessage = "Unknown train action." }
-		};
-	}
+    public async Task<Response> HandleAsync(string action, JObject? data)
+    {
+        return action switch
+        {
+            "GetAllTrains" => await HandleGetAllTrainsAsync(data),
+            "GetTrainById" => await HandleGetTrainByIdAsync(data),
+            "SearchTrains" => await HandleSearchTrainsAsync(data),
+            "CreateTrain" => await HandleCreateTrainAsync(data),
+            "UpdateTrain" => await HandleUpdateTrainAsync(data),
+            "DeleteTrain" => await HandleDeleteTrainAsync(data),
+            "UpdateTrainStatus" => await HandleUpdateTrainStatusAsync(data),
+            _ => new Response { Success = false, ErrorMessage = "Unknown train action." }
+        };
+    }
 
-	private async Task<Response> HandleGetAllTrainsAsync()
-	{
-		var trains = await _trainService.GetAllTrainsAsync();
-		return new Response { Success = true, Data = trains };
-	}
+    private async Task<Response> HandleGetAllTrainsAsync(JObject? data)
+    {
+        var pageNumber = data?["PageNumber"]?.Value<int>();
+        var pageSize = data?["PageSize"]?.Value<int>();
 
-	private async Task<Response> HandleGetTrainByIdAsync(JObject? data)
-	{
-		if (data == null)
-		{
-			return new Response { Success = false, ErrorMessage = "Invalid request data." };
-		}
+        if (pageNumber.HasValue && pageSize.HasValue)
+        {
+            if (pageNumber.Value < 1 || pageSize.Value < 1 || pageSize.Value > 100)
+            {
+                return new Response
+                {
+                    Success = false,
+                    ErrorMessage =
+                        "Invalid pagination parameters. PageNumber must be >= 1, PageSize must be between 1 and 100."
+                };
+            }
 
-		var trainId = data["TrainId"]?.Value<int>();
-		if (!trainId.HasValue)
-		{
-			return new Response { Success = false, ErrorMessage = "TrainId is required." };
-		}
+            var pagedTrains = await _trainService.GetAllTrainsAsync(pageNumber.Value, pageSize.Value);
+            return new Response { Success = true, Data = pagedTrains };
+        }
 
-		var train = await _trainService.GetTrainByIdAsync(trainId.Value);
-		return new Response { Success = train != null, Data = train, ErrorMessage = train == null ? "Train not found." : null };
-	}
+        var trains = await _trainService.GetAllTrainsAsync();
+        return new Response { Success = true, Data = trains };
+    }
 
-	private async Task<Response> HandleSearchTrainsAsync(JObject? data)
-	{
-		if (data == null)
-		{
-			return new Response { Success = false, ErrorMessage = "Invalid request data." };
-		}
+    private async Task<Response> HandleGetTrainByIdAsync(JObject? data)
+    {
+        if (data == null)
+        {
+            return new Response { Success = false, ErrorMessage = "Invalid request data." };
+        }
 
-		var request = data.ToObject<SearchTrainRequest>();
-		var trains = await _trainService.SearchTrainsAsync(request?.DepartureStation, request?.ArrivalStation, request?.DepartureDate);
-		return new Response { Success = true, Data = trains };
-	}
+        var trainId = data["TrainId"]?.Value<int>();
+        if (!trainId.HasValue)
+        {
+            return new Response { Success = false, ErrorMessage = "TrainId is required." };
+        }
 
-	private async Task<Response> HandleCreateTrainAsync(JObject? data)
-	{
-		if (data == null)
-		{
-			return new Response { Success = false, ErrorMessage = "Invalid request data." };
-		}
+        var train = await _trainService.GetTrainByIdAsync(trainId.Value);
+        return new Response
+        {
+            Success = train != null, Data = train, ErrorMessage = train == null ? "Train not found." : null
+        };
+    }
 
-		var request = data.ToObject<CreateTrainRequest>();
-		if (request == null)
-		{
-			return new Response { Success = false, ErrorMessage = "Invalid train data." };
-		}
+    private async Task<Response> HandleSearchTrainsAsync(JObject? data)
+    {
+        if (data == null)
+        {
+            return new Response { Success = false, ErrorMessage = "Invalid request data." };
+        }
 
-		var train = new Train
-		{
-			TrainNumber = request.TrainNumber,
-			TrainName = request.TrainName,
-			DepartureStation = request.DepartureStation,
-			ArrivalStation = request.ArrivalStation,
-			DepartureTime = request.DepartureTime,
-			ArrivalTime = request.ArrivalTime,
-			TotalSeats = request.TotalSeats,
-			TicketPrice = request.TicketPrice
-		};
+        var request = data.ToObject<SearchTrainRequest>();
+        var pageNumber = data["PageNumber"]?.Value<int>();
+        var pageSize = data["PageSize"]?.Value<int>();
 
-		var result = await _trainService.CreateTrainAsync(train);
-		return new Response
-		{
-			Success = result.Success,
-			ErrorMessage = result.Success ? null : result.Message,
-			Data = result.Success ? new { TrainId = result.TrainId, Message = result.Message } : null
-		};
-	}
+        if (pageNumber.HasValue && pageSize.HasValue)
+        {
+            if (pageNumber.Value < 1 || pageSize.Value < 1 || pageSize.Value > 100)
+            {
+                return new Response
+                {
+                    Success = false,
+                    ErrorMessage =
+                        "Invalid pagination parameters. PageNumber must be >= 1, PageSize must be between 1 and 100."
+                };
+            }
 
-	private async Task<Response> HandleUpdateTrainAsync(JObject? data)
-	{
-		if (data == null)
-		{
-			return new Response { Success = false, ErrorMessage = "Invalid request data." };
-		}
+            var pagedTrains = await _trainService.SearchTrainsAsync(request?.DepartureStation, request?.ArrivalStation,
+                request?.DepartureDate, pageNumber.Value, pageSize.Value);
+            return new Response { Success = true, Data = pagedTrains };
+        }
 
-		var request = data.ToObject<UpdateTrainRequest>();
-		if (request == null)
-		{
-			return new Response { Success = false, ErrorMessage = "Invalid train data." };
-		}
+        var trains = await _trainService.SearchTrainsAsync(request?.DepartureStation, request?.ArrivalStation,
+            request?.DepartureDate);
+        return new Response { Success = true, Data = trains };
+    }
 
-		var train = new Train
-		{
-			TrainId = request.TrainId,
-			TrainNumber = request.TrainNumber,
-			TrainName = request.TrainName,
-			DepartureStation = request.DepartureStation,
-			ArrivalStation = request.ArrivalStation,
-			DepartureTime = request.DepartureTime,
-			ArrivalTime = request.ArrivalTime,
-			TotalSeats = request.TotalSeats,
-			TicketPrice = request.TicketPrice,
-			Status = request.Status
-		};
+    private async Task<Response> HandleCreateTrainAsync(JObject? data)
+    {
+        if (data == null)
+        {
+            return new Response { Success = false, ErrorMessage = "Invalid request data." };
+        }
 
-		var result = await _trainService.UpdateTrainAsync(train);
-		return new Response
-		{
-			Success = result.Success,
-			ErrorMessage = result.Success ? null : result.Message,
-			Data = result.Success ? new { Message = result.Message } : null
-		};
-	}
+        var request = data.ToObject<CreateTrainRequest>();
+        if (request == null)
+        {
+            return new Response { Success = false, ErrorMessage = "Invalid train data." };
+        }
 
-	private async Task<Response> HandleDeleteTrainAsync(JObject? data)
-	{
-		if (data == null)
-		{
-			return new Response { Success = false, ErrorMessage = "Invalid request data." };
-		}
+        var train = new Train
+        {
+            TrainNumber = request.TrainNumber,
+            TrainName = request.TrainName,
+            DepartureStation = request.DepartureStation,
+            ArrivalStation = request.ArrivalStation,
+            DepartureTime = request.DepartureTime,
+            ArrivalTime = request.ArrivalTime,
+            TotalSeats = request.TotalSeats,
+            TicketPrice = request.TicketPrice
+        };
 
-		var trainId = data["TrainId"]?.Value<int>();
-		if (!trainId.HasValue)
-		{
-			return new Response { Success = false, ErrorMessage = "TrainId is required." };
-		}
+        var result = await _trainService.CreateTrainAsync(train);
+        return new Response
+        {
+            Success = result.Success,
+            ErrorMessage = result.Success ? null : result.Message,
+            Data = result.Success ? new { TrainId = result.TrainId, Message = result.Message } : null
+        };
+    }
 
-		var result = await _trainService.DeleteTrainAsync(trainId.Value);
-		return new Response
-		{
-			Success = result.Success,
-			ErrorMessage = result.Success ? null : result.Message,
-			Data = result.Success ? new { Message = result.Message } : null
-		};
-	}
+    private async Task<Response> HandleUpdateTrainAsync(JObject? data)
+    {
+        if (data == null)
+        {
+            return new Response { Success = false, ErrorMessage = "Invalid request data." };
+        }
 
-	private async Task<Response> HandleUpdateTrainStatusAsync(JObject? data)
-	{
-		if (data == null)
-		{
-			return new Response { Success = false, ErrorMessage = "Invalid request data." };
-		}
+        var request = data.ToObject<UpdateTrainRequest>();
+        if (request == null)
+        {
+            return new Response { Success = false, ErrorMessage = "Invalid train data." };
+        }
 
-		var trainId = data["TrainId"]?.Value<int>();
-		var status = data["Status"]?.Value<string>();
+        var train = new Train
+        {
+            TrainId = request.TrainId,
+            TrainNumber = request.TrainNumber,
+            TrainName = request.TrainName,
+            DepartureStation = request.DepartureStation,
+            ArrivalStation = request.ArrivalStation,
+            DepartureTime = request.DepartureTime,
+            ArrivalTime = request.ArrivalTime,
+            TotalSeats = request.TotalSeats,
+            TicketPrice = request.TicketPrice,
+            Status = request.Status
+        };
 
-		if (!trainId.HasValue || string.IsNullOrEmpty(status))
-		{
-			return new Response { Success = false, ErrorMessage = "TrainId and Status are required." };
-		}
+        var result = await _trainService.UpdateTrainAsync(train);
+        return new Response
+        {
+            Success = result.Success,
+            ErrorMessage = result.Success ? null : result.Message,
+            Data = result.Success ? new { Message = result.Message } : null
+        };
+    }
 
-		var result = await _trainService.UpdateTrainStatusAsync(trainId.Value, status);
-		return new Response
-		{
-			Success = result.Success,
-			ErrorMessage = result.Success ? null : result.Message,
-			Data = result.Success ? new { Message = result.Message } : null
-		};
-	}
+    private async Task<Response> HandleDeleteTrainAsync(JObject? data)
+    {
+        if (data == null)
+        {
+            return new Response { Success = false, ErrorMessage = "Invalid request data." };
+        }
+
+        var trainId = data["TrainId"]?.Value<int>();
+        if (!trainId.HasValue)
+        {
+            return new Response { Success = false, ErrorMessage = "TrainId is required." };
+        }
+
+        var result = await _trainService.DeleteTrainAsync(trainId.Value);
+        return new Response
+        {
+            Success = result.Success,
+            ErrorMessage = result.Success ? null : result.Message,
+            Data = result.Success ? new { Message = result.Message } : null
+        };
+    }
+
+    private async Task<Response> HandleUpdateTrainStatusAsync(JObject? data)
+    {
+        if (data == null)
+        {
+            return new Response { Success = false, ErrorMessage = "Invalid request data." };
+        }
+
+        var trainId = data["TrainId"]?.Value<int>();
+        var status = data["Status"]?.Value<string>();
+
+        if (!trainId.HasValue || string.IsNullOrEmpty(status))
+        {
+            return new Response { Success = false, ErrorMessage = "TrainId and Status are required." };
+        }
+
+        var result = await _trainService.UpdateTrainStatusAsync(trainId.Value, status);
+        return new Response
+        {
+            Success = result.Success,
+            ErrorMessage = result.Success ? null : result.Message,
+            Data = result.Success ? new { Message = result.Message } : null
+        };
+    }
 }
 

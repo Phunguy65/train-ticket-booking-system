@@ -48,6 +48,25 @@ public class BookingRepository : IBookingRepository
         return await connection.QueryAsync<Booking>(sql);
     }
 
+    public async Task<(IEnumerable<Booking> Items, int TotalCount)> GetAllAsync(int pageNumber, int pageSize)
+    {
+        using var connection = _context.CreateConnection();
+
+        var countSql = "SELECT COUNT(*) FROM Booking";
+        var totalCount = await connection.ExecuteScalarAsync<int>(countSql);
+
+        var offset = (pageNumber - 1) * pageSize;
+        var dataSql = @"
+            SELECT * FROM Booking
+            ORDER BY BookingDate DESC
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY";
+
+        var items = await connection.QueryAsync<Booking>(dataSql, new { Offset = offset, PageSize = pageSize });
+
+        return (items, totalCount);
+    }
+
     public async Task<int> CreateAsync(Booking booking)
     {
         var sql = @"

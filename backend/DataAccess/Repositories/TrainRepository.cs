@@ -41,6 +41,25 @@ public class TrainRepository : ITrainRepository
         return await connection.QueryAsync<Train>(sql);
     }
 
+    public async Task<(IEnumerable<Train> Items, int TotalCount)> GetAllAsync(int pageNumber, int pageSize)
+    {
+        using var connection = _context.CreateConnection();
+
+        var countSql = "SELECT COUNT(*) FROM Train";
+        var totalCount = await connection.ExecuteScalarAsync<int>(countSql);
+
+        var offset = (pageNumber - 1) * pageSize;
+        var dataSql = @"
+            SELECT * FROM Train
+            ORDER BY DepartureTime
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY";
+
+        var items = await connection.QueryAsync<Train>(dataSql, new { Offset = offset, PageSize = pageSize });
+
+        return (items, totalCount);
+    }
+
     public async Task<IEnumerable<Train>> SearchAsync(string? departureStation, string? arrivalStation,
         DateTime? departureDate)
     {
@@ -68,6 +87,51 @@ public class TrainRepository : ITrainRepository
 
         sql += " ORDER BY DepartureTime";
         return await connection.QueryAsync<Train>(sql, parameters);
+    }
+
+    public async Task<(IEnumerable<Train> Items, int TotalCount)> SearchAsync(string? departureStation,
+        string? arrivalStation,
+        DateTime? departureDate, int pageNumber, int pageSize)
+    {
+        using var connection = _context.CreateConnection();
+        var whereClause = "WHERE [Status] = 'Active'";
+        var parameters = new DynamicParameters();
+
+        if (!string.IsNullOrEmpty(departureStation))
+        {
+            whereClause += " AND DepartureStation = @DepartureStation";
+            parameters.Add("DepartureStation", departureStation);
+        }
+
+        if (!string.IsNullOrEmpty(arrivalStation))
+        {
+            whereClause += " AND ArrivalStation = @ArrivalStation";
+            parameters.Add("ArrivalStation", arrivalStation);
+        }
+
+        if (departureDate.HasValue)
+        {
+            whereClause += " AND CAST(DepartureTime AS DATE) = @DepartureDate";
+            parameters.Add("DepartureDate", departureDate.Value.Date);
+        }
+
+        var countSql = $"SELECT COUNT(*) FROM Train {whereClause}";
+        var totalCount = await connection.ExecuteScalarAsync<int>(countSql, parameters);
+
+        var offset = (pageNumber - 1) * pageSize;
+        parameters.Add("Offset", offset);
+        parameters.Add("PageSize", pageSize);
+
+        var dataSql = $@"
+            SELECT * FROM Train
+            {whereClause}
+            ORDER BY DepartureTime
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY";
+
+        var items = await connection.QueryAsync<Train>(dataSql, parameters);
+
+        return (items, totalCount);
     }
 
     public async Task<int> CreateAsync(Train train)
