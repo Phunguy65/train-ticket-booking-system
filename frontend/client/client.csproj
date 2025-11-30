@@ -76,5 +76,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\sdk-client\sdk-client.csproj">
+      <Project>{4dec6ae0-0d4e-43e8-a13b-d4aa7d5b30b2}</Project>
+      <Name>sdk-client</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
