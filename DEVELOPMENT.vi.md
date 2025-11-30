@@ -2,14 +2,14 @@
 
 ## Mục Lục
 
-- [1. Giới Thiệu](#1-giới-thiệu)
-- [2. Yêu Cầu Phần Mềm](#2-yêu-cầu-phần-mềm)
-- [3. Cấu Trúc Thư Mục Dự Án](#3-cấu-trúc-thư-mục-dự-án)
-- [4. Hướng Dẫn Cài Đặt](#4-hướng-dẫn-cài-đặt)
-- [5. Chạy Ứng Dụng](#5-chạy-ứng-dụng)
-- [6. Cấu Hình](#6-cấu-hình)
-- [7. Quy Trình Phát Triển](#7-quy-trình-phát-triển)
-- [8. Xử Lý Lỗi Thường Gặp](#8-xử-lý-lỗi-thường-gặp)
+*   [1. Giới Thiệu](#1-giới-thiệu)
+*   [2. Yêu Cầu Phần Mềm](#2-yêu-cầu-phần-mềm)
+*   [3. Cấu Trúc Thư Mục Dự Án](#3-cấu-trúc-thư-mục-dự-án)
+*   [4. Hướng Dẫn Cài Đặt](#4-hướng-dẫn-cài-đặt)
+*   [5. Chạy Ứng Dụng](#5-chạy-ứng-dụng)
+*   [6. Cấu Hình](#6-cấu-hình)
+*   [7. Quy Trình Phát Triển](#7-quy-trình-phát-triển)
+*   [8. Xử Lý Lỗi Thường Gặp](#8-xử-lý-lỗi-thường-gặp)
 
 ---
 
@@ -19,10 +19,10 @@
 
 Hệ thống đặt vé tàu cao tốc mô phỏng với các tính năng:
 
-- Đăng ký và đăng nhập người dùng
-- Quản lý chuyến tàu với 10 ghế mỗi chuyến
-- Đặt vé và hủy vé
-- Quản trị hệ thống (dành cho quản trị viên)
+*   Đăng ký và đăng nhập người dùng
+*   Quản lý chuyến tàu với 10 ghế mỗi chuyến
+*   Đặt vé và hủy vé
+*   Quản trị hệ thống (dành cho quản trị viên)
 
 ### 1.2. Kiến Trúc Hệ Thống
 
@@ -293,11 +293,11 @@ pnpm install
 
 Lệnh này sẽ cài đặt:
 
-- Biome (kiểm tra mã nguồn)
-- Prettier (định dạng mã)
-- Husky (Git Hooks)
-- lint-staged (kiểm tra tệp đã thay đổi)
-- commitlint (kiểm tra thông điệp commit)
+*   Biome (kiểm tra mã nguồn)
+*   Prettier (định dạng mã)
+*   Husky (Git Hooks)
+*   lint-staged (kiểm tra tệp đã thay đổi)
+*   commitlint (kiểm tra thông điệp commit)
 
 ### 4.3. Khôi Phục Gói NuGet
 
@@ -448,13 +448,13 @@ Tệp: `backend/appsettings.json`
 
 ```json
 {
-	"TcpServer": {
-		"Host": "127.0.0.1", // Địa chỉ IP lắng nghe
-		"Port": 5000, // Cổng lắng nghe
-		"MaxConnections": 100, // Số kết nối tối đa
-		"ConnectionTimeout": 30, // Thời gian chờ kết nối (giây)
-		"HeartbeatInterval": 60 // Khoảng cách gửi heartbeat (giây)
-	}
+ "TcpServer": {
+  "Host": "127.0.0.1", // Địa chỉ IP lắng nghe
+  "Port": 5000, // Cổng lắng nghe
+  "MaxConnections": 100, // Số kết nối tối đa
+  "ConnectionTimeout": 30, // Thời gian chờ kết nối (giây)
+  "HeartbeatInterval": 60 // Khoảng cách gửi heartbeat (giây)
+ }
 }
 ```
 
@@ -462,11 +462,11 @@ Tệp: `backend/appsettings.json`
 
 ```json
 {
-	"Security": {
-		"SessionTimeout": 30, // Thời gian phiên hết hạn (phút)
-		"MaxLoginAttempts": 5, // Số lần đăng nhập sai tối đa
-		"LockoutDuration": 15 // Thời gian khóa tài khoản (phút)
-	}
+ "Security": {
+  "SessionTimeout": 30, // Thời gian phiên hết hạn (phút)
+  "MaxLoginAttempts": 5, // Số lần đăng nhập sai tối đa
+  "LockoutDuration": 15 // Thời gian khóa tài khoản (phút)
+ }
 }
 ```
 
@@ -474,9 +474,9 @@ Tệp: `backend/appsettings.json`
 
 ```json
 {
-	"Booking": {
-		"CancellationDeadlineHours": 24 // Hạn hủy vé trước giờ khởi hành
-	}
+ "Booking": {
+  "CancellationDeadlineHours": 24 // Hạn hủy vé trước giờ khởi hành
+ }
 }
 ```
 
@@ -488,9 +488,9 @@ Tệp: `backend/appsettings.json`
 
 ```json
 {
-	"ConnectionStrings": {
-		"DefaultConnection": "Server=localhost,8666;Database=TrainTicketDB;User Id=sa;Password=My$tr0ngP@ssw0rd!;TrustServerCertificate=True;Min Pool Size=5;Max Pool Size=100;"
-	}
+ "ConnectionStrings": {
+  "DefaultConnection": "Server=localhost,8666;Database=TrainTicketDB;User Id=sa;Password=My$tr0ngP@ssw0rd!;TrustServerCertificate=True;Min Pool Size=5;Max Pool Size=100;"
+ }
 }
 ```
 
@@ -578,9 +578,9 @@ Dự án tuân theo [Conventional Commits](https://www.conventionalcommits.org/)
 
 #### Quy tắc
 
-- Tiêu đề không quá **72 ký tự**
-- Mỗi dòng nội dung không quá **80 ký tự**
-- Viết bằng tiếng Việt hoặc tiếng Anh (nhất quán trong dự án)
+*   Tiêu đề không quá **72 ký tự**
+*   Mỗi dòng nội dung không quá **80 ký tự**
+*   Viết bằng tiếng Việt hoặc tiếng Anh (nhất quán trong dự án)
 
 ### 7.3. Định Dạng Mã Nguồn
 
@@ -625,8 +625,8 @@ pnpm prettier --write database\entrypoint-initdb.d\01__schema.sql
 
 #### Async/Await
 
-- Sử dụng `async/await` cho tất cả thao tác I/O
-- Thêm hậu tố `Async` cho phương thức bất đồng bộ
+*   Sử dụng `async/await` cho tất cả thao tác I/O
+*   Thêm hậu tố `Async` cho phương thức bất đồng bộ
 
 ```csharp
 // Đúng
@@ -644,8 +644,8 @@ public User GetUserById(int id)
 
 #### Null Safety
 
-- Bật nullable reference types
-- Sử dụng toán tử null-conditional (`?.`) và null-coalescing (`??`)
+*   Bật nullable reference types
+*   Sử dụng toán tử null-conditional (`?.`) và null-coalescing (`??`)
 
 ```csharp
 // Trong tệp .csproj
@@ -710,9 +710,9 @@ Hoặc đổi cổng trong `appsettings.json`:
 
 ```json
 {
-	"TcpServer": {
-		"Port": 5001
-	}
+ "TcpServer": {
+  "Port": 5001
+ }
 }
 ```
 

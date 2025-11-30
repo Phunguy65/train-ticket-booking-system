@@ -10,10 +10,10 @@ registration/login
 
 ### Technology Stack
 
-- **Backend**: .NET 9 Background Service, TCP/Socket server, Dapper ORM
-- **Database**: Microsoft SQL Server 2022
-- **Frontend**: Windows Forms 4.8.1 (Admin & Client), TCP/Socket communication
-- **Development Tools**: pnpm, Biome, Prettier, Husky, lint-staged
+*   **Backend**: .NET 9 Background Service, TCP/Socket server, Dapper ORM
+*   **Database**: Microsoft SQL Server 2022
+*   **Frontend**: Windows Forms 4.8.1 (Admin & Client), TCP/Socket communication
+*   **Development Tools**: pnpm, Biome, Prettier, Husky, lint-staged
 
 ---
 
@@ -48,13 +48,13 @@ train-ticket-booking-system/
 
 ### Required Software
 
-- **.NET 9 SDK** - For backend service
-- **.NET Framework 4.8.1 Developer Pack** - For WinForms clients
-- **SQL Server 2022** - Database (via Docker or local installation)
-- **Docker Desktop** - For containerized SQL Server
-- **Node.js 18+** - For development tools (pnpm, linting)
-- **pnpm 10.23.0** - Package manager for dev dependencies
-- **Visual Studio 2022** or **Rider** - Recommended IDE
+*   **.NET 9 SDK** - For backend service
+*   **.NET Framework 4.8.1 Developer Pack** - For WinForms clients
+*   **SQL Server 2022** - Database (via Docker or local installation)
+*   **Docker Desktop** - For containerized SQL Server
+*   **Node.js 18+** - For development tools (pnpm, linting)
+*   **pnpm 10.23.0** - Package manager for dev dependencies
+*   **Visual Studio 2022** or **Rider** - Recommended IDE
 
 ### Verify Installation
 
@@ -170,26 +170,26 @@ dotnet run
 ### Tables
 
 1. **User** - User accounts (Admin/Customer)
-    - UserId, Username, PasswordHash, FullName, Email, PhoneNumber, Role,
+    *   UserId, Username, PasswordHash, FullName, Email, PhoneNumber, Role,
       CreatedAt, IsActive
 2. **Train** - Train schedules
-    - TrainId, TrainNumber, TrainName, DepartureStation, ArrivalStation,
+    *   TrainId, TrainNumber, TrainName, DepartureStation, ArrivalStation,
       DepartureTime, ArrivalTime, TotalSeats (default: 10), TicketPrice, Status
 3. **Seat** - Seat availability per train
-    - SeatId, TrainId, SeatNumber, IsAvailable, Version (for optimistic locking)
+    *   SeatId, TrainId, SeatNumber, IsAvailable, Version (for optimistic locking)
 4. **Booking** - Ticket bookings
-    - BookingId, UserId, TrainId, SeatId, BookingStatus, BookingDate,
+    *   BookingId, UserId, TrainId, SeatId, BookingStatus, BookingDate,
       TotalAmount, PaymentStatus, CancelledAt
 5. **AuditLog** - Transaction history
-    - LogId, UserId, Action, EntityType, EntityId, Details, CreatedAt
+    *   LogId, UserId, Action, EntityType, EntityId, Details, CreatedAt
 
 ### Key Constraints
 
-- 10 seats per train (enforced by default constraint)
-- Optimistic concurrency control on Seat table (Version column)
-- Role-based access: Admin, Customer
-- Booking statuses: Pending, Confirmed, Cancelled
-- Payment statuses: Pending, Paid, Refunded
+*   10 seats per train (enforced by default constraint)
+*   Optimistic concurrency control on Seat table (Version column)
+*   Role-based access: Admin, Customer
+*   Booking statuses: Pending, Confirmed, Cancelled
+*   Payment statuses: Pending, Paid, Refunded
 
 ---
 
@@ -213,10 +213,10 @@ pnpm markdownlint-cli2 --fix "**/*.md"
 
 Pre-commit hooks automatically run:
 
-- Biome for JS/TS files
-- Prettier for JSON/YAML/SQL/Markdown
-- dotnet format for C# files
-- Markdownlint for Markdown files
+*   Biome for JS/TS files
+*   Prettier for JSON/YAML/SQL/Markdown
+*   dotnet format for C# files
+*   Markdownlint for Markdown files
 
 ### Commit Message Convention
 
@@ -258,25 +258,25 @@ dotnet test
 
 ### Backend (TCP Server)
 
-- **Pattern**: Background Service with TCP listener
-- **ORM**: Dapper for database access
-- **Concurrency**: Handle multiple client connections
-- **Protocol**: Define custom TCP message protocol (JSON/Binary)
-- **Logging**: Use ILogger for structured logging
+*   **Pattern**: Background Service with TCP listener
+*   **ORM**: Dapper for database access
+*   **Concurrency**: Handle multiple client connections
+*   **Protocol**: Define custom TCP message protocol (JSON/Binary)
+*   **Logging**: Use ILogger for structured logging
 
 ### Frontend (WinForms)
 
-- **Pattern**: Event-driven UI with TCP client
-- **Communication**: Async TCP socket operations
-- **State Management**: Local state per form
-- **Error Handling**: User-friendly error messages
+*   **Pattern**: Event-driven UI with TCP client
+*   **Communication**: Async TCP socket operations
+*   **State Management**: Local state per form
+*   **Error Handling**: User-friendly error messages
 
 ### Database Access
 
-- **ORM**: Dapper (micro-ORM)
-- **Transactions**: Use for booking operations
-- **Concurrency**: Optimistic locking on Seat table
-- **Connection Pooling**: Enabled by default
+*   **ORM**: Dapper (micro-ORM)
+*   **Transactions**: Use for booking operations
+*   **Concurrency**: Optimistic locking on Seat table
+*   **Connection Pooling**: Enabled by default
 
 ---
 
@@ -334,22 +334,22 @@ docker exec -i ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P
 
 ### C# Style
 
-- **Indentation**: Tabs (4 spaces)
-- **Naming**: PascalCase for public members, camelCase for private
-- **Async**: Use async/await for I/O operations
-- **Null Safety**: Enable nullable reference types
-- **Comments**: Explain "what" and "why", not "how"
+*   **Indentation**: Tabs (4 spaces)
+*   **Naming**: PascalCase for public members, camelCase for private
+*   **Async**: Use async/await for I/O operations
+*   **Null Safety**: Enable nullable reference types
+*   **Comments**: Explain "what" and "why", not "how"
 
 ### SQL Style
 
-- **Keywords**: UPPERCASE
-- **Identifiers**: PascalCase for tables/columns
-- **Formatting**: Use Prettier with prettier-plugin-sql
+*   **Keywords**: UPPERCASE
+*   **Identifiers**: PascalCase for tables/columns
+*   **Formatting**: Use Prettier with prettier-plugin-sql
 
 ### JavaScript/TypeScript
 
-- **Formatter**: Biome
-- **Style**: Single quotes, no semicolons (enforced by Biome)
+*   **Formatter**: Biome
+*   **Style**: Single quotes, no semicolons (enforced by Biome)
 
 ---
 
@@ -392,47 +392,47 @@ dotnet build frontend/admin/admin.csproj --no-incremental
 
 ```json
 {
-	"ConnectionStrings": {
-		"DefaultConnection": "Server=localhost,8666;Database=TrainTicketDB;User Id=sa;Password=user;TrustServerCertificate=True;"
-	},
-	"TcpServer": {
-		"Port": 5000,
-		"MaxConnections": 100
-	}
+ "ConnectionStrings": {
+  "DefaultConnection": "Server=localhost,8666;Database=TrainTicketDB;User Id=sa;Password=user;TrustServerCertificate=True;"
+ },
+ "TcpServer": {
+  "Port": 5000,
+  "MaxConnections": 100
+ }
 }
 ```
 
 ### Database (docker-compose.yml)
 
-- `DB_PORT`: SQL Server port (default: 8666)
-- `SA_PASSWORD`: SA user password (default: user)
+*   `DB_PORT`: SQL Server port (default: 8666)
+*   `SA_PASSWORD`: SA user password (default: user)
 
 ---
 
 ## Security Notes
 
-- **Passwords**: Hash using BCrypt or PBKDF2
-- **SQL Injection**: Use parameterized queries (Dapper handles this)
-- **TCP Security**: Consider TLS for production
-- **Connection Strings**: Use User Secrets for sensitive data
+*   **Passwords**: Hash using BCrypt or PBKDF2
+*   **SQL Injection**: Use parameterized queries (Dapper handles this)
+*   **TCP Security**: Consider TLS for production
+*   **Connection Strings**: Use User Secrets for sensitive data
 
 ---
 
 ## Performance Considerations
 
-- **Connection Pooling**: Enabled by default in SQL Server
-- **Async I/O**: Use async/await for all network operations
-- **Indexing**: Indexes created on frequently queried columns
-- **Optimistic Locking**: Version column prevents race conditions
+*   **Connection Pooling**: Enabled by default in SQL Server
+*   **Async I/O**: Use async/await for all network operations
+*   **Indexing**: Indexes created on frequently queried columns
+*   **Optimistic Locking**: Version column prevents race conditions
 
 ---
 
 ## References
 
-- [.NET 9 Documentation](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9)
-- [Dapper Documentation](https://github.com/DapperLib/Dapper)
-- [Windows Forms .NET Framework](https://learn.microsoft.com/en-us/dotnet/desktop/winforms/)
-- [SQL Server 2022 Docker](https://hub.docker.com/_/microsoft-mssql-server)
+*   [.NET 9 Documentation](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9)
+*   [Dapper Documentation](https://github.com/DapperLib/Dapper)
+*   [Windows Forms .NET Framework](https://learn.microsoft.com/en-us/dotnet/desktop/winforms/)
+*   [SQL Server 2022 Docker](https://hub.docker.com/_/microsoft-mssql-server)
 
 ---
 
