@@ -52,8 +52,41 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\Authentication\Login.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Authentication\Login.Designer.cs">
+      <DependentUpon>Login.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Authentication\Register.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Authentication\Register.Designer.cs">
+      <DependentUpon>Register.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Booking\Booking.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Booking\Booking.Designer.cs">
+      <DependentUpon>Booking.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Profile\Profile.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Profile\Profile.Designer.cs">
+      <DependentUpon>Profile.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\TrainSearch\MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\TrainSearch\MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Forms\Authentication\Login.resx">
+      <DependentUpon>Login.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -63,6 +96,145 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="biome.json" />
+    <None Include="Controls\.gitkeep" />
+    <None Include="Forms\Authentication\.gitkeep" />
+    <None Include="Forms\Booking\.gitkeep" />
+    <None Include="Forms\Profile\.gitkeep" />
+    <None Include="Forms\TrainSearch\.gitkeep" />
+    <None Include="Helpers\.gitkeep" />
+    <None Include="Models\.gitkeep" />
+    <None Include="node_modules\%40biomejs\biome\bin\biome" />
+    <None Include="node_modules\%40biomejs\biome\configuration_schema.json" />
+    <None Include="node_modules\%40biomejs\biome\LICENSE-APACHE" />
+    <None Include="node_modules\%40biomejs\biome\LICENSE-MIT" />
+    <None Include="node_modules\%40biomejs\biome\node_modules\.bin\biome" />
+    <None Include="node_modules\%40biomejs\biome\node_modules\.bin\biome.CMD" />
+    <None Include="node_modules\%40biomejs\biome\node_modules\.bin\biome.ps1" />
+    <None Include="node_modules\%40biomejs\biome\package.json" />
+    <None Include="node_modules\%40biomejs\biome\README.es.md" />
+    <None Include="node_modules\%40biomejs\biome\README.fr.md" />
+    <None Include="node_modules\%40biomejs\biome\README.hi.md" />
+    <None Include="node_modules\%40biomejs\biome\README.ja.md" />
+    <None Include="node_modules\%40biomejs\biome\README.kr.md" />
+    <None Include="node_modules\%40biomejs\biome\README.md" />
+    <None Include="node_modules\%40biomejs\biome\README.pl.md" />
+    <None Include="node_modules\%40biomejs\biome\README.pt-BR.md" />
+    <None Include="node_modules\%40biomejs\biome\README.ru.md" />
+    <None Include="node_modules\%40biomejs\biome\README.uk.md" />
+    <None Include="node_modules\%40biomejs\biome\README.zh-CN.md" />
+    <None Include="node_modules\%40biomejs\biome\README.zh-TW.md" />
+    <None Include="node_modules\%40biomejs\biome\ROME-LICENSE-MIT" />
+    <None Include="node_modules\%40github\markdownlint-github\.github\CODEOWNERS" />
+    <None Include="node_modules\%40github\markdownlint-github\.github\dependabot.yml" />
+    <None Include="node_modules\%40github\markdownlint-github\.github\workflows\accessibility-alt-text-bot.yml" />
+    <None Include="node_modules\%40github\markdownlint-github\.github\workflows\ci.yml" />
+    <None Include="node_modules\%40github\markdownlint-github\.github\workflows\publish.yml" />
+    <None Include="node_modules\%40github\markdownlint-github\.nvmrc" />
+    <None Include="node_modules\%40github\markdownlint-github\CHANGELOG.md" />
+    <None Include="node_modules\%40github\markdownlint-github\CODEOWNERS" />
+    <None Include="node_modules\%40github\markdownlint-github\CODE_OF_CONDUCT.md" />
+    <None Include="node_modules\%40github\markdownlint-github\CONTRIBUTING.md" />
+    <None Include="node_modules\%40github\markdownlint-github\docs\rules\GH001-no-default-alt-text.md" />
+    <None Include="node_modules\%40github\markdownlint-github\docs\rules\GH002-no-generic-link-text.md" />
+    <None Include="node_modules\%40github\markdownlint-github\docs\rules\GH003-no-empty-alt-text.md" />
+    <None Include="node_modules\%40github\markdownlint-github\jest.config.json" />
+    <None Include="node_modules\%40github\markdownlint-github\package.json" />
+    <None Include="node_modules\%40github\markdownlint-github\README.md" />
+    <None Include="node_modules\%40github\markdownlint-github\SECURITY.md" />
+    <None Include="node_modules\%40github\markdownlint-github\SUPPORT.md" />
+    <None Include="node_modules\%40github\markdownlint-github\test\example.md" />
+    <None Include="node_modules\%40prettier\plugin-xml\CHANGELOG.md" />
+    <None Include="node_modules\%40prettier\plugin-xml\LICENSE" />
+    <None Include="node_modules\%40prettier\plugin-xml\node_modules\.bin\prettier" />
+    <None Include="node_modules\%40prettier\plugin-xml\node_modules\.bin\prettier.CMD" />
+    <None Include="node_modules\%40prettier\plugin-xml\node_modules\.bin\prettier.ps1" />
+    <None Include="node_modules\%40prettier\plugin-xml\package.json" />
+    <None Include="node_modules\%40prettier\plugin-xml\README.md" />
+    <None Include="node_modules\.bin\biome" />
+    <None Include="node_modules\.bin\biome.CMD" />
+    <None Include="node_modules\.bin\biome.ps1" />
+    <None Include="node_modules\.bin\markdownlint-cli2" />
+    <None Include="node_modules\.bin\markdownlint-cli2.CMD" />
+    <None Include="node_modules\.bin\markdownlint-cli2.ps1" />
+    <None Include="node_modules\.bin\prettier" />
+    <None Include="node_modules\.bin\prettier.CMD" />
+    <None Include="node_modules\.bin\prettier.ps1" />
+    <None Include="node_modules\.bin\tsc" />
+    <None Include="node_modules\.bin\tsc.CMD" />
+    <None Include="node_modules\.bin\tsc.ps1" />
+    <None Include="node_modules\.bin\tsserver" />
+    <None Include="node_modules\.bin\tsserver.CMD" />
+    <None Include="node_modules\.bin\tsserver.ps1" />
+    <None Include="node_modules\markdownlint-cli2-formatter-pretty\LICENSE" />
+    <None Include="node_modules\markdownlint-cli2-formatter-pretty\node_modules\.bin\markdownlint-cli2" />
+    <None Include="node_modules\markdownlint-cli2-formatter-pretty\node_modules\.bin\markdownlint-cli2.CMD" />
+    <None Include="node_modules\markdownlint-cli2-formatter-pretty\node_modules\.bin\markdownlint-cli2.ps1" />
+    <None Include="node_modules\markdownlint-cli2-formatter-pretty\package.json" />
+    <None Include="node_modules\markdownlint-cli2-formatter-pretty\README.md" />
+    <None Include="node_modules\markdownlint-cli2\CHANGELOG.md" />
+    <None Include="node_modules\markdownlint-cli2\LICENSE" />
+    <None Include="node_modules\markdownlint-cli2\node_modules\.bin\js-yaml" />
+    <None Include="node_modules\markdownlint-cli2\node_modules\.bin\js-yaml.CMD" />
+    <None Include="node_modules\markdownlint-cli2\node_modules\.bin\js-yaml.ps1" />
+    <None Include="node_modules\markdownlint-cli2\node_modules\.bin\markdown-it" />
+    <None Include="node_modules\markdownlint-cli2\node_modules\.bin\markdown-it.CMD" />
+    <None Include="node_modules\markdownlint-cli2\node_modules\.bin\markdown-it.ps1" />
+    <None Include="node_modules\markdownlint-cli2\node_modules\.bin\markdownlint-cli2" />
+    <None Include="node_modules\markdownlint-cli2\node_modules\.bin\markdownlint-cli2.CMD" />
+    <None Include="node_modules\markdownlint-cli2\node_modules\.bin\markdownlint-cli2.ps1" />
+    <None Include="node_modules\markdownlint-cli2\package.json" />
+    <None Include="node_modules\markdownlint-cli2\README.md" />
+    <None Include="node_modules\markdownlint-cli2\schema\markdownlint-cli2-config-schema.json" />
+    <None Include="node_modules\markdownlint-cli2\schema\markdownlint-config-schema.json" />
+    <None Include="node_modules\markdownlint-cli2\schema\ValidatingConfiguration.md" />
+    <None Include="node_modules\prettier-plugin-sql\lib\index.js.map" />
+    <None Include="node_modules\prettier-plugin-sql\lib\languages.js.map" />
+    <None Include="node_modules\prettier-plugin-sql\LICENSE" />
+    <None Include="node_modules\prettier-plugin-sql\node_modules\.bin\jsox" />
+    <None Include="node_modules\prettier-plugin-sql\node_modules\.bin\jsox.CMD" />
+    <None Include="node_modules\prettier-plugin-sql\node_modules\.bin\jsox.ps1" />
+    <None Include="node_modules\prettier-plugin-sql\node_modules\.bin\prettier" />
+    <None Include="node_modules\prettier-plugin-sql\node_modules\.bin\prettier.CMD" />
+    <None Include="node_modules\prettier-plugin-sql\node_modules\.bin\prettier.ps1" />
+    <None Include="node_modules\prettier-plugin-sql\node_modules\.bin\sql-formatter" />
+    <None Include="node_modules\prettier-plugin-sql\node_modules\.bin\sql-formatter.CMD" />
+    <None Include="node_modules\prettier-plugin-sql\node_modules\.bin\sql-formatter.ps1" />
+    <None Include="node_modules\prettier-plugin-sql\package.json" />
+    <None Include="node_modules\prettier-plugin-sql\README.md" />
+    <None Include="node_modules\prettier\LICENSE" />
+    <None Include="node_modules\prettier\node_modules\.bin\prettier" />
+    <None Include="node_modules\prettier\node_modules\.bin\prettier.CMD" />
+    <None Include="node_modules\prettier\node_modules\.bin\prettier.ps1" />
+    <None Include="node_modules\prettier\package.json" />
+    <None Include="node_modules\prettier\README.md" />
+    <None Include="node_modules\prettier\THIRD-PARTY-NOTICES.md" />
+    <None Include="node_modules\typescript\bin\tsc" />
+    <None Include="node_modules\typescript\bin\tsserver" />
+    <None Include="node_modules\typescript\lib\cs\diagnosticMessages.generated.json" />
+    <None Include="node_modules\typescript\lib\de\diagnosticMessages.generated.json" />
+    <None Include="node_modules\typescript\lib\es\diagnosticMessages.generated.json" />
+    <None Include="node_modules\typescript\lib\fr\diagnosticMessages.generated.json" />
+    <None Include="node_modules\typescript\lib\it\diagnosticMessages.generated.json" />
+    <None Include="node_modules\typescript\lib\ja\diagnosticMessages.generated.json" />
+    <None Include="node_modules\typescript\lib\ko\diagnosticMessages.generated.json" />
+    <None Include="node_modules\typescript\lib\pl\diagnosticMessages.generated.json" />
+    <None Include="node_modules\typescript\lib\pt-br\diagnosticMessages.generated.json" />
+    <None Include="node_modules\typescript\lib\ru\diagnosticMessages.generated.json" />
+    <None Include="node_modules\typescript\lib\tr\diagnosticMessages.generated.json" />
+    <None Include="node_modules\typescript\lib\typesMap.json" />
+    <None Include="node_modules\typescript\lib\zh-cn\diagnosticMessages.generated.json" />
+    <None Include="node_modules\typescript\lib\zh-tw\diagnosticMessages.generated.json" />
+    <None Include="node_modules\typescript\node_modules\.bin\tsc" />
+    <None Include="node_modules\typescript\node_modules\.bin\tsc.CMD" />
+    <None Include="node_modules\typescript\node_modules\.bin\tsc.ps1" />
+    <None Include="node_modules\typescript\node_modules\.bin\tsserver" />
+    <None Include="node_modules\typescript\node_modules\.bin\tsserver.CMD" />
+    <None Include="node_modules\typescript\node_modules\.bin\tsserver.ps1" />
+    <None Include="node_modules\typescript\package.json" />
+    <None Include="node_modules\typescript\README.md" />
+    <None Include="node_modules\typescript\SECURITY.md" />
+    <None Include="package.json" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -82,5 +254,220 @@
       <Name>sdk-client</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include=".gitignore" />
+    <Content Include=".markdownlint-cli2.mjs" />
+    <Content Include="node_modules\%40github\markdownlint-github\.markdownlint-cli2.mjs" />
+    <Content Include="node_modules\%40github\markdownlint-github\eslint.config.js" />
+    <Content Include="node_modules\%40github\markdownlint-github\index.js" />
+    <Content Include="node_modules\%40github\markdownlint-github\LICENSE.txt" />
+    <Content Include="node_modules\%40github\markdownlint-github\src\helpers\strip-and-downcase-text.js" />
+    <Content Include="node_modules\%40github\markdownlint-github\src\rules\index.js" />
+    <Content Include="node_modules\%40github\markdownlint-github\src\rules\no-default-alt-text.js" />
+    <Content Include="node_modules\%40github\markdownlint-github\src\rules\no-empty-alt-text.js" />
+    <Content Include="node_modules\%40github\markdownlint-github\src\rules\no-generic-link-text.js" />
+    <Content Include="node_modules\%40github\markdownlint-github\style\accessibility.js" />
+    <Content Include="node_modules\%40github\markdownlint-github\style\base.js" />
+    <Content Include="node_modules\%40github\markdownlint-github\test\accessibility-rules.test.js" />
+    <Content Include="node_modules\%40github\markdownlint-github\test\no-default-alt-text.test.js" />
+    <Content Include="node_modules\%40github\markdownlint-github\test\no-empty-alt-text.test.js" />
+    <Content Include="node_modules\%40github\markdownlint-github\test\no-generic-link-text.test.js" />
+    <Content Include="node_modules\%40github\markdownlint-github\test\strip-and-downcase-text.test.js" />
+    <Content Include="node_modules\%40github\markdownlint-github\test\usage.test.js" />
+    <Content Include="node_modules\%40github\markdownlint-github\test\utils\run-test.js" />
+    <Content Include="node_modules\%40prettier\plugin-xml\eslint.config.mjs" />
+    <Content Include="node_modules\%40prettier\plugin-xml\src\embed.js" />
+    <Content Include="node_modules\%40prettier\plugin-xml\src\languages.js" />
+    <Content Include="node_modules\%40prettier\plugin-xml\src\parser.js" />
+    <Content Include="node_modules\%40prettier\plugin-xml\src\plugin.js" />
+    <Content Include="node_modules\%40prettier\plugin-xml\src\printer.js" />
+    <Content Include="node_modules\markdownlint-cli2-formatter-pretty\markdownlint-cli2-formatter-pretty.js" />
+    <Content Include="node_modules\markdownlint-cli2\append-to-array.mjs" />
+    <Content Include="node_modules\markdownlint-cli2\export-markdownlint-helpers.mjs" />
+    <Content Include="node_modules\markdownlint-cli2\export-markdownlint-promise.mjs" />
+    <Content Include="node_modules\markdownlint-cli2\export-markdownlint.mjs" />
+    <Content Include="node_modules\markdownlint-cli2\markdownlint-cli2-bin.mjs" />
+    <Content Include="node_modules\markdownlint-cli2\markdownlint-cli2.mjs" />
+    <Content Include="node_modules\markdownlint-cli2\merge-options.mjs" />
+    <Content Include="node_modules\markdownlint-cli2\parsers\jsonc-parse.mjs" />
+    <Content Include="node_modules\markdownlint-cli2\parsers\parsers.mjs" />
+    <Content Include="node_modules\markdownlint-cli2\parsers\yaml-parse.mjs" />
+    <Content Include="node_modules\prettier-plugin-sql\lib\index.cjs" />
+    <Content Include="node_modules\prettier-plugin-sql\lib\index.js" />
+    <Content Include="node_modules\prettier-plugin-sql\lib\languages.js" />
+    <Content Include="node_modules\prettier\bin\prettier.cjs" />
+    <Content Include="node_modules\prettier\doc.js" />
+    <Content Include="node_modules\prettier\doc.mjs" />
+    <Content Include="node_modules\prettier\index.cjs" />
+    <Content Include="node_modules\prettier\index.mjs" />
+    <Content Include="node_modules\prettier\internal\experimental-cli-worker.mjs" />
+    <Content Include="node_modules\prettier\internal\experimental-cli.mjs" />
+    <Content Include="node_modules\prettier\internal\legacy-cli.mjs" />
+    <Content Include="node_modules\prettier\plugins\acorn.js" />
+    <Content Include="node_modules\prettier\plugins\acorn.mjs" />
+    <Content Include="node_modules\prettier\plugins\angular.js" />
+    <Content Include="node_modules\prettier\plugins\angular.mjs" />
+    <Content Include="node_modules\prettier\plugins\babel.js" />
+    <Content Include="node_modules\prettier\plugins\babel.mjs" />
+    <Content Include="node_modules\prettier\plugins\estree.js" />
+    <Content Include="node_modules\prettier\plugins\estree.mjs" />
+    <Content Include="node_modules\prettier\plugins\flow.js" />
+    <Content Include="node_modules\prettier\plugins\flow.mjs" />
+    <Content Include="node_modules\prettier\plugins\glimmer.js" />
+    <Content Include="node_modules\prettier\plugins\glimmer.mjs" />
+    <Content Include="node_modules\prettier\plugins\graphql.js" />
+    <Content Include="node_modules\prettier\plugins\graphql.mjs" />
+    <Content Include="node_modules\prettier\plugins\html.js" />
+    <Content Include="node_modules\prettier\plugins\html.mjs" />
+    <Content Include="node_modules\prettier\plugins\markdown.js" />
+    <Content Include="node_modules\prettier\plugins\markdown.mjs" />
+    <Content Include="node_modules\prettier\plugins\meriyah.js" />
+    <Content Include="node_modules\prettier\plugins\meriyah.mjs" />
+    <Content Include="node_modules\prettier\plugins\postcss.js" />
+    <Content Include="node_modules\prettier\plugins\postcss.mjs" />
+    <Content Include="node_modules\prettier\plugins\typescript.js" />
+    <Content Include="node_modules\prettier\plugins\typescript.mjs" />
+    <Content Include="node_modules\prettier\plugins\yaml.js" />
+    <Content Include="node_modules\prettier\plugins\yaml.mjs" />
+    <Content Include="node_modules\prettier\standalone.js" />
+    <Content Include="node_modules\prettier\standalone.mjs" />
+    <Content Include="node_modules\typescript\lib\tsc.js" />
+    <Content Include="node_modules\typescript\lib\tsserver.js" />
+    <Content Include="node_modules\typescript\lib\tsserverlibrary.js" />
+    <Content Include="node_modules\typescript\lib\typescript.js" />
+    <Content Include="node_modules\typescript\lib\typingsInstaller.js" />
+    <Content Include="node_modules\typescript\lib\watchGuard.js" />
+    <Content Include="node_modules\typescript\lib\_tsc.js" />
+    <Content Include="node_modules\typescript\lib\_tsserver.js" />
+    <Content Include="node_modules\typescript\lib\_typingsInstaller.js" />
+    <Content Include="node_modules\typescript\LICENSE.txt" />
+    <Content Include="node_modules\typescript\ThirdPartyNoticeText.txt" />
+    <Content Include="prettier.config.cjs" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="node_modules\%40prettier\plugin-xml\types\plugin.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier-plugin-sql\index.d.cts" />
+    <TypeScriptCompile Include="node_modules\prettier-plugin-sql\lib\index.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier-plugin-sql\lib\languages.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\doc.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\index.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\plugins\acorn.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\plugins\angular.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\plugins\babel.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\plugins\estree.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\plugins\flow.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\plugins\glimmer.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\plugins\graphql.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\plugins\html.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\plugins\markdown.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\plugins\meriyah.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\plugins\postcss.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\plugins\typescript.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\plugins\yaml.d.ts" />
+    <TypeScriptCompile Include="node_modules\prettier\standalone.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.decorators.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.decorators.legacy.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.dom.asynciterable.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.dom.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.dom.iterable.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2015.collection.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2015.core.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2015.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2015.generator.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2015.iterable.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2015.promise.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2015.proxy.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2015.reflect.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2015.symbol.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2015.symbol.wellknown.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2016.array.include.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2016.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2016.full.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2016.intl.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2017.arraybuffer.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2017.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2017.date.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2017.full.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2017.intl.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2017.object.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2017.sharedmemory.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2017.string.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2017.typedarrays.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2018.asyncgenerator.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2018.asynciterable.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2018.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2018.full.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2018.intl.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2018.promise.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2018.regexp.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2019.array.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2019.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2019.full.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2019.intl.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2019.object.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2019.string.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2019.symbol.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2020.bigint.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2020.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2020.date.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2020.full.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2020.intl.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2020.number.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2020.promise.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2020.sharedmemory.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2020.string.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2020.symbol.wellknown.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2021.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2021.full.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2021.intl.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2021.promise.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2021.string.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2021.weakref.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2022.array.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2022.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2022.error.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2022.full.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2022.intl.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2022.object.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2022.regexp.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2022.string.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2023.array.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2023.collection.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2023.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2023.full.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2023.intl.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2024.arraybuffer.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2024.collection.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2024.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2024.full.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2024.object.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2024.promise.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2024.regexp.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2024.sharedmemory.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es2024.string.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es5.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.es6.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.esnext.array.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.esnext.collection.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.esnext.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.esnext.decorators.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.esnext.disposable.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.esnext.error.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.esnext.float16.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.esnext.full.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.esnext.intl.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.esnext.iterator.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.esnext.promise.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.esnext.sharedmemory.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.scripthost.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.webworker.asynciterable.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.webworker.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.webworker.importscripts.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\lib.webworker.iterable.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\tsserverlibrary.d.ts" />
+    <TypeScriptCompile Include="node_modules\typescript\lib\typescript.d.ts" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
