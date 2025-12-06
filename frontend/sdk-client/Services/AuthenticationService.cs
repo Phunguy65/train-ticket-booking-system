@@ -29,7 +29,8 @@ namespace sdk_client.Services
 		/// <param name="email">User's email address</param>
 		/// <param name="phoneNumber">User's phone number (optional)</param>
 		/// <returns>Response containing registration result</returns>
-		public async Task<Response> RegisterAsync(string username, string password, string fullName, string email, string phoneNumber = null)
+		public async Task<Response> RegisterAsync(string username, string password, string fullName, string email,
+			string phoneNumber = null)
 		{
 			var request = new RegisterRequest
 			{
@@ -52,13 +53,10 @@ namespace sdk_client.Services
 		/// <returns>LoginResponse containing session token and user information</returns>
 		public async Task<LoginResponse> LoginAsync(string username, string password)
 		{
-			var request = new LoginRequest
-			{
-				Username = username,
-				Password = password
-			};
+			var request = new LoginRequest { Username = username, Password = password };
 
-			var loginResponse = await _apiClient.SendRequestAsync<LoginResponse>("Authentication.Login", request).ConfigureAwait(false);
+			var loginResponse = await _apiClient.SendRequestAsync<LoginResponse>("Authentication.Login", request)
+				.ConfigureAwait(false);
 
 			if (loginResponse != null && !string.IsNullOrEmpty(loginResponse.SessionToken))
 			{

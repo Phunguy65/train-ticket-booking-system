@@ -176,7 +176,8 @@ namespace client.Forms.Authentication
 			};
 
 			// Vẽ chữ 2 màu
-			lblLogin.Paint += (s, e) => {
+			lblLogin.Paint += (s, e) =>
+			{
 				string text1 = "Đã có tài khoản?";
 				string text2 = "Đăng nhập ngay";
 				Size size1 = TextRenderer.MeasureText(text1, lblLogin.Font);
@@ -187,11 +188,13 @@ namespace client.Forms.Authentication
 				TextRenderer.DrawText(e.Graphics, text1, lblLogin.Font, new Point(startX, 5), ClrTextMuted);
 				using (Font fontBold = new Font(lblLogin.Font, FontStyle.Bold | FontStyle.Underline))
 				{
-					TextRenderer.DrawText(e.Graphics, text2, fontBold, new Point(startX + size1.Width - 5, 5), ClrPrimary);
+					TextRenderer.DrawText(e.Graphics, text2, fontBold, new Point(startX + size1.Width - 5, 5),
+						ClrPrimary);
 				}
 			};
 
-			lblLogin.Click += (s, e) => {
+			lblLogin.Click += (s, e) =>
+			{
 				this.Hide();
 				var loginForm = new Login(); // Chuyển về màn hình Login
 				loginForm.ShowDialog();
@@ -225,16 +228,33 @@ namespace client.Forms.Authentication
 			// Nút Đóng (X)
 			Label btnClose = CreateWindowButton("✕", this.Width - btnSize, 0, btnSize);
 			btnClose.Click += (s, e) => Application.Exit();
-			btnClose.MouseEnter += (s, e) => { btnClose.BackColor = ClrCloseHover; btnClose.ForeColor = Color.White; };
-			btnClose.MouseLeave += (s, e) => { btnClose.BackColor = Color.Transparent; btnClose.ForeColor = Color.White; };
+			btnClose.MouseEnter += (s, e) =>
+			{
+				btnClose.BackColor = ClrCloseHover;
+				btnClose.ForeColor = Color.White;
+			};
+			btnClose.MouseLeave += (s, e) =>
+			{
+				btnClose.BackColor = Color.Transparent;
+				btnClose.ForeColor = Color.White;
+			};
 			pnlHeader.Controls.Add(btnClose);
 
 			// Nút Phóng to
 			Label btnMax = CreateWindowButton("□", this.Width - (btnSize * 2), 0, btnSize);
 			btnMax.Font = new Font("Segoe UI", 13);
-			btnMax.Click += (s, e) => {
-				if (this.WindowState == FormWindowState.Normal) { this.WindowState = FormWindowState.Maximized; btnMax.Text = "❐"; }
-				else { this.WindowState = FormWindowState.Normal; btnMax.Text = "□"; }
+			btnMax.Click += (s, e) =>
+			{
+				if (this.WindowState == FormWindowState.Normal)
+				{
+					this.WindowState = FormWindowState.Maximized;
+					btnMax.Text = "❐";
+				}
+				else
+				{
+					this.WindowState = FormWindowState.Normal;
+					btnMax.Text = "□";
+				}
 			};
 			btnMax.MouseEnter += (s, e) => btnMax.BackColor = ClrHeaderHover;
 			btnMax.MouseLeave += (s, e) => btnMax.BackColor = Color.Transparent;
@@ -248,23 +268,43 @@ namespace client.Forms.Authentication
 			pnlHeader.Controls.Add(btnMin);
 
 			// Resize Event
-			this.Resize += (s, e) => {
+			this.Resize += (s, e) =>
+			{
 				btnClose.Location = new Point(this.Width - btnSize, 0);
 				btnMax.Location = new Point(this.Width - (btnSize * 2), 0);
 				btnMin.Location = new Point(this.Width - (btnSize * 3), 0);
-				if (pnlCard != null) pnlCard.Location = new Point((this.Width - pnlCard.Width) / 2, (this.Height - pnlCard.Height) / 2 + 15);
+				if (pnlCard != null)
+					pnlCard.Location = new Point((this.Width - pnlCard.Width) / 2,
+						(this.Height - pnlCard.Height) / 2 + 15);
 			};
 		}
 
 		// --- CÁC HÀM HỖ TRỢ ---
 		private Label CreateWindowButton(string text, int x, int y, int size)
 		{
-			return new Label() { Text = text, Font = new Font("Segoe UI", 11, FontStyle.Regular), ForeColor = Color.White, AutoSize = false, Size = new Size(size, 40), Location = new Point(x, y), TextAlign = ContentAlignment.MiddleCenter, Cursor = Cursors.Hand };
+			return new Label()
+			{
+				Text = text,
+				Font = new Font("Segoe UI", 11, FontStyle.Regular),
+				ForeColor = Color.White,
+				AutoSize = false,
+				Size = new Size(size, 40),
+				Location = new Point(x, y),
+				TextAlign = ContentAlignment.MiddleCenter,
+				Cursor = Cursors.Hand
+			};
 		}
 
 		private Label CreateLabel(string text, int x, int y)
 		{
-			return new Label { Text = text, Font = new Font("Segoe UI", 11, FontStyle.Regular), ForeColor = ClrTextMuted, AutoSize = true, Location = new Point(x, y) };
+			return new Label
+			{
+				Text = text,
+				Font = new Font("Segoe UI", 11, FontStyle.Regular),
+				ForeColor = ClrTextMuted,
+				AutoSize = true,
+				Location = new Point(x, y)
+			};
 		}
 
 		private void DrawRoundedPanel(object sender, PaintEventArgs e, int radius)
@@ -280,22 +320,35 @@ namespace client.Forms.Authentication
 		{
 			if (txtPassword.TextValue != txtConfirmPass.TextValue)
 			{
-				MessageBox.Show("Mật khẩu xác nhận không trùng khớp!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Mật khẩu xác nhận không trùng khớp!", "Lỗi", MessageBoxButtons.OK,
+					MessageBoxIcon.Warning);
 				return;
 			}
+
 			if (string.IsNullOrEmpty(txtEmail.TextValue) || string.IsNullOrEmpty(txtPassword.TextValue))
 			{
-				MessageBox.Show("Vui lòng nhập đầy đủ thông tin!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Vui lòng nhập đầy đủ thông tin!", "Thông báo", MessageBoxButtons.OK,
+					MessageBoxIcon.Warning);
 				return;
 			}
+
 			MessageBox.Show($"Đăng ký thành công!\nEmail: {txtEmail.TextValue}", "Thông báo");
 		}
 
 		// Kéo thả form
 		[System.Runtime.InteropServices.DllImport("user32.dll")]
 		public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+
 		[System.Runtime.InteropServices.DllImport("user32.dll")]
 		public static extern bool ReleaseCapture();
-		private void Form_MouseDown(object sender, MouseEventArgs e) { if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, 0xA1, 0x2, 0); } }
+
+		private void Form_MouseDown(object sender, MouseEventArgs e)
+		{
+			if (e.Button == MouseButtons.Left)
+			{
+				ReleaseCapture();
+				SendMessage(Handle, 0xA1, 0x2, 0);
+			}
+		}
 	}
 }

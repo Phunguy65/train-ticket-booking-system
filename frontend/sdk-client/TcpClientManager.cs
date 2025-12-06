@@ -70,7 +70,8 @@ namespace sdk_client
 			{
 				_client.Close();
 				_client = null;
-				throw new TimeoutException($"Connection to {_host}:{_port} timed out after {_connectionTimeout} seconds.");
+				throw new TimeoutException(
+					$"Connection to {_host}:{_port} timed out after {_connectionTimeout} seconds.");
 			}
 
 			await connectTask.ConfigureAwait(false);

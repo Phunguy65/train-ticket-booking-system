@@ -71,13 +71,15 @@ public class AuthenticationHandler
 		{
 			Success = result.Success,
 			ErrorMessage = result.Success ? null : result.Message,
-			Data = result.Success ? new LoginResponse
-			{
-				SessionToken = result.SessionToken,
-				UserId = result.User!.UserId,
-				Username = result.User.Username,
-				Role = result.User.Role
-			} : null
+			Data = result.Success
+				? new LoginResponse
+				{
+					SessionToken = result.SessionToken,
+					UserId = result.User!.UserId,
+					Username = result.User.Username,
+					Role = result.User.Role
+				}
+				: null
 		};
 	}
 
@@ -104,4 +106,3 @@ public class AuthenticationHandler
 		};
 	}
 }
-

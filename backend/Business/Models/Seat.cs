@@ -12,4 +12,3 @@ public class Seat
 	public bool IsAvailable { get; set; }
 	public int Version { get; set; }
 }
-

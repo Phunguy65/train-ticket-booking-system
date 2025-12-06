@@ -8,19 +8,18 @@ namespace backend.Business.Services;
 /// </summary>
 public interface ITrainService
 {
-    Task<Train?> GetTrainByIdAsync(int trainId);
-    Task<IEnumerable<Train>> GetAllTrainsAsync();
-    Task<PagedResult<Train>> GetAllTrainsAsync(int pageNumber, int pageSize);
+	Task<Train?> GetTrainByIdAsync(int trainId);
+	Task<IEnumerable<Train>> GetAllTrainsAsync();
+	Task<PagedResult<Train>> GetAllTrainsAsync(int pageNumber, int pageSize);
 
-    Task<IEnumerable<Train>> SearchTrainsAsync(string? departureStation, string? arrivalStation,
-        DateTime? departureDate);
+	Task<IEnumerable<Train>> SearchTrainsAsync(string? departureStation, string? arrivalStation,
+		DateTime? departureDate);
 
-    Task<PagedResult<Train>> SearchTrainsAsync(string? departureStation, string? arrivalStation,
-        DateTime? departureDate, int pageNumber, int pageSize);
+	Task<PagedResult<Train>> SearchTrainsAsync(string? departureStation, string? arrivalStation,
+		DateTime? departureDate, int pageNumber, int pageSize);
 
-    Task<(bool Success, string Message, int TrainId)> CreateTrainAsync(Train train);
-    Task<(bool Success, string Message)> UpdateTrainAsync(Train train);
-    Task<(bool Success, string Message)> DeleteTrainAsync(int trainId);
-    Task<(bool Success, string Message)> UpdateTrainStatusAsync(int trainId, string status);
+	Task<(bool Success, string Message, int TrainId)> CreateTrainAsync(Train train);
+	Task<(bool Success, string Message)> UpdateTrainAsync(Train train);
+	Task<(bool Success, string Message)> DeleteTrainAsync(int trainId);
+	Task<(bool Success, string Message)> UpdateTrainStatusAsync(int trainId, string status);
 }
-

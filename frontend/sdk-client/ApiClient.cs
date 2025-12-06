@@ -14,6 +14,7 @@ namespace sdk_client
 	public class ApiClient : IDisposable
 	{
 		private readonly TcpClientManager _tcpClient;
+		private readonly JsonSerializerSettings _jsonSettings;
 		private bool _disposed;
 
 		/// <summary>
@@ -32,6 +33,13 @@ namespace sdk_client
 			int requestTimeout = 30)
 		{
 			_tcpClient = new TcpClientManager(host, port, connectionTimeout, requestTimeout);
+
+			// Configure JSON serialization for UTC timezone handling
+			_jsonSettings = new JsonSerializerSettings
+			{
+				DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+				DateFormatHandling = DateFormatHandling.IsoDateFormat
+			};
 		}
 
 		/// <summary>
@@ -95,11 +103,11 @@ namespace sdk_client
 
 			var request = new Request { Action = action, Data = requestData, RequestId = requestId };
 
-			var requestJson = JsonConvert.SerializeObject(request);
+			var requestJson = JsonConvert.SerializeObject(request, _jsonSettings);
 			await _tcpClient.SendAsync(requestJson).ConfigureAwait(false);
 
 			var responseJson = await _tcpClient.ReceiveAsync().ConfigureAwait(false);
-			var response = JsonConvert.DeserializeObject<Response>(responseJson);
+			var response = JsonConvert.DeserializeObject<Response>(responseJson, _jsonSettings);
 
 			if (response == null)
 			{

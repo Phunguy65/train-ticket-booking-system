@@ -16,4 +16,3 @@ public class PasswordHasher
 		return BCrypt.Net.BCrypt.Verify(password, passwordHash);
 	}
 }
-

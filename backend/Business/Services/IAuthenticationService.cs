@@ -8,9 +8,10 @@ namespace backend.Business.Services;
 /// </summary>
 public interface IAuthenticationService
 {
-	Task<(bool Success, string Message, int UserId)> RegisterAsync(string username, string password, string fullName, string email, string? phoneNumber);
+	Task<(bool Success, string Message, int UserId)> RegisterAsync(string username, string password, string fullName,
+		string email, string? phoneNumber);
+
 	Task<(bool Success, string Message, string SessionToken, User? User)> LoginAsync(string username, string password);
 	Task<bool> LogoutAsync(string sessionToken);
 	Task<SessionInfo?> ValidateSessionAsync(string sessionToken);
 }
-

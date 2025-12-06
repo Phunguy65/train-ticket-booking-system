@@ -17,4 +17,3 @@ public interface ISeatRepository
 	Task<bool> UpdateAvailabilityAsync(int seatId, bool isAvailable);
 	Task<int> CreateSeatsForTrainAsync(int trainId, int totalSeats);
 }
-

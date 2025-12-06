@@ -6,8 +6,15 @@ using backend.DataAccess.UnitOfWork;
 using backend.Infrastructure.Security;
 using backend.Presentation;
 using backend.Presentation.Handlers;
+using Newtonsoft.Json;
 
 var builder = Host.CreateApplicationBuilder(args);
+
+// Configure Newtonsoft.Json for UTC timezone handling
+JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+{
+	DateTimeZoneHandling = DateTimeZoneHandling.Utc, DateFormatHandling = DateFormatHandling.IsoDateFormat
+};
 
 builder.Services.AddSingleton<DapperContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

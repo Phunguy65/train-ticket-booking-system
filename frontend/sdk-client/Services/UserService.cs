@@ -33,11 +33,7 @@ namespace sdk_client.Services
 
 			if (pageNumber.HasValue && pageSize.HasValue)
 			{
-				requestData = new
-				{
-					PageNumber = pageNumber.Value,
-					PageSize = pageSize.Value
-				};
+				requestData = new { PageNumber = pageNumber.Value, PageSize = pageSize.Value };
 			}
 
 			var response = await _apiClient.SendRequestAsync("User.GetAllUsers", requestData).ConfigureAwait(false);
@@ -52,14 +48,10 @@ namespace sdk_client.Services
 		/// <param name="email">Updated email address (optional)</param>
 		/// <param name="phoneNumber">Updated phone number (optional)</param>
 		/// <returns>Response indicating update success</returns>
-		public async Task<Response> UpdateUserProfileAsync(string fullName = null, string email = null, string phoneNumber = null)
+		public async Task<Response> UpdateUserProfileAsync(string fullName = null, string email = null,
+			string phoneNumber = null)
 		{
-			var request = new UpdateUserRequest
-			{
-				FullName = fullName,
-				Email = email,
-				PhoneNumber = phoneNumber
-			};
+			var request = new UpdateUserRequest { FullName = fullName, Email = email, PhoneNumber = phoneNumber };
 
 			return await _apiClient.SendRequestAsync("User.UpdateUserProfile", request).ConfigureAwait(false);
 		}
@@ -73,11 +65,7 @@ namespace sdk_client.Services
 		/// <returns>Response indicating lock/unlock success</returns>
 		public async Task<Response> LockUnlockUserAsync(int userId, bool isActive)
 		{
-			var request = new LockUnlockUserRequest
-			{
-				UserId = userId,
-				IsActive = isActive
-			};
+			var request = new LockUnlockUserRequest { UserId = userId, IsActive = isActive };
 
 			return await _apiClient.SendRequestAsync("User.LockUnlockUser", request).ConfigureAwait(false);
 		}
