@@ -64,20 +64,20 @@ namespace sdk_client.Protocol
 
 	public class BookTicketRequest
 	{
-		public string SessionToken { get; set; } = string.Empty;
+		public string SessionToken { get; set; }
 		public int TrainId { get; set; }
 		public int SeatId { get; set; }
 	}
 
 	public class CancelBookingRequest
 	{
-		public string SessionToken { get; set; } = string.Empty;
+		public string SessionToken { get; set; }
 		public int BookingId { get; set; }
 	}
 
 	public class UpdateUserRequest
 	{
-		public string SessionToken { get; set; } = string.Empty;
+		public string SessionToken { get; set; }
 		public string FullName { get; set; }
 		public string Email { get; set; }
 		public string PhoneNumber { get; set; }
@@ -91,7 +91,7 @@ namespace sdk_client.Protocol
 
 	public class GetBookingHistoryRequest
 	{
-		public string SessionToken { get; set; } = string.Empty;
+		public string SessionToken { get; set; }
 	}
 
 	public class GetSeatMapRequest
@@ -108,7 +108,7 @@ namespace sdk_client.Protocol
 
 	public class AuthenticatedRequest
 	{
-		public string SessionToken { get; set; } = string.Empty;
+		public string SessionToken { get; set; }
 	}
 
 	public class PaginationRequest
@@ -117,4 +117,3 @@ namespace sdk_client.Protocol
 		public int PageSize { get; set; } = 10;
 	}
 }
-
