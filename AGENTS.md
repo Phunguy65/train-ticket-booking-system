@@ -87,34 +87,36 @@ dotnet restore train-ticket-booking-system.slnx
 
 ### 2. Database Setup
 
-#### Option A: Using Docker (Recommended)
+#### Using Docker with Flyway (Recommended)
 
 ```powershell
 # Navigate to database directory
 cd database
 
 # Start SQL Server container
-docker-compose up -d
+docker-compose up -d ttbs-database
 
 # Verify container is running
 docker ps | Select-String "ttbs-database"
 
-# Wait 30 seconds for SQL Server to initialize
-Start-Sleep -Seconds 30
+# Initialize database (creates TrainTicketBooking database)
+.\init-database.ps1
 
-# Apply database schema
-docker exec -i ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P user -C -i /docker-entrypoint-initdb.d/schema.sql
+# Run Flyway migrations
+docker-compose up ttbs-flyway
+
+# Or start all services together
+docker-compose up -d
 ```
 
 **Connection String**:
-`Server=localhost,8666;Database=TrainTicketDB;User Id=sa;Password=user;TrustServerCertificate=True;`
+`Server=localhost,8666;Database=TrainTicketBooking;User Id=sa;Password=My$tr0ngP@ssw0rd!;TrustServerCertificate=True;`
 
-#### Option B: Local SQL Server
+**Migration Files Location**: `database/migrations/`
 
-```powershell
-# Apply schema using sqlcmd
-sqlcmd -S localhost -d TrainTicketDB -i database\sql\schema.sql
-```
+*   `V1__initial_schema.sql` - Core database schema
+*   `V2__add_pagination_indexes.sql` - Performance indexes
+*   `V3__add_cascade_delete.sql` - CASCADE DELETE constraints
 
 ### 3. Build Projects
 
@@ -190,6 +192,36 @@ dotnet run
 *   Role-based access: Admin, Customer
 *   Booking statuses: Pending, Confirmed, Cancelled
 *   Payment statuses: Pending, Paid, Refunded
+*   **CASCADE DELETE enabled**: Deleting a Train automatically deletes all related
+  Seats and Bookings
+
+### Foreign Key Cascade Behavior
+
+**Deletion Chain:**
+
+```text
+DELETE Train (TrainId)
+    ↓ ON DELETE CASCADE
+DELETE all Seats (TrainId = deleted train)
+    ↓ ON DELETE CASCADE
+DELETE all Bookings (SeatId = deleted seats)
+```
+
+**Foreign Key Constraints with CASCADE DELETE:**
+
+*   `FK_Seat_TrainId_Train`: Seat.TrainId → Train.TrainId (ON DELETE CASCADE)
+*   `FK_Booking_TrainId_Train`: Booking.TrainId → Train.TrainId (ON DELETE
+  CASCADE)
+*   `FK_Booking_SeatId_Seat`: Booking.SeatId → Seat.SeatId (ON DELETE CASCADE)
+
+**⚠️ Important Notes:**
+
+*   Deleting a train **permanently removes** all associated seats and bookings
+*   Booking history is **not preserved** after train deletion
+*   Use with caution in production environments
+*   Consider implementing soft delete (status change) instead of hard delete for
+  audit trail preservation
+*   The `AuditLog` table records train deletion events for tracking purposes
 
 ---
 
@@ -285,11 +317,29 @@ dotnet test
 ### Add New Database Migration
 
 ```powershell
-# Create new SQL file
-New-Item -Path "database\sql\migration_001.sql" -ItemType File
+# Create new Flyway migration file
+# Follow naming convention: V<VERSION>__<description>.sql
+New-Item -Path "database\migrations\V4__your_migration_description.sql" -ItemType File
 
-# Apply migration
-docker exec -i ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P user -C -i /docker-entrypoint-initdb.d/migration_001.sql
+# Write your SQL migration
+# Example: ALTER TABLE, CREATE INDEX, etc.
+
+# Run Flyway migration
+cd database
+docker-compose up ttbs-flyway
+
+# Verify migration was applied
+docker exec -it ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "My`$tr0ngP@ssw0rd!" -d TrainTicketBooking -Q "SELECT * FROM flyway_schema_history ORDER BY installed_rank" -C
+```
+
+### View Migration History
+
+```powershell
+# Navigate to database directory
+cd database
+
+# Check Flyway migration history
+docker exec -it ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "My`$tr0ngP@ssw0rd!" -d TrainTicketBooking -Q "SELECT installed_rank, version, description, script, installed_on, success FROM flyway_schema_history ORDER BY installed_rank" -C
 ```
 
 ### Add NuGet Package to Backend
@@ -317,15 +367,17 @@ dotnet add reference ..\..\backend\backend.csproj
 ```powershell
 cd database
 
-# Stop and remove container
+# Stop and remove container with volumes
 docker-compose down -v
 
-# Restart with fresh data
-docker-compose up -d
-Start-Sleep -Seconds 30
+# Restart database container
+docker-compose up -d ttbs-database
 
-# Reapply schema
-docker exec -i ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P user -C -i /docker-entrypoint-initdb.d/schema.sql
+# Initialize database
+.\init-database.ps1
+
+# Run Flyway migrations
+docker-compose up ttbs-flyway
 ```
 
 ---
@@ -373,7 +425,7 @@ dotnet run --verbosity detailed
 docker ps | Select-String "ttbs-database"
 
 # Test connection
-docker exec -it ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P user -C -Q "SELECT @@VERSION"
+docker exec -it ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "My`$tr0ngP@ssw0rd!" -C -Q "SELECT @@VERSION"
 ```
 
 ### WinForms Build Errors
@@ -393,7 +445,7 @@ dotnet build frontend/admin/admin.csproj --no-incremental
 ```json
 {
  "ConnectionStrings": {
-  "DefaultConnection": "Server=localhost,8666;Database=TrainTicketDB;User Id=sa;Password=user;TrustServerCertificate=True;"
+  "DefaultConnection": "Server=localhost,8666;Database=TrainTicketBooking;User Id=sa;Password=My$tr0ngP@ssw0rd!;TrustServerCertificate=True;"
  },
  "TcpServer": {
   "Port": 5000,
@@ -405,7 +457,7 @@ dotnet build frontend/admin/admin.csproj --no-incremental
 ### Database (docker-compose.yml)
 
 *   `DB_PORT`: SQL Server port (default: 8666)
-*   `SA_PASSWORD`: SA user password (default: user)
+*   `SA_PASSWORD`: SA user password (default: My$tr0ngP@ssw0rd!)
 
 ---
 

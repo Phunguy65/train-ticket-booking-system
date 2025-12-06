@@ -186,9 +186,9 @@ See [AGENTS.md](../AGENTS.md) for detailed setup instructions.
 
     ```powershell
     cd database
-    docker-compose up -d
-    Start-Sleep -Seconds 30
-    docker exec -i ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P user -C -i /docker-entrypoint-initdb.d/01__schema.sql
+    docker-compose up -d ttbs-database
+    .\init-database.ps1
+    docker-compose up ttbs-flyway
     ```
 
 6. **Build the solution**:

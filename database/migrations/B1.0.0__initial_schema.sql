@@ -1,22 +1,6 @@
-USE master;
-
-GO
-GO IF NOT EXISTS (
-	SELECT
-		*
-	FROM
-		sys.databases
-	WHERE
-		name = 'TrainTicketBooking'
-) BEGIN
-CREATE DATABASE TrainTicketBooking;
-
-PRINT 'Created database TrainTicketBooking';
-
-END ELSE BEGIN PRINT 'Database TrainTicketBooking already exists';
-
-END
-GO
+-- Initial database schema for Train Ticket Booking System
+-- Creates core tables: User, Train, Seat, Booking, AuditLog
+-- Includes primary keys, foreign keys, constraints, and performance indexes
 -- Bảng người dùng
 CREATE TABLE [User] (
 	UserId INT IDENTITY(1, 1) NOT NULL,
