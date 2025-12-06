@@ -1,21 +1,54 @@
 version: '3.8'
+
 services:
+    # SQL Server Database
     ttbs-database:
         image: mcr.microsoft.com/mssql/server:2022-latest
         container_name: ttbs-database
         environment:
             - ACCEPT_EULA=Y
-            - SA_PASSWORD=My$tr0ngP@ssw0rd!
+            - SA_PASSWORD=My$$tr0ngP@ssw0rd!
+            - MSSQL_PID=Developer
         ports:
             - '${DB_PORT:-8666}:1433'
         volumes:
-            - ./entrypoint-initdb.d:/docker-entrypoint-initdb.d
             - ttbs-db-data:/var/opt/mssql
         networks:
             - ttbs-network
+        healthcheck:
+            test:
+                /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P
+                "My$$tr0ngP@ssw0rd!" -Q "SELECT 1" -C || exit 1
+            interval: 10s
+            timeout: 3s
+            retries: 10
+            start_period: 30s
+
+    # Flyway Database Migration Service
+    ttbs-flyway:
+        image: flyway/flyway:latest
+        container_name: ttbs-flyway
+        command: migrate -connectRetries=60
+        volumes:
+            - ./migrations:/flyway/sql
+        environment:
+            - FLYWAY_URL=jdbc:sqlserver://ttbs-database:1433;databaseName=TrainTicketBooking;encrypt=true;trustServerCertificate=true
+            - FLYWAY_USER=sa
+            - FLYWAY_PASSWORD=My$$tr0ngP@ssw0rd!
+            - FLYWAY_SCHEMAS=dbo
+            - FLYWAY_BASELINE_ON_MIGRATE=true
+            - FLYWAY_VALIDATE_ON_MIGRATE=true
+            - FLYWAY_CREATE_SCHEMAS=false
+        networks:
+            - ttbs-network
+        depends_on:
+            ttbs-database:
+                condition: service_healthy
+
 networks:
     ttbs-network:
         name: ttbs-network
+
 volumes:
     ttbs-db-data:
         name: ttbs-db-data

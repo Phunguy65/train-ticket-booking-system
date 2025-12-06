@@ -251,11 +251,12 @@ frontend/sdk-client/
 
 ```powershell
 database/
-├── docker-compose.yml          # Cấu hình Docker cho SQL Server
-└── entrypoint-initdb.d/        # Tập lệnh khởi tạo
-    ├── 01__schema.sql          # Lược đồ cơ sở dữ liệu
-    ├── 02__add_pagination_indexes.sql  # Chỉ mục tối ưu
-    └── entrypoint.sh           # Tập lệnh khởi động
+├── docker-compose.yml          # Cấu hình Docker cho SQL Server và Flyway
+├── init-database.ps1           # Tập lệnh khởi tạo cơ sở dữ liệu
+└── migrations/                 # Tập lệnh di chuyển Flyway
+    ├── V1__initial_schema.sql  # Lược đồ cơ sở dữ liệu ban đầu
+    ├── V2__add_pagination_indexes.sql  # Chỉ mục tối ưu phân trang
+    └── V3__add_cascade_delete.sql      # Ràng buộc CASCADE DELETE
 ```
 
 ### 3.5. Các Tệp Cấu Hình Gốc
@@ -348,8 +349,11 @@ xxxxxxxxxxxx   mcr.microsoft.com/mssql/server:2022-latest   ...   Up   0.0.0.0:8
 #### Bước 5: Áp dụng lược đồ cơ sở dữ liệu (nếu cần)
 
 ```powershell
-# Chạy tập lệnh khởi tạo
-docker exec -it ttbs-database /bin/bash /docker-entrypoint-initdb.d/entrypoint.sh
+# Khởi tạo cơ sở dữ liệu
+.\init-database.ps1
+
+# Chạy di chuyển Flyway
+docker-compose up ttbs-flyway
 ```
 
 ### 4.5. Biên Dịch Dự Án
@@ -489,22 +493,22 @@ Tệp: `backend/appsettings.json`
 ```json
 {
  "ConnectionStrings": {
-  "DefaultConnection": "Server=localhost,8666;Database=TrainTicketDB;User Id=sa;Password=My$tr0ngP@ssw0rd!;TrustServerCertificate=True;Min Pool Size=5;Max Pool Size=100;"
+  "DefaultConnection": "Server=localhost,8666;Database=TrainTicketBooking;User Id=sa;Password=My$tr0ngP@ssw0rd!;TrustServerCertificate=True;Min Pool Size=5;Max Pool Size=100;"
  }
 }
 ```
 
 #### Giải thích các thành phần
 
-| Thành phần             | Giá trị           | Mô tả                           |
-| ---------------------- | ----------------- | ------------------------------- |
-| Server                 | localhost,8666    | Địa chỉ và cổng SQL Server      |
-| Database               | TrainTicketDB     | Tên cơ sở dữ liệu               |
-| User Id                | sa                | Tên người dùng                  |
-| Password               | My$tr0ngP@ssw0rd! | Mật khẩu                        |
-| TrustServerCertificate | True              | Bỏ qua xác thực chứng chỉ SSL   |
-| Min Pool Size          | 5                 | Số kết nối tối thiểu trong pool |
-| Max Pool Size          | 100               | Số kết nối tối đa trong pool    |
+| Thành phần             | Giá trị            | Mô tả                           |
+| ---------------------- | ------------------ | ------------------------------- |
+| Server                 | localhost,8666     | Địa chỉ và cổng SQL Server      |
+| Database               | TrainTicketBooking | Tên cơ sở dữ liệu               |
+| User Id                | sa                 | Tên người dùng                  |
+| Password               | My$tr0ngP@ssw0rd!  | Mật khẩu                        |
+| TrustServerCertificate | True               | Bỏ qua xác thực chứng chỉ SSL   |
+| Min Pool Size          | 5                  | Số kết nối tối thiểu trong pool |
+| Max Pool Size          | 100                | Số kết nối tối đa trong pool    |
 
 ### 6.5. Cấu Hình Docker
 
@@ -607,7 +611,7 @@ dotnet format train-ticket-booking-system.slnx
 dotnet format train-ticket-booking-system.slnx --include backend\Program.cs
 
 # Định dạng tệp SQL
-pnpm prettier --write database\entrypoint-initdb.d\01__schema.sql
+pnpm prettier --write database\migrations\V1__initial_schema.sql
 ```
 
 ### 7.4. Quy Tắc Viết Mã Csharp
@@ -779,14 +783,14 @@ cd database
 # Dừng và xóa container cùng dữ liệu
 docker-compose down -v
 
-# Khởi động lại
-docker-compose up -d
+# Khởi động lại container cơ sở dữ liệu
+docker-compose up -d ttbs-database
 
-# Đợi khởi động
-Start-Sleep -Seconds 30
+# Khởi tạo cơ sở dữ liệu
+.\init-database.ps1
 
-# Áp dụng lược đồ
-docker exec -it ttbs-database /bin/bash /docker-entrypoint-initdb.d/entrypoint.sh
+# Chạy di chuyển Flyway
+docker-compose up ttbs-flyway
 
 cd ..
 ```

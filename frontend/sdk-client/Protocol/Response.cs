@@ -12,4 +12,3 @@ namespace sdk_client.Protocol
 		public string RequestId { get; set; } = string.Empty;
 	}
 }
-

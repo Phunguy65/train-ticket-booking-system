@@ -1,9 +1,9 @@
-using System;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using sdk_client.Exceptions;
 using sdk_client.Protocol;
+using System;
+using System.Threading.Tasks;
 
 namespace sdk_client
 {
@@ -28,7 +28,8 @@ namespace sdk_client
 		/// <param name="port">Server port number</param>
 		/// <param name="connectionTimeout">Connection timeout in seconds</param>
 		/// <param name="requestTimeout">Request timeout in seconds</param>
-		public ApiClient(string host = "127.0.0.1", int port = 5000, int connectionTimeout = 30, int requestTimeout = 30)
+		public ApiClient(string host = "127.0.0.1", int port = 5000, int connectionTimeout = 30,
+			int requestTimeout = 30)
 		{
 			_tcpClient = new TcpClientManager(host, port, connectionTimeout, requestTimeout);
 		}
@@ -79,10 +80,12 @@ namespace sdk_client
 			if (!string.IsNullOrEmpty(SessionToken) && data != null)
 			{
 				var jObject = JObject.FromObject(data);
-				if (jObject["SessionToken"] == null)
+				var existingToken = jObject["SessionToken"]?.ToString();
+				if (string.IsNullOrEmpty(existingToken))
 				{
 					jObject["SessionToken"] = SessionToken;
 				}
+
 				requestData = jObject;
 			}
 			else if (!string.IsNullOrEmpty(SessionToken) && data == null)
@@ -90,12 +93,7 @@ namespace sdk_client
 				requestData = new { SessionToken };
 			}
 
-			var request = new Request
-			{
-				Action = action,
-				Data = requestData,
-				RequestId = requestId
-			};
+			var request = new Request { Action = action, Data = requestData, RequestId = requestId };
 
 			var requestJson = JsonConvert.SerializeObject(request);
 			await _tcpClient.SendAsync(requestJson).ConfigureAwait(false);
@@ -168,4 +166,3 @@ namespace sdk_client
 		}
 	}
 }
-

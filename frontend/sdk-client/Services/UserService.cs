@@ -1,5 +1,5 @@
-using System.Threading.Tasks;
 using sdk_client.Protocol;
+using System.Threading.Tasks;
 
 namespace sdk_client.Services
 {
@@ -83,4 +83,3 @@ namespace sdk_client.Services
 		}
 	}
 }
-

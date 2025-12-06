@@ -1,8 +1,8 @@
+using Newtonsoft.Json.Linq;
+using sdk_client.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using sdk_client.Protocol;
 
 namespace sdk_client.Services
 {
@@ -148,4 +148,3 @@ namespace sdk_client.Services
 		}
 	}
 }
-
