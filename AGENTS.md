@@ -212,9 +212,13 @@ DELETE all Bookings (SeatId = deleted seats)
 **Foreign Key Constraints with CASCADE DELETE:**
 
 *   `FK_Seat_TrainId_Train`: Seat.TrainId → Train.TrainId (ON DELETE CASCADE)
-*   `FK_Booking_TrainId_Train`: Booking.TrainId → Train.TrainId (ON DELETE
-  CASCADE)
+*   `FK_Booking_TrainId_Train`: Booking.TrainId → Train.TrainId (ON DELETE NO
+  ACTION)
 *   `FK_Booking_SeatId_Seat`: Booking.SeatId → Seat.SeatId (ON DELETE CASCADE)
+
+**Note:** `FK_Booking_TrainId_Train` uses `NO ACTION` instead of `CASCADE` to
+prevent SQL Server's "multiple cascade paths" error. The cascade deletion occurs
+through the single path: Train → Seat → Booking.
 
 **⚠️ Important Notes:**
 
@@ -224,6 +228,8 @@ DELETE all Bookings (SeatId = deleted seats)
 *   Consider implementing soft delete (status change) instead of hard delete for
   audit trail preservation
 *   The `AuditLog` table records train deletion events for tracking purposes
+*   The `TrainId` foreign key in `Booking` table is maintained for query purposes
+  but does not cascade delete to avoid multiple cascade paths
 
 ---
 

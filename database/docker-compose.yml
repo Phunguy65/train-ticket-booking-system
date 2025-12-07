@@ -17,12 +17,31 @@ services:
             - ttbs-network
         healthcheck:
             test:
-                /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P
-                "MyStr0ngP@ssw0rd!" -Q "SELECT 1" -C || exit 1
+                /opt/mssql-tools18/bin/sqlcmd -S ttbs-database -U sa -P
+                "MyStr0ngP@ssw0rd!" -Q "SELECT 1" -C || exit 1;
             interval: 10s
             timeout: 3s
             retries: 10
             start_period: 30s
+
+    ttbs-db-init:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        container_name: ttbs-db-init
+        command: >
+            bash -c ' until /opt/mssql-tools18/bin/sqlcmd -S ttbs-database -U sa
+            -P "MyStr0ngP@ssw0rd!" -Q "SELECT 1" -C > /dev/null 2>&1; do
+                echo "Waiting for SQL Server...";
+                sleep 2;
+            done; echo "Creating database..."; /opt/mssql-tools18/bin/sqlcmd -S
+            ttbs-database -U sa -P "MyStr0ngP@ssw0rd!" -Q "IF NOT EXISTS (SELECT
+            name FROM sys.databases WHERE name = N'\''TrainTicketBooking'\'')
+            CREATE DATABASE TrainTicketBooking" -C; echo "Database created
+            successfully"; '
+        networks:
+            - ttbs-network
+        depends_on:
+            ttbs-database:
+                condition: service_healthy
 
     # Flyway Database Migration Service
     ttbs-flyway:
