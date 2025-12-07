@@ -17,6 +17,8 @@
 		<FileAlignment>512</FileAlignment>
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 		<Deterministic>true</Deterministic>
+		<LangVersion>9</LangVersion>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
 		<PlatformTarget>AnyCPU</PlatformTarget>
@@ -28,8 +30,7 @@
 		<ErrorReport>prompt</ErrorReport>
 		<WarningLevel>4</WarningLevel>
 	</PropertyGroup>
-	<PropertyGroup
-		Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
 		<PlatformTarget>AnyCPU</PlatformTarget>
 		<DebugType>pdbonly</DebugType>
 		<Optimize>true</Optimize>
@@ -40,6 +41,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<Reference Include="System" />
+		<Reference Include="System.Configuration" />
 		<Reference Include="System.Core" />
 		<Reference Include="System.Xml.Linq" />
 		<Reference Include="System.Data.DataSetExtensions" />
@@ -88,6 +90,8 @@
 		<Compile Include="Forms\TrainSearch\MainForm.Designer.cs">
 			<DependentUpon>MainForm.cs</DependentUpon>
 		</Compile>
+		<Compile Include="Services\SessionManager.cs" />
+		<Compile Include="Configuration\ApiConfig.cs" />
 		<Compile Include="Program.cs" />
 		<Compile Include="Properties\AssemblyInfo.cs" />
 		<EmbeddedResource Include="Forms\Authentication\Login.resx">

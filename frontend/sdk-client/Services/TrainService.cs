@@ -67,7 +67,7 @@ namespace sdk_client.Services
 		/// <param name="pageNumber">Page number (1-based)</param>
 		/// <param name="pageSize">Number of items per page (1-100)</param>
 		/// <returns>List of matching trains or paginated result with local time</returns>
-		public async Task<object?> SearchTrainsAsync(string departureStation = null, string arrivalStation = null,
+		public async Task<object?> SearchTrainsAsync(string? departureStation = null, string? arrivalStation = null,
 			DateTime? departureDate = null, int? pageNumber = null, int? pageSize = null)
 		{
 			var jObject = new JObject();
@@ -200,7 +200,7 @@ namespace sdk_client.Services
 			{
 				var departureTime = (trainObject["DepartureTime"] ??
 				                     throw new InvalidOperationException(
-					                     $"""{nameof(trainObject)}["DepartureTime"] is null"""))
+					                     $"{nameof(trainObject)}[\"DepartureTime\"] is null"))
 					.Value<DateTime>();
 				trainObject["DepartureTime"] = departureTime.ToLocalTimeSafe();
 			}
@@ -209,7 +209,7 @@ namespace sdk_client.Services
 			{
 				var arrivalTime =
 					(trainObject["ArrivalTime"] ??
-					 throw new InvalidOperationException($"""{nameof(trainObject)}["ArrivalTime"] is null"""))
+					 throw new InvalidOperationException($"{nameof(trainObject)}[\"ArrivalTime\"] is null"))
 					.Value<DateTime>();
 				trainObject["ArrivalTime"] = arrivalTime.ToLocalTimeSafe();
 			}
@@ -217,7 +217,7 @@ namespace sdk_client.Services
 			if (trainObject["CreatedAt"] != null)
 			{
 				var createdAt = (trainObject["CreatedAt"] ??
-				                 throw new InvalidOperationException($"""{nameof(trainObject)}["CreatedAt"] is null"""))
+				                 throw new InvalidOperationException($"{nameof(trainObject)}[\"CreatedAt\"] is null"))
 					.Value<DateTime>();
 				trainObject["CreatedAt"] = createdAt.ToLocalTimeSafe();
 			}

@@ -17,7 +17,7 @@ namespace client
 		{
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
-			Application.Run(new client.Forms.TrainSearch.MainForm());
+			Application.Run(new Login());
 		}
 	}
 }

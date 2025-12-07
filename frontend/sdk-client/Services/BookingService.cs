@@ -147,7 +147,7 @@ namespace sdk_client.Services
 			{
 				var bookingDate = (bookingObject["BookingDate"] ??
 				                   throw new InvalidOperationException(
-					                   $"""{nameof(bookingObject)}["BookingDate"] is null"""))
+					                   $"{nameof(bookingObject)}[\"BookingDate\"] is null"))
 					.Value<DateTime>();
 				bookingObject["BookingDate"] = bookingDate.ToLocalTimeSafe();
 			}
@@ -156,7 +156,7 @@ namespace sdk_client.Services
 			{
 				var cancelledAt = (bookingObject["CancelledAt"] ??
 				                   throw new InvalidOperationException(
-					                   $"""{nameof(bookingObject)}["CancelledAt"] is null"""))
+					                   $"{nameof(bookingObject)}[\"CancelledAt\"] is null"))
 					.Value<DateTime?>();
 				if (cancelledAt.HasValue)
 				{

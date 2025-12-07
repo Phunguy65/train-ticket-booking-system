@@ -1,8 +1,8 @@
+using client.Forms.Authentication; // Sử dụng lại RoundedButton & ModernTextBox
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
-using client.Forms.Authentication; // Sử dụng lại RoundedButton & ModernTextBox
 
 namespace client.Forms.Profile
 {

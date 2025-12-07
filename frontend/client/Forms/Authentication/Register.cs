@@ -1,6 +1,13 @@
+using client.Configuration;
+using client.Services;
+using sdk_client;
+using sdk_client.Exceptions;
+using sdk_client.Services;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace client.Forms.Authentication
@@ -26,15 +33,52 @@ namespace client.Forms.Authentication
 		// --- 2. CÁC CONTROL ---
 		private Panel pnlCard;
 		private Panel pnlHeader;
+		private ModernTextBox txtUsername;
+		private ModernTextBox txtFullName;
 		private ModernTextBox txtEmail;
+		private ModernTextBox txtPhoneNumber;
 		private ModernTextBox txtPassword;
 		private ModernTextBox txtConfirmPass;
 		private RoundedButton btnRegister;
+
+		// API client và services
+		private ApiClient? _apiClient;
+		private AuthenticationService? _authService;
+		private bool _isRegistering;
 
 		public Register()
 		{
 			InitializeComponent();
 			SetupModernUI();
+			InitializeApiClient();
+		}
+
+		private void InitializeApiClient()
+		{
+			try
+			{
+				SessionManager.Instance.Initialize(
+					ApiConfig.Host,
+					ApiConfig.Port,
+					ApiConfig.ConnectionTimeout,
+					ApiConfig.RequestTimeout
+				);
+
+				_apiClient = SessionManager.Instance.ApiClient;
+				if (_apiClient != null)
+				{
+					_authService = new AuthenticationService(_apiClient);
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(
+					$"Không thể kết nối đến máy chủ.\nChi tiết: {ex.Message}",
+					"Lỗi kết nối",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Error
+				);
+			}
 		}
 
 		// --- 3. HÀM DỰNG GIAO DIỆN ---
@@ -51,59 +95,90 @@ namespace client.Forms.Authentication
 			SetupWindowControls();
 
 			// 2. PANEL CARD TRUNG TÂM
-			int cardW = 500;
-			int cardH = 750; // Cao hơn Login chút để chứa đủ 3 ô nhập
+			int cardW = 550;
+			int cardH = 800;
 
 			pnlCard = new Panel()
 			{
 				Size = new Size(cardW, cardH),
 				BackColor = ClrCard,
-				// Căn giữa màn hình
 				Location = new Point((this.Width - cardW) / 2, (this.Height - cardH) / 2 + 15),
 			};
-			pnlCard.Paint += (s, e) => DrawRoundedPanel(s, e, 25); // Bo góc 25px
+			pnlCard.Paint += (s, e) => DrawRoundedPanel(s, e, 25);
 			this.Controls.Add(pnlCard);
 
 			// --- NỘI DUNG BÊN TRONG CARD ---
-			int yPos = 40;
+			int yPos = 30;
 			int xMargin = 50;
 			int inputWidth = cardW - (xMargin * 2);
 
-			// 3. Tiêu đề lớn
+			// 3. Tiêu đề
 			Label lblTitle = new Label()
 			{
 				Text = "ĐĂNG KÝ TÀI KHOẢN",
-				Font = new Font("Segoe UI", 22, FontStyle.Bold),
+				Font = new Font("Segoe UI", 20, FontStyle.Bold),
 				ForeColor = ClrText,
 				AutoSize = false,
-				Size = new Size(inputWidth, 50),
+				Size = new Size(inputWidth, 40),
 				Location = new Point(xMargin, yPos),
 				TextAlign = ContentAlignment.MiddleCenter
 			};
 			pnlCard.Controls.Add(lblTitle);
-			yPos += 50;
+			yPos += 45;
 
-			// 4. Tiêu đề nhỏ (Subtitle)
+			// 4. Subtitle
 			Label lblSub = new Label()
 			{
 				Text = "Tham gia hệ thống đặt vé tàu ngay hôm nay.",
-				Font = new Font("Segoe UI", 11, FontStyle.Regular),
+				Font = new Font("Segoe UI", 10, FontStyle.Regular),
 				ForeColor = ClrTextMuted,
 				AutoSize = false,
-				Size = new Size(inputWidth, 30),
+				Size = new Size(inputWidth, 25),
 				Location = new Point(xMargin, yPos),
 				TextAlign = ContentAlignment.MiddleCenter
 			};
 			pnlCard.Controls.Add(lblSub);
-			yPos += 40;
-
-			// 5. Email Input
-			pnlCard.Controls.Add(CreateLabel("Email", xMargin, yPos));
 			yPos += 35;
+
+			// 5. Username Input
+			pnlCard.Controls.Add(CreateLabel("Tên đăng nhập", xMargin, yPos));
+			yPos += 30;
+			txtUsername = new ModernTextBox
+			{
+				Location = new Point(xMargin, yPos),
+				Size = new Size(inputWidth, 50),
+				PlaceholderText = "Nhập tên đăng nhập",
+				BackColor = ClrInputBg,
+				ForeColor = ClrText,
+				IconText = "👤",
+				IsPasswordChar = false
+			};
+			pnlCard.Controls.Add(txtUsername);
+			yPos += 70;
+
+			// 6. Full Name Input
+			pnlCard.Controls.Add(CreateLabel("Họ và tên", xMargin, yPos));
+			yPos += 30;
+			txtFullName = new ModernTextBox
+			{
+				Location = new Point(xMargin, yPos),
+				Size = new Size(inputWidth, 50),
+				PlaceholderText = "Nhập họ và tên đầy đủ",
+				BackColor = ClrInputBg,
+				ForeColor = ClrText,
+				IconText = "📝",
+				IsPasswordChar = false
+			};
+			pnlCard.Controls.Add(txtFullName);
+			yPos += 70;
+
+			// 7. Email Input
+			pnlCard.Controls.Add(CreateLabel("Email", xMargin, yPos));
+			yPos += 30;
 			txtEmail = new ModernTextBox
 			{
 				Location = new Point(xMargin, yPos),
-				Size = new Size(inputWidth, 55),
+				Size = new Size(inputWidth, 50),
 				PlaceholderText = "Nhập email của bạn",
 				BackColor = ClrInputBg,
 				ForeColor = ClrText,
@@ -111,15 +186,31 @@ namespace client.Forms.Authentication
 				IsPasswordChar = false
 			};
 			pnlCard.Controls.Add(txtEmail);
-			yPos += 85;
+			yPos += 70;
 
-			// 6. Password Input
+			// 8. Phone Number Input (Optional)
+			pnlCard.Controls.Add(CreateLabel("Số điện thoại (tùy chọn)", xMargin, yPos));
+			yPos += 30;
+			txtPhoneNumber = new ModernTextBox
+			{
+				Location = new Point(xMargin, yPos),
+				Size = new Size(inputWidth, 50),
+				PlaceholderText = "Nhập số điện thoại",
+				BackColor = ClrInputBg,
+				ForeColor = ClrText,
+				IconText = "📱",
+				IsPasswordChar = false
+			};
+			pnlCard.Controls.Add(txtPhoneNumber);
+			yPos += 70;
+
+			// 9. Password Input
 			pnlCard.Controls.Add(CreateLabel("Mật khẩu", xMargin, yPos));
-			yPos += 35;
+			yPos += 30;
 			txtPassword = new ModernTextBox
 			{
 				Location = new Point(xMargin, yPos),
-				Size = new Size(inputWidth, 55),
+				Size = new Size(inputWidth, 50),
 				PlaceholderText = "Nhập mật khẩu",
 				BackColor = ClrInputBg,
 				ForeColor = ClrText,
@@ -127,15 +218,15 @@ namespace client.Forms.Authentication
 				IsPasswordChar = true
 			};
 			pnlCard.Controls.Add(txtPassword);
-			yPos += 85;
+			yPos += 70;
 
-			// 7. Confirm Password Input
+			// 10. Confirm Password Input
 			pnlCard.Controls.Add(CreateLabel("Xác nhận mật khẩu", xMargin, yPos));
-			yPos += 35;
+			yPos += 30;
 			txtConfirmPass = new ModernTextBox
 			{
 				Location = new Point(xMargin, yPos),
-				Size = new Size(inputWidth, 55),
+				Size = new Size(inputWidth, 50),
 				PlaceholderText = "Nhập lại mật khẩu",
 				BackColor = ClrInputBg,
 				ForeColor = ClrText,
@@ -143,7 +234,7 @@ namespace client.Forms.Authentication
 				IsPasswordChar = true
 			};
 			pnlCard.Controls.Add(txtConfirmPass);
-			yPos += 95; // Cách xa nút Register
+			yPos += 75;
 
 			// 8. Nút Đăng ký
 			btnRegister = new RoundedButton
@@ -316,23 +407,229 @@ namespace client.Forms.Authentication
 			using (SolidBrush brush = new SolidBrush(pnl.BackColor)) { e.Graphics.FillPath(brush, path); }
 		}
 
-		private void BtnRegister_Click(object sender, EventArgs e)
+		private async void BtnRegister_Click(object sender, EventArgs e)
 		{
-			if (txtPassword.TextValue != txtConfirmPass.TextValue)
+			if (_isRegistering)
 			{
-				MessageBox.Show("Mật khẩu xác nhận không trùng khớp!", "Lỗi", MessageBoxButtons.OK,
-					MessageBoxIcon.Warning);
 				return;
 			}
 
-			if (string.IsNullOrEmpty(txtEmail.TextValue) || string.IsNullOrEmpty(txtPassword.TextValue))
+			var validationError = ValidateInputs();
+			if (!string.IsNullOrEmpty(validationError))
 			{
-				MessageBox.Show("Vui lòng nhập đầy đủ thông tin!", "Thông báo", MessageBoxButtons.OK,
-					MessageBoxIcon.Warning);
+				MessageBox.Show(validationError, "Lỗi xác thực", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 
-			MessageBox.Show($"Đăng ký thành công!\nEmail: {txtEmail.TextValue}", "Thông báo");
+			if (_authService == null)
+			{
+				MessageBox.Show(
+					"Không thể kết nối đến máy chủ. Vui lòng khởi động lại ứng dụng.",
+					"Lỗi",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Error
+				);
+				return;
+			}
+
+			await PerformRegistrationAsync();
+		}
+
+		private string? ValidateInputs()
+		{
+			var username = txtUsername.TextValue?.Trim();
+			var fullName = txtFullName.TextValue?.Trim();
+			var email = txtEmail.TextValue?.Trim();
+			var phoneNumber = txtPhoneNumber.TextValue?.Trim();
+			var password = txtPassword.TextValue;
+			var confirmPassword = txtConfirmPass.TextValue;
+
+			if (string.IsNullOrWhiteSpace(username))
+			{
+				return "Vui lòng nhập tên đăng nhập.";
+			}
+
+			if (username.Length < 3)
+			{
+				return "Tên đăng nhập phải có ít nhất 3 ký tự.";
+			}
+
+			if (!Regex.IsMatch(username, @"^[a-zA-Z0-9_]+$"))
+			{
+				return "Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới.";
+			}
+
+			if (string.IsNullOrWhiteSpace(fullName))
+			{
+				return "Vui lòng nhập họ và tên.";
+			}
+
+			if (string.IsNullOrWhiteSpace(email))
+			{
+				return "Vui lòng nhập email.";
+			}
+
+			if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+			{
+				return "Email không hợp lệ.";
+			}
+
+			if (!string.IsNullOrWhiteSpace(phoneNumber))
+			{
+				if (!Regex.IsMatch(phoneNumber, @"^[0-9]{10,11}$"))
+				{
+					return "Số điện thoại phải có 10-11 chữ số.";
+				}
+			}
+
+			if (string.IsNullOrWhiteSpace(password))
+			{
+				return "Vui lòng nhập mật khẩu.";
+			}
+
+			if (password.Length < 6)
+			{
+				return "Mật khẩu phải có ít nhất 6 ký tự.";
+			}
+
+			if (password != confirmPassword)
+			{
+				return "Mật khẩu xác nhận không trùng khớp.";
+			}
+
+			return null;
+		}
+
+		private async Task PerformRegistrationAsync()
+		{
+			_isRegistering = true;
+			SetRegisterButtonState(false, "ĐANG ĐĂNG KÝ...");
+
+			try
+			{
+				var username = txtUsername.TextValue!.Trim();
+				var fullName = txtFullName.TextValue!.Trim();
+				var email = txtEmail.TextValue!.Trim();
+				var phoneNumber = string.IsNullOrWhiteSpace(txtPhoneNumber.TextValue)
+					? null
+					: txtPhoneNumber.TextValue.Trim();
+				var password = txtPassword.TextValue!;
+
+				await _authService!.RegisterAsync(username, password, fullName, email, phoneNumber)
+					.ConfigureAwait(false);
+
+				this.Invoke((MethodInvoker)delegate
+				{
+					MessageBox.Show(
+						"Đăng ký thành công!\nBạn có thể đăng nhập ngay bây giờ.",
+						"Thành công",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Information
+					);
+				});
+
+				await AutoLoginAfterRegistrationAsync(username, password);
+			}
+			catch (ApiException apiEx)
+			{
+				this.Invoke((MethodInvoker)delegate
+				{
+					var errorMessage = TranslateErrorMessage(apiEx.Message);
+					MessageBox.Show(
+						errorMessage,
+						"Đăng ký thất bại",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Error
+					);
+				});
+			}
+			catch (Exception ex)
+			{
+				this.Invoke((MethodInvoker)delegate
+				{
+					MessageBox.Show(
+						$"Lỗi kết nối đến máy chủ.\nVui lòng kiểm tra kết nối mạng và thử lại.\n\nChi tiết: {ex.Message}",
+						"Lỗi kết nối",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Error
+					);
+				});
+			}
+			finally
+			{
+				this.Invoke((MethodInvoker)delegate
+				{
+					SetRegisterButtonState(true, "ĐĂNG KÝ");
+					_isRegistering = false;
+				});
+			}
+		}
+
+		private async Task AutoLoginAfterRegistrationAsync(string username, string password)
+		{
+			try
+			{
+				var loginResponse = await _authService!.LoginAsync(username, password).ConfigureAwait(false);
+
+				if (loginResponse != null)
+				{
+					SessionManager.Instance.SetSession(loginResponse);
+
+					this.Invoke((MethodInvoker)delegate
+					{
+						this.Hide();
+						var mainForm = new TrainSearch.MainForm();
+						mainForm.FormClosed += (s, e) =>
+						{
+							SessionManager.Instance.ClearSession();
+							this.Close();
+						};
+						mainForm.Show();
+					});
+				}
+			}
+			catch
+			{
+				this.Invoke((MethodInvoker)delegate
+				{
+					this.Hide();
+					var loginForm = new Login();
+					loginForm.ShowDialog();
+					this.Close();
+				});
+			}
+		}
+
+		private void SetRegisterButtonState(bool enabled, string text)
+		{
+			btnRegister.Enabled = enabled;
+			btnRegister.Text = text;
+			btnRegister.BackColor = enabled ? ClrPrimary : Color.FromArgb(71, 85, 105);
+		}
+
+		private string TranslateErrorMessage(string errorMessage)
+		{
+			if (errorMessage.Contains("Username already exists"))
+			{
+				return "Tên đăng nhập đã tồn tại. Vui lòng chọn tên khác.";
+			}
+
+			if (errorMessage.Contains("Email already exists"))
+			{
+				return "Email đã được sử dụng. Vui lòng sử dụng email khác.";
+			}
+
+			if (errorMessage.Contains("Invalid email format"))
+			{
+				return "Định dạng email không hợp lệ.";
+			}
+
+			if (errorMessage.Contains("timeout") || errorMessage.Contains("connection"))
+			{
+				return "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.";
+			}
+
+			return errorMessage;
 		}
 
 		// Kéo thả form
