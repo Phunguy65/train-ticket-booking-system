@@ -45,10 +45,7 @@ namespace sdk_client
 		/// <summary>
 		/// Gets whether the client is currently connected to the server.
 		/// </summary>
-		public bool IsConnected
-		{
-			get { return _tcpClient.IsConnected; }
-		}
+		public bool IsConnected => _tcpClient.IsConnected;
 
 		/// <summary>
 		/// Establishes a connection to the server.

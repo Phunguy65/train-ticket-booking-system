@@ -198,7 +198,9 @@ namespace sdk_client.Services
 
 			if (trainObject["DepartureTime"] != null)
 			{
-				var departureTime = (trainObject["DepartureTime"] ?? throw new InvalidOperationException())
+				var departureTime = (trainObject["DepartureTime"] ??
+				                     throw new InvalidOperationException(
+					                     $"""{nameof(trainObject)}["DepartureTime"] is null"""))
 					.Value<DateTime>();
 				trainObject["DepartureTime"] = departureTime.ToLocalTimeSafe();
 			}
@@ -206,13 +208,16 @@ namespace sdk_client.Services
 			if (trainObject["ArrivalTime"] != null)
 			{
 				var arrivalTime =
-					(trainObject["ArrivalTime"] ?? throw new InvalidOperationException()).Value<DateTime>();
+					(trainObject["ArrivalTime"] ??
+					 throw new InvalidOperationException($"""{nameof(trainObject)}["ArrivalTime"] is null"""))
+					.Value<DateTime>();
 				trainObject["ArrivalTime"] = arrivalTime.ToLocalTimeSafe();
 			}
 
 			if (trainObject["CreatedAt"] != null)
 			{
-				var createdAt = (trainObject["CreatedAt"] ?? throw new InvalidOperationException())
+				var createdAt = (trainObject["CreatedAt"] ??
+				                 throw new InvalidOperationException($"""{nameof(trainObject)}["CreatedAt"] is null"""))
 					.Value<DateTime>();
 				trainObject["CreatedAt"] = createdAt.ToLocalTimeSafe();
 			}
