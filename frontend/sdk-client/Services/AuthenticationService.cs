@@ -30,7 +30,7 @@ namespace sdk_client.Services
 		/// <param name="phoneNumber">User's phone number (optional)</param>
 		/// <returns>Response containing registration result</returns>
 		public async Task<Response> RegisterAsync(string username, string password, string fullName, string email,
-			string phoneNumber = null)
+			string? phoneNumber)
 		{
 			var request = new RegisterRequest
 			{
@@ -51,7 +51,7 @@ namespace sdk_client.Services
 		/// <param name="username">Username for authentication</param>
 		/// <param name="password">Password for authentication</param>
 		/// <returns>LoginResponse containing session token and user information</returns>
-		public async Task<LoginResponse> LoginAsync(string username, string password)
+		public async Task<LoginResponse?> LoginAsync(string username, string password)
 		{
 			var request = new LoginRequest { Username = username, Password = password };
 

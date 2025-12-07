@@ -27,9 +27,9 @@ namespace sdk_client.Services
 		/// <param name="pageNumber">Page number (1-based)</param>
 		/// <param name="pageSize">Number of items per page (1-100)</param>
 		/// <returns>List of all users or paginated result</returns>
-		public async Task<object> GetAllUsersAsync(int? pageNumber = null, int? pageSize = null)
+		public async Task<object?> GetAllUsersAsync(int? pageNumber = null, int? pageSize = null)
 		{
-			object requestData = null;
+			object? requestData = null;
 
 			if (pageNumber.HasValue && pageSize.HasValue)
 			{
@@ -48,8 +48,7 @@ namespace sdk_client.Services
 		/// <param name="email">Updated email address (optional)</param>
 		/// <param name="phoneNumber">Updated phone number (optional)</param>
 		/// <returns>Response indicating update success</returns>
-		public async Task<Response> UpdateUserProfileAsync(string fullName = null, string email = null,
-			string phoneNumber = null)
+		public async Task<Response> UpdateUserProfileAsync(string? fullName, string? email, string? phoneNumber)
 		{
 			var request = new UpdateUserRequest { FullName = fullName, Email = email, PhoneNumber = phoneNumber };
 

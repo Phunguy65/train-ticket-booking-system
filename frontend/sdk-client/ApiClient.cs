@@ -20,7 +20,7 @@ namespace sdk_client
 		/// <summary>
 		/// Gets or sets the current session token for authenticated requests.
 		/// </summary>
-		public string SessionToken { get; set; }
+		public string? SessionToken { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of ApiClient with server connection details.
@@ -70,7 +70,7 @@ namespace sdk_client
 		/// <param name="action">Action string in format 'Category.Action'</param>
 		/// <param name="data">Request data object</param>
 		/// <returns>Response object from server</returns>
-		public async Task<Response> SendRequestAsync(string action, object data = null)
+		public async Task<Response> SendRequestAsync(string action, object? data = null)
 		{
 			if (_disposed)
 			{
@@ -129,14 +129,9 @@ namespace sdk_client
 		/// <param name="action">Action string in format 'Category.Action'</param>
 		/// <param name="data">Request data object</param>
 		/// <returns>Deserialized response data</returns>
-		public async Task<T> SendRequestAsync<T>(string action, object data = null)
+		public async Task<T?> SendRequestAsync<T>(string action, object? data = null)
 		{
 			var response = await SendRequestAsync(action, data).ConfigureAwait(false);
-
-			if (response.Data == null)
-			{
-				return default(T);
-			}
 
 			if (response.Data is JObject jObject)
 			{

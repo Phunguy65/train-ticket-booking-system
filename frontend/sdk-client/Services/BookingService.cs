@@ -28,7 +28,7 @@ namespace sdk_client.Services
 		/// </summary>
 		/// <param name="trainId">Unique train identifier</param>
 		/// <returns>Seat map with availability information</returns>
-		public async Task<object> GetSeatMapAsync(int trainId)
+		public async Task<object?> GetSeatMapAsync(int trainId)
 		{
 			var request = new GetSeatMapRequest { TrainId = trainId };
 
@@ -69,7 +69,7 @@ namespace sdk_client.Services
 		/// Requires an active session token for authentication.
 		/// </summary>
 		/// <returns>List of user's bookings with local time</returns>
-		public async Task<object> GetBookingHistoryAsync()
+		public async Task<object?> GetBookingHistoryAsync()
 		{
 			var response = await _apiClient.SendRequestAsync("Booking.GetBookingHistory").ConfigureAwait(false);
 			return ConvertBookingTimesToLocal(response.Data);
@@ -83,9 +83,9 @@ namespace sdk_client.Services
 		/// <param name="pageNumber">Page number (1-based)</param>
 		/// <param name="pageSize">Number of items per page (1-100)</param>
 		/// <returns>List of all bookings or paginated result with local time</returns>
-		public async Task<object> GetAllBookingsAsync(int? pageNumber = null, int? pageSize = null)
+		public async Task<object?> GetAllBookingsAsync(int? pageNumber = null, int? pageSize = null)
 		{
-			object requestData = null;
+			object? requestData = null;
 
 			if (pageNumber.HasValue && pageSize.HasValue)
 			{
@@ -103,7 +103,7 @@ namespace sdk_client.Services
 		/// </summary>
 		/// <param name="data">Booking data from server response</param>
 		/// <returns>Booking data with DateTime fields converted to local time</returns>
-		private object ConvertBookingTimesToLocal(object data)
+		private object? ConvertBookingTimesToLocal(object? data)
 		{
 			if (data == null) return null;
 
@@ -139,19 +139,21 @@ namespace sdk_client.Services
 		/// Converts DateTime fields in a single booking JObject from UTC to local time.
 		/// </summary>
 		/// <param name="bookingObject">Booking JObject</param>
-		private void ConvertBookingJObjectTimesToLocal(JObject bookingObject)
+		private void ConvertBookingJObjectTimesToLocal(JObject? bookingObject)
 		{
 			if (bookingObject == null) return;
 
 			if (bookingObject["BookingDate"] != null)
 			{
-				var bookingDate = bookingObject["BookingDate"].Value<DateTime>();
+				var bookingDate = (bookingObject["BookingDate"] ?? throw new InvalidOperationException())
+					.Value<DateTime>();
 				bookingObject["BookingDate"] = bookingDate.ToLocalTimeSafe();
 			}
 
 			if (bookingObject["CancelledAt"] != null)
 			{
-				var cancelledAt = bookingObject["CancelledAt"].Value<DateTime?>();
+				var cancelledAt = (bookingObject["CancelledAt"] ?? throw new InvalidOperationException())
+					.Value<DateTime?>();
 				if (cancelledAt.HasValue)
 				{
 					bookingObject["CancelledAt"] = cancelledAt.Value.ToLocalTimeSafe();

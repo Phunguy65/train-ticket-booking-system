@@ -12,7 +12,7 @@ namespace sdk_client.Protocol
 		public string Password { get; set; } = string.Empty;
 		public string FullName { get; set; } = string.Empty;
 		public string Email { get; set; } = string.Empty;
-		public string PhoneNumber { get; set; }
+		public string? PhoneNumber { get; set; }
 	}
 
 	public class LoginRequest
@@ -57,30 +57,30 @@ namespace sdk_client.Protocol
 
 	public class SearchTrainRequest
 	{
-		public string DepartureStation { get; set; }
-		public string ArrivalStation { get; set; }
+		public string DepartureStation { get; set; } = string.Empty;
+		public string ArrivalStation { get; set; } = string.Empty;
 		public DateTime? DepartureDate { get; set; }
 	}
 
 	public class BookTicketRequest
 	{
-		public string SessionToken { get; set; }
+		public string SessionToken { get; set; } = string.Empty;
 		public int TrainId { get; set; }
 		public int SeatId { get; set; }
 	}
 
 	public class CancelBookingRequest
 	{
-		public string SessionToken { get; set; }
+		public string SessionToken { get; set; } = string.Empty;
 		public int BookingId { get; set; }
 	}
 
 	public class UpdateUserRequest
 	{
-		public string SessionToken { get; set; }
-		public string FullName { get; set; }
-		public string Email { get; set; }
-		public string PhoneNumber { get; set; }
+		public string SessionToken { get; set; } = string.Empty;
+		public string? FullName { get; set; }
+		public string? Email { get; set; }
+		public string? PhoneNumber { get; set; }
 	}
 
 	public class LockUnlockUserRequest
@@ -91,7 +91,7 @@ namespace sdk_client.Protocol
 
 	public class GetBookingHistoryRequest
 	{
-		public string SessionToken { get; set; }
+		public string SessionToken { get; set; } = string.Empty;
 	}
 
 	public class GetSeatMapRequest
@@ -108,7 +108,7 @@ namespace sdk_client.Protocol
 
 	public class AuthenticatedRequest
 	{
-		public string SessionToken { get; set; }
+		public string SessionToken { get; set; } = string.Empty;
 	}
 
 	public class PaginationRequest

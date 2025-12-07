@@ -2,8 +2,6 @@ using Newtonsoft.Json.Linq;
 using sdk_client.Protocol;
 using sdk_client.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace sdk_client.Services
@@ -32,9 +30,9 @@ namespace sdk_client.Services
 		/// <param name="pageNumber">Page number (1-based)</param>
 		/// <param name="pageSize">Number of items per page (1-100)</param>
 		/// <returns>List of trains or paginated result with local time</returns>
-		public async Task<object> GetAllTrainsAsync(int? pageNumber = null, int? pageSize = null)
+		public async Task<object?> GetAllTrainsAsync(int? pageNumber = null, int? pageSize = null)
 		{
-			object requestData = null;
+			object? requestData = null;
 
 			if (pageNumber.HasValue && pageSize.HasValue)
 			{
@@ -51,7 +49,7 @@ namespace sdk_client.Services
 		/// </summary>
 		/// <param name="trainId">Unique train identifier</param>
 		/// <returns>Train information with local time</returns>
-		public async Task<object> GetTrainByIdAsync(int trainId)
+		public async Task<object?> GetTrainByIdAsync(int trainId)
 		{
 			var requestData = new { TrainId = trainId };
 			var response = await _apiClient.SendRequestAsync("Train.GetTrainById", requestData).ConfigureAwait(false);
@@ -69,7 +67,7 @@ namespace sdk_client.Services
 		/// <param name="pageNumber">Page number (1-based)</param>
 		/// <param name="pageSize">Number of items per page (1-100)</param>
 		/// <returns>List of matching trains or paginated result with local time</returns>
-		public async Task<object> SearchTrainsAsync(string departureStation = null, string arrivalStation = null,
+		public async Task<object?> SearchTrainsAsync(string departureStation = null, string arrivalStation = null,
 			DateTime? departureDate = null, int? pageNumber = null, int? pageSize = null)
 		{
 			var jObject = new JObject();
@@ -158,7 +156,7 @@ namespace sdk_client.Services
 		/// </summary>
 		/// <param name="data">Train data from server response</param>
 		/// <returns>Train data with DateTime fields converted to local time</returns>
-		private object ConvertTrainTimesToLocal(object data)
+		private object? ConvertTrainTimesToLocal(object? data)
 		{
 			if (data == null) return null;
 
@@ -194,25 +192,28 @@ namespace sdk_client.Services
 		/// Converts DateTime fields in a single train JObject from UTC to local time.
 		/// </summary>
 		/// <param name="trainObject">Train JObject</param>
-		private void ConvertTrainJObjectTimesToLocal(JObject trainObject)
+		private void ConvertTrainJObjectTimesToLocal(JObject? trainObject)
 		{
 			if (trainObject == null) return;
 
 			if (trainObject["DepartureTime"] != null)
 			{
-				var departureTime = trainObject["DepartureTime"].Value<DateTime>();
+				var departureTime = (trainObject["DepartureTime"] ?? throw new InvalidOperationException())
+					.Value<DateTime>();
 				trainObject["DepartureTime"] = departureTime.ToLocalTimeSafe();
 			}
 
 			if (trainObject["ArrivalTime"] != null)
 			{
-				var arrivalTime = trainObject["ArrivalTime"].Value<DateTime>();
+				var arrivalTime =
+					(trainObject["ArrivalTime"] ?? throw new InvalidOperationException()).Value<DateTime>();
 				trainObject["ArrivalTime"] = arrivalTime.ToLocalTimeSafe();
 			}
 
 			if (trainObject["CreatedAt"] != null)
 			{
-				var createdAt = trainObject["CreatedAt"].Value<DateTime>();
+				var createdAt = (trainObject["CreatedAt"] ?? throw new InvalidOperationException())
+					.Value<DateTime>();
 				trainObject["CreatedAt"] = createdAt.ToLocalTimeSafe();
 			}
 		}

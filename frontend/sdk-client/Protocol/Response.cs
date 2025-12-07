@@ -7,8 +7,8 @@ namespace sdk_client.Protocol
 	public class Response
 	{
 		public bool Success { get; set; }
-		public object Data { get; set; }
-		public string ErrorMessage { get; set; }
+		public object? Data { get; set; }
+		public string? ErrorMessage { get; set; }
 		public string RequestId { get; set; } = string.Empty;
 	}
 }

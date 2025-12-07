@@ -34,7 +34,7 @@ namespace sdk_client.Services
 		/// <param name="pageNumber">Page number (1-based)</param>
 		/// <param name="pageSize">Number of items per page (1-100)</param>
 		/// <returns>List of audit logs or paginated result with local time</returns>
-		public async Task<object> GetAuditLogsAsync(int? userId = null, DateTime? startDate = null,
+		public async Task<object?> GetAuditLogsAsync(int? userId = null, DateTime? startDate = null,
 			DateTime? endDate = null, int? pageNumber = null, int? pageSize = null)
 		{
 			var jObject = new JObject();
@@ -74,33 +74,35 @@ namespace sdk_client.Services
 		/// </summary>
 		/// <param name="data">Audit log data from server response</param>
 		/// <returns>Audit log data with DateTime fields converted to local time</returns>
-		private object ConvertAuditLogTimesToLocal(object data)
+		private object? ConvertAuditLogTimesToLocal(object? data)
 		{
-			if (data == null) return null;
+			if (data is null) return null;
 
-			var jToken = data as JToken;
-			if (jToken == null) return data;
+			if (data is not JToken jToken) return data;
 
-			if (jToken is JArray jArray)
+			switch (jToken)
 			{
-				foreach (var item in jArray)
-				{
-					ConvertAuditLogJObjectTimesToLocal(item as JObject);
-				}
-			}
-			else if (jToken is JObject jObject)
-			{
-				if (jObject["Items"] != null && jObject["Items"] is JArray items)
-				{
-					foreach (var item in items)
+				case JArray jArray:
 					{
-						ConvertAuditLogJObjectTimesToLocal(item as JObject);
+						foreach (var item in jArray)
+						{
+							ConvertAuditLogJObjectTimesToLocal(item as JObject);
+						}
+
+						break;
 					}
-				}
-				else
-				{
+				case JObject jObject when jObject["Items"] != null && jObject["Items"] is JArray items:
+					{
+						foreach (var item in items)
+						{
+							ConvertAuditLogJObjectTimesToLocal(item as JObject);
+						}
+
+						break;
+					}
+				case JObject jObject:
 					ConvertAuditLogJObjectTimesToLocal(jObject);
-				}
+					break;
 			}
 
 			return data;
@@ -110,13 +112,14 @@ namespace sdk_client.Services
 		/// Converts DateTime fields in a single audit log JObject from UTC to local time.
 		/// </summary>
 		/// <param name="auditLogObject">Audit log JObject</param>
-		private void ConvertAuditLogJObjectTimesToLocal(JObject auditLogObject)
+		private void ConvertAuditLogJObjectTimesToLocal(JObject? auditLogObject)
 		{
-			if (auditLogObject == null) return;
-
-			if (auditLogObject["CreatedAt"] != null)
+			if (auditLogObject?["CreatedAt"] != null)
 			{
-				var createdAt = auditLogObject["CreatedAt"].Value<DateTime>();
+				var createdAt =
+					(auditLogObject["CreatedAt"] ??
+					 throw new InvalidOperationException($"{nameof(auditLogObject)}[\"CreatedAt\"] is null"))
+					.Value<DateTime>();
 				auditLogObject["CreatedAt"] = createdAt.ToLocalTimeSafe();
 			}
 		}
