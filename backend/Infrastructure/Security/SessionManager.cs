@@ -49,6 +49,7 @@ public class SessionManager
 				_sessions.TryRemove(sessionToken, out _);
 			}
 		}
+
 		return null;
 	}
 
@@ -75,4 +76,3 @@ public class SessionManager
 		}
 	}
 }
-

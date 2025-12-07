@@ -28,6 +28,7 @@ public class UnitOfWork : IUnitOfWork
 				_connection = _context.CreateConnection();
 				_connection.Open();
 			}
+
 			return _connection;
 		}
 	}
@@ -89,8 +90,8 @@ public class UnitOfWork : IUnitOfWork
 				_transaction?.Dispose();
 				_connection?.Dispose();
 			}
+
 			_disposed = true;
 		}
 	}
 }
-

@@ -62,11 +62,13 @@ ADD CONSTRAINT FK_Seat_TrainId_Train FOREIGN KEY (TrainId) REFERENCES Train (Tra
 PRINT 'Created constraint FK_Seat_TrainId_Train with ON DELETE CASCADE';
 
 GO
--- Step 5: Recreate Booking foreign key (TrainId) with CASCADE DELETE
+-- Step 5: Recreate Booking foreign key (TrainId) with NO ACTION
+-- Note: Using NO ACTION to avoid multiple cascade paths (Train->Booking and Train->Seat->Booking)
+-- The cascade deletion will occur through the Seat table: Train -> Seat -> Booking
 ALTER TABLE Booking
-ADD CONSTRAINT FK_Booking_TrainId_Train FOREIGN KEY (TrainId) REFERENCES Train (TrainId) ON DELETE CASCADE;
+ADD CONSTRAINT FK_Booking_TrainId_Train FOREIGN KEY (TrainId) REFERENCES Train (TrainId) ON DELETE NO ACTION;
 
-PRINT 'Created constraint FK_Booking_TrainId_Train with ON DELETE CASCADE';
+PRINT 'Created constraint FK_Booking_TrainId_Train with ON DELETE NO ACTION';
 
 GO
 -- Step 6: Recreate Booking foreign key (SeatId) with CASCADE DELETE
@@ -103,3 +105,5 @@ ORDER BY
 PRINT 'CASCADE DELETE migration completed successfully';
 
 PRINT 'Deletion behavior: Train -> Seat (CASCADE) -> Booking (CASCADE)';
+
+PRINT 'Note: FK_Booking_TrainId_Train uses NO ACTION to prevent multiple cascade paths';

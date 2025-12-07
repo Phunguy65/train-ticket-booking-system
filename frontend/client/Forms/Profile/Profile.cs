@@ -1,8 +1,8 @@
+using client.Forms.Authentication; // Sử dụng lại RoundedButton & ModernTextBox
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
-using client.Forms.Authentication; // Sử dụng lại RoundedButton & ModernTextBox
 
 namespace client.Forms.Profile
 {
@@ -55,8 +55,19 @@ namespace client.Forms.Profile
 			this.DoubleBuffered = true;
 
 			// HEADER
-			Panel pnlHeader = new Panel { Dock = DockStyle.Top, Height = 60, Padding = new Padding(30, 0, 30, 0), BackColor = ClrHeader };
-			Label lblLogo = new Label { Text = "🚆 Vé Tàu Cao Tốc", Font = new Font("Segoe UI", 16, FontStyle.Bold), ForeColor = ClrTabActive, AutoSize = true, Location = new Point(30, 15), Cursor = Cursors.Hand };
+			Panel pnlHeader = new Panel
+			{
+				Dock = DockStyle.Top, Height = 60, Padding = new Padding(30, 0, 30, 0), BackColor = ClrHeader
+			};
+			Label lblLogo = new Label
+			{
+				Text = "🚆 Vé Tàu Cao Tốc",
+				Font = new Font("Segoe UI", 16, FontStyle.Bold),
+				ForeColor = ClrTabActive,
+				AutoSize = true,
+				Location = new Point(30, 15),
+				Cursor = Cursors.Hand
+			};
 			lblLogo.Click += (s, e) => this.Close();
 			pnlHeader.Controls.Add(lblLogo);
 			AddWindowControls(pnlHeader);
@@ -65,7 +76,14 @@ namespace client.Forms.Profile
 
 			// PAGE TITLE
 			Panel pnlPageTitle = new Panel { Dock = DockStyle.Top, Height = 70, Padding = new Padding(50, 0, 50, 0) };
-			Label lblPageTitle = new Label { Text = "Quản lý tài khoản", Font = new Font("Segoe UI", 24, FontStyle.Bold), ForeColor = Color.White, AutoSize = true, Location = new Point(50, 10) };
+			Label lblPageTitle = new Label
+			{
+				Text = "Quản lý tài khoản",
+				Font = new Font("Segoe UI", 24, FontStyle.Bold),
+				ForeColor = Color.White,
+				AutoSize = true,
+				Location = new Point(50, 10)
+			};
 			pnlPageTitle.Controls.Add(lblPageTitle);
 
 			// TABS
@@ -78,7 +96,10 @@ namespace client.Forms.Profile
 			btnTabProfile.Click += (s, e) => SwitchTab("PROFILE");
 			pnlTabs.Controls.Add(btnTabProfile);
 
-			lineActiveTab = new Panel { Height = 4, BackColor = ClrTabActive, Location = new Point(50, 46), Size = new Size(100, 4) };
+			lineActiveTab = new Panel
+			{
+				Height = 4, BackColor = ClrTabActive, Location = new Point(50, 46), Size = new Size(100, 4)
+			};
 			pnlTabs.Controls.Add(lineActiveTab);
 
 			// CONTENT
@@ -170,21 +191,30 @@ namespace client.Forms.Profile
 			flowList.BringToFront();
 
 			// 3. Thêm dữ liệu mẫu (Giữ nguyên)
-			AddHistoryItem(flowList, "#VE12345", "Tàu SE1 - Toa 5 (Ghế 12A)", "15/08/2024", "Đã hoàn tất", ClrSuccess, "450,000đ");
-			AddHistoryItem(flowList, "#VE67890", "Tàu TN2 - Toa 3 (Ghế 05B)", "22/09/2024", "Sắp tới", ClrWarning, "500,000đ");
-			AddHistoryItem(flowList, "#VE13579", "Tàu SE7 - Toa 1 (Ghế 01C)", "01/07/2024", "Đã hủy", ClrError, "380,000đ");
-			AddHistoryItem(flowList, "#VE99999", "Tàu HN1 - Toa VIP", "30/12/2024", "Sắp tới", ClrWarning, "1,200,000đ");
+			AddHistoryItem(flowList, "#VE12345", "Tàu SE1 - Toa 5 (Ghế 12A)", "15/08/2024", "Đã hoàn tất", ClrSuccess,
+				"450,000đ");
+			AddHistoryItem(flowList, "#VE67890", "Tàu TN2 - Toa 3 (Ghế 05B)", "22/09/2024", "Sắp tới", ClrWarning,
+				"500,000đ");
+			AddHistoryItem(flowList, "#VE13579", "Tàu SE7 - Toa 1 (Ghế 01C)", "01/07/2024", "Đã hủy", ClrError,
+				"380,000đ");
+			AddHistoryItem(flowList, "#VE99999", "Tàu HN1 - Toa VIP", "30/12/2024", "Sắp tới", ClrWarning,
+				"1,200,000đ");
 			AddHistoryItem(flowList, "#VE88888", "Tàu SE3 - Toa 2", "10/01/2025", "Sắp tới", ClrWarning, "600,000đ");
 		}
 
-		private void AddHistoryItem(FlowLayoutPanel parent, string code, string train, string date, string status, Color statusColor, string price)
+		private void AddHistoryItem(FlowLayoutPanel parent, string code, string train, string date, string status,
+			Color statusColor, string price)
 		{
 			int itemWidth = parent.ClientSize.Width - 20;
 			if (itemWidth < 1200) itemWidth = 1200;
 
-			Panel pnlItem = new Panel { Size = new Size(itemWidth, 70), Margin = new Padding(0, 0, 0, 15), BackColor = Color.Transparent };
+			Panel pnlItem = new Panel
+			{
+				Size = new Size(itemWidth, 70), Margin = new Padding(0, 0, 0, 15), BackColor = Color.Transparent
+			};
 
-			pnlItem.Paint += (s, e) => {
+			pnlItem.Paint += (s, e) =>
+			{
 				e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 				Rectangle rect = new Rectangle(0, 0, pnlItem.Width - 1, pnlItem.Height - 1);
 				using (GraphicsPath path = GetRoundedPath(rect, 15))
@@ -192,11 +222,22 @@ namespace client.Forms.Profile
 			};
 
 			int curX = 20;
-			pnlItem.Controls.Add(CreateLabel(code, 11, FontStyle.Bold, ClrText, curX, 25)); curX += colWidths[0];
-			pnlItem.Controls.Add(CreateLabel(train, 11, FontStyle.Regular, ClrText, curX, 25)); curX += colWidths[1];
-			pnlItem.Controls.Add(CreateLabel(date, 11, FontStyle.Regular, ClrTextGray, curX, 25)); curX += colWidths[2];
-			Label lblStatus = new Label { Text = status, ForeColor = statusColor, Font = new Font("Segoe UI", 10, FontStyle.Bold), AutoSize = true, Location = new Point(curX, 25) };
-			pnlItem.Controls.Add(lblStatus); curX += colWidths[3];
+			pnlItem.Controls.Add(CreateLabel(code, 11, FontStyle.Bold, ClrText, curX, 25));
+			curX += colWidths[0];
+			pnlItem.Controls.Add(CreateLabel(train, 11, FontStyle.Regular, ClrText, curX, 25));
+			curX += colWidths[1];
+			pnlItem.Controls.Add(CreateLabel(date, 11, FontStyle.Regular, ClrTextGray, curX, 25));
+			curX += colWidths[2];
+			Label lblStatus = new Label
+			{
+				Text = status,
+				ForeColor = statusColor,
+				Font = new Font("Segoe UI", 10, FontStyle.Bold),
+				AutoSize = true,
+				Location = new Point(curX, 25)
+			};
+			pnlItem.Controls.Add(lblStatus);
+			curX += colWidths[3];
 			pnlItem.Controls.Add(CreateLabel(price, 12, FontStyle.Bold, ClrText, curX, 23));
 
 			parent.Controls.Add(pnlItem);
@@ -208,28 +249,77 @@ namespace client.Forms.Profile
 		private void LoadProfileContent()
 		{
 			Panel pnlProfile = new Panel { Size = new Size(800, 500), Location = new Point(20, 20) };
-			Label lblHeader = new Label { Text = "Thông tin cá nhân", Font = new Font("Segoe UI", 14, FontStyle.Bold), ForeColor = ClrText, AutoSize = true, Location = new Point(0, 0) };
-			Label lblSub = new Label { Text = "Cập nhật thông tin định danh và liên hệ của bạn.", Font = new Font("Segoe UI", 10, FontStyle.Regular), ForeColor = ClrTextGray, AutoSize = true, Location = new Point(0, 35) };
-			pnlProfile.Controls.Add(lblHeader); pnlProfile.Controls.Add(lblSub);
+			Label lblHeader = new Label
+			{
+				Text = "Thông tin cá nhân",
+				Font = new Font("Segoe UI", 14, FontStyle.Bold),
+				ForeColor = ClrText,
+				AutoSize = true,
+				Location = new Point(0, 0)
+			};
+			Label lblSub = new Label
+			{
+				Text = "Cập nhật thông tin định danh và liên hệ của bạn.",
+				Font = new Font("Segoe UI", 10, FontStyle.Regular),
+				ForeColor = ClrTextGray,
+				AutoSize = true,
+				Location = new Point(0, 35)
+			};
+			pnlProfile.Controls.Add(lblHeader);
+			pnlProfile.Controls.Add(lblSub);
 
 			int yPos = 80;
 			pnlProfile.Controls.Add(CreateLabel("Họ và Tên", 10, FontStyle.Regular, ClrTextGray, 0, yPos));
 			pnlProfile.Controls.Add(CreateLabel("Số điện thoại", 10, FontStyle.Regular, ClrTextGray, 420, yPos));
 			yPos += 30;
 
-			ModernTextBox txtName = new ModernTextBox { Location = new Point(0, yPos), Size = new Size(380, 50), PlaceholderText = "Nguyễn Văn A", BackColor = ClrItemBg, ForeColor = ClrText, IconText = "👤" };
+			ModernTextBox txtName = new ModernTextBox
+			{
+				Location = new Point(0, yPos),
+				Size = new Size(380, 50),
+				PlaceholderText = "Nguyễn Văn A",
+				BackColor = ClrItemBg,
+				ForeColor = ClrText,
+				IconText = "👤"
+			};
 			pnlProfile.Controls.Add(txtName);
-			ModernTextBox txtPhone = new ModernTextBox { Location = new Point(420, yPos), Size = new Size(380, 50), PlaceholderText = "0909123456", BackColor = ClrItemBg, ForeColor = ClrText, IconText = "📞" };
+			ModernTextBox txtPhone = new ModernTextBox
+			{
+				Location = new Point(420, yPos),
+				Size = new Size(380, 50),
+				PlaceholderText = "0909123456",
+				BackColor = ClrItemBg,
+				ForeColor = ClrText,
+				IconText = "📞"
+			};
 			pnlProfile.Controls.Add(txtPhone);
 			yPos += 70;
 
 			pnlProfile.Controls.Add(CreateLabel("Địa chỉ Email", 10, FontStyle.Regular, ClrTextGray, 0, yPos));
 			yPos += 30;
-			ModernTextBox txtEmail = new ModernTextBox { Location = new Point(0, yPos), Size = new Size(800, 50), PlaceholderText = "example@email.com", BackColor = ClrItemBg, ForeColor = ClrText, IconText = "📧" };
+			ModernTextBox txtEmail = new ModernTextBox
+			{
+				Location = new Point(0, yPos),
+				Size = new Size(800, 50),
+				PlaceholderText = "example@email.com",
+				BackColor = ClrItemBg,
+				ForeColor = ClrText,
+				IconText = "📧"
+			};
 			pnlProfile.Controls.Add(txtEmail);
 			yPos += 90;
 
-			RoundedButton btnUpdate = new RoundedButton { Text = "Lưu thay đổi", BackColor = ClrTabActive, ForeColor = Color.White, Size = new Size(200, 50), Location = new Point(0, yPos), Font = new Font("Segoe UI", 11, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat };
+			RoundedButton btnUpdate = new RoundedButton
+			{
+				Text = "Lưu thay đổi",
+				BackColor = ClrTabActive,
+				ForeColor = Color.White,
+				Size = new Size(200, 50),
+				Location = new Point(0, yPos),
+				Font = new Font("Segoe UI", 11, FontStyle.Bold),
+				Cursor = Cursors.Hand,
+				FlatStyle = FlatStyle.Flat
+			};
 			btnUpdate.FlatAppearance.BorderSize = 0;
 			btnUpdate.Click += (s, e) => MessageBox.Show("Cập nhật thông tin thành công!", "Hệ thống");
 			pnlProfile.Controls.Add(btnUpdate);
@@ -283,19 +373,32 @@ namespace client.Forms.Profile
 			int btnSize = 45;
 			int startX = parent.Width - (btnSize * 3) - 10;
 			Label btnClose = CreateWindowButton("✕", startX + (btnSize * 2), ClrError);
-			btnClose.Click += (s, e) => this.Close(); btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			btnClose.Click += (s, e) => this.Close();
+			btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			parent.Controls.Add(btnClose);
 			Label btnMax = CreateWindowButton("☐", startX + btnSize, ClrItemBg);
-			btnMax.Click += (s, e) => ToggleMaximize(); btnMax.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			btnMax.Click += (s, e) => ToggleMaximize();
+			btnMax.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			parent.Controls.Add(btnMax);
 			Label btnMin = CreateWindowButton("―", startX, ClrItemBg);
-			btnMin.Click += (s, e) => this.WindowState = FormWindowState.Minimized; btnMin.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			btnMin.Click += (s, e) => this.WindowState = FormWindowState.Minimized;
+			btnMin.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			parent.Controls.Add(btnMin);
 		}
 
 		private Label CreateWindowButton(string text, int x, Color hoverColor)
 		{
-			Label lbl = new Label { Text = text, Font = new Font("Segoe UI", 12, FontStyle.Regular), ForeColor = Color.White, AutoSize = false, Size = new Size(45, 30), Location = new Point(x, 15), TextAlign = ContentAlignment.MiddleCenter, Cursor = Cursors.Hand };
+			Label lbl = new Label
+			{
+				Text = text,
+				Font = new Font("Segoe UI", 12, FontStyle.Regular),
+				ForeColor = Color.White,
+				AutoSize = false,
+				Size = new Size(45, 30),
+				Location = new Point(x, 15),
+				TextAlign = ContentAlignment.MiddleCenter,
+				Cursor = Cursors.Hand
+			};
 			lbl.MouseEnter += (s, e) => lbl.BackColor = hoverColor;
 			lbl.MouseLeave += (s, e) => lbl.BackColor = Color.Transparent;
 			return lbl;
@@ -303,31 +406,67 @@ namespace client.Forms.Profile
 
 		private void ToggleMaximize()
 		{
-			if (isMaximized) { this.WindowState = FormWindowState.Normal; this.Size = new Size(1500, 850); this.CenterToScreen(); }
+			if (isMaximized)
+			{
+				this.WindowState = FormWindowState.Normal;
+				this.Size = new Size(1500, 850);
+				this.CenterToScreen();
+			}
 			else { this.WindowState = FormWindowState.Maximized; }
+
 			isMaximized = !isMaximized;
 		}
 
 		private Label CreateTabButton(string text, int x)
 		{
-			return new Label { Text = text, Font = new Font("Segoe UI", 12, FontStyle.Bold), ForeColor = ClrTextGray, AutoSize = true, Location = new Point(x, 10), Cursor = Cursors.Hand };
+			return new Label
+			{
+				Text = text,
+				Font = new Font("Segoe UI", 12, FontStyle.Bold),
+				ForeColor = ClrTextGray,
+				AutoSize = true,
+				Location = new Point(x, 10),
+				Cursor = Cursors.Hand
+			};
 		}
 
 		private Label CreateLabel(string text, float size, FontStyle style, Color color, int x, int y)
 		{
-			return new Label { Text = text, Font = new Font("Segoe UI", size, style), ForeColor = color, AutoSize = true, Location = new Point(x, y) };
+			return new Label
+			{
+				Text = text,
+				Font = new Font("Segoe UI", size, style),
+				ForeColor = color,
+				AutoSize = true,
+				Location = new Point(x, y)
+			};
 		}
 
 		public static GraphicsPath GetRoundedPath(Rectangle rect, int radius)
 		{
-			GraphicsPath path = new GraphicsPath(); float d = radius * 2F;
-			path.AddArc(rect.X, rect.Y, d, d, 180, 90); path.AddArc(rect.Right - d, rect.Y, d, d, 270, 90);
-			path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90); path.AddArc(rect.X, rect.Bottom - d, d, d, 90, 90);
-			path.CloseFigure(); return path;
+			GraphicsPath path = new GraphicsPath();
+			float d = radius * 2F;
+			path.AddArc(rect.X, rect.Y, d, d, 180, 90);
+			path.AddArc(rect.Right - d, rect.Y, d, d, 270, 90);
+			path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90);
+			path.AddArc(rect.X, rect.Bottom - d, d, d, 90, 90);
+			path.CloseFigure();
+			return path;
 		}
 
-		[System.Runtime.InteropServices.DllImport("user32.dll")] public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
-		[System.Runtime.InteropServices.DllImport("user32.dll")] public static extern bool ReleaseCapture();
-		protected override void OnMouseDown(MouseEventArgs e) { if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, 0xA1, 0x2, 0); } }
+		[System.Runtime.InteropServices.DllImport("user32.dll")]
+		public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+
+		[System.Runtime.InteropServices.DllImport("user32.dll")]
+		public static extern bool ReleaseCapture();
+
+		protected override void OnMouseDown(MouseEventArgs e)
+		{
+			if (e.Button == MouseButtons.Left)
+			{
+				ReleaseCapture();
+				SendMessage(Handle, 0xA1, 0x2, 0);
+			}
+		}
 	}
 }

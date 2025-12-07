@@ -14,12 +14,13 @@ namespace sdk_client
 	public class ApiClient : IDisposable
 	{
 		private readonly TcpClientManager _tcpClient;
+		private readonly JsonSerializerSettings _jsonSettings;
 		private bool _disposed;
 
 		/// <summary>
 		/// Gets or sets the current session token for authenticated requests.
 		/// </summary>
-		public string SessionToken { get; set; }
+		public string? SessionToken { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of ApiClient with server connection details.
@@ -32,15 +33,19 @@ namespace sdk_client
 			int requestTimeout = 30)
 		{
 			_tcpClient = new TcpClientManager(host, port, connectionTimeout, requestTimeout);
+
+			// Configure JSON serialization for UTC timezone handling
+			_jsonSettings = new JsonSerializerSettings
+			{
+				DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+				DateFormatHandling = DateFormatHandling.IsoDateFormat
+			};
 		}
 
 		/// <summary>
 		/// Gets whether the client is currently connected to the server.
 		/// </summary>
-		public bool IsConnected
-		{
-			get { return _tcpClient.IsConnected; }
-		}
+		public bool IsConnected => _tcpClient.IsConnected;
 
 		/// <summary>
 		/// Establishes a connection to the server.
@@ -62,7 +67,7 @@ namespace sdk_client
 		/// <param name="action">Action string in format 'Category.Action'</param>
 		/// <param name="data">Request data object</param>
 		/// <returns>Response object from server</returns>
-		public async Task<Response> SendRequestAsync(string action, object data = null)
+		public async Task<Response> SendRequestAsync(string action, object? data = null)
 		{
 			if (_disposed)
 			{
@@ -95,11 +100,11 @@ namespace sdk_client
 
 			var request = new Request { Action = action, Data = requestData, RequestId = requestId };
 
-			var requestJson = JsonConvert.SerializeObject(request);
+			var requestJson = JsonConvert.SerializeObject(request, _jsonSettings);
 			await _tcpClient.SendAsync(requestJson).ConfigureAwait(false);
 
 			var responseJson = await _tcpClient.ReceiveAsync().ConfigureAwait(false);
-			var response = JsonConvert.DeserializeObject<Response>(responseJson);
+			var response = JsonConvert.DeserializeObject<Response>(responseJson, _jsonSettings);
 
 			if (response == null)
 			{
@@ -121,14 +126,9 @@ namespace sdk_client
 		/// <param name="action">Action string in format 'Category.Action'</param>
 		/// <param name="data">Request data object</param>
 		/// <returns>Deserialized response data</returns>
-		public async Task<T> SendRequestAsync<T>(string action, object data = null)
+		public async Task<T?> SendRequestAsync<T>(string action, object? data = null)
 		{
 			var response = await SendRequestAsync(action, data).ConfigureAwait(false);
-
-			if (response.Data == null)
-			{
-				return default(T);
-			}
 
 			if (response.Data is JObject jObject)
 			{

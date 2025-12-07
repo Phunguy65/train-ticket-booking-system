@@ -7,7 +7,7 @@ services:
         container_name: ttbs-database
         environment:
             - ACCEPT_EULA=Y
-            - SA_PASSWORD=My$$tr0ngP@ssw0rd!
+            - SA_PASSWORD=MyStr0ngP@ssw0rd!
             - MSSQL_PID=Developer
         ports:
             - '${DB_PORT:-8666}:1433'
@@ -17,12 +17,31 @@ services:
             - ttbs-network
         healthcheck:
             test:
-                /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P
-                "My$$tr0ngP@ssw0rd!" -Q "SELECT 1" -C || exit 1
+                /opt/mssql-tools18/bin/sqlcmd -S ttbs-database -U sa -P
+                "MyStr0ngP@ssw0rd!" -Q "SELECT 1" -C || exit 1;
             interval: 10s
             timeout: 3s
             retries: 10
             start_period: 30s
+
+    ttbs-db-init:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        container_name: ttbs-db-init
+        command: >
+            bash -c ' until /opt/mssql-tools18/bin/sqlcmd -S ttbs-database -U sa
+            -P "MyStr0ngP@ssw0rd!" -Q "SELECT 1" -C > /dev/null 2>&1; do
+                echo "Waiting for SQL Server...";
+                sleep 2;
+            done; echo "Creating database..."; /opt/mssql-tools18/bin/sqlcmd -S
+            ttbs-database -U sa -P "MyStr0ngP@ssw0rd!" -Q "IF NOT EXISTS (SELECT
+            name FROM sys.databases WHERE name = N'\''TrainTicketBooking'\'')
+            CREATE DATABASE TrainTicketBooking" -C; echo "Database created
+            successfully"; '
+        networks:
+            - ttbs-network
+        depends_on:
+            ttbs-database:
+                condition: service_healthy
 
     # Flyway Database Migration Service
     ttbs-flyway:
@@ -34,7 +53,7 @@ services:
         environment:
             - FLYWAY_URL=jdbc:sqlserver://ttbs-database:1433;databaseName=TrainTicketBooking;encrypt=true;trustServerCertificate=true
             - FLYWAY_USER=sa
-            - FLYWAY_PASSWORD=My$$tr0ngP@ssw0rd!
+            - FLYWAY_PASSWORD=MyStr0ngP@ssw0rd!
             - FLYWAY_SCHEMAS=dbo
             - FLYWAY_BASELINE_ON_MIGRATE=true
             - FLYWAY_VALIDATE_ON_MIGRATE=true

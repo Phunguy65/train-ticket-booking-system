@@ -11,8 +11,8 @@ namespace sdk_client
 	/// </summary>
 	public class TcpClientManager : IDisposable
 	{
-		private TcpClient _client;
-		private NetworkStream _stream;
+		private TcpClient? _client;
+		private NetworkStream? _stream;
 		private readonly string _host;
 		private readonly int _port;
 		private readonly int _connectionTimeout;
@@ -70,7 +70,8 @@ namespace sdk_client
 			{
 				_client.Close();
 				_client = null;
-				throw new TimeoutException($"Connection to {_host}:{_port} timed out after {_connectionTimeout} seconds.");
+				throw new TimeoutException(
+					$"Connection to {_host}:{_port} timed out after {_connectionTimeout} seconds.");
 			}
 
 			await connectTask.ConfigureAwait(false);
@@ -91,6 +92,11 @@ namespace sdk_client
 			if (!IsConnected)
 			{
 				throw new InvalidOperationException("Not connected to server.");
+			}
+
+			if (_stream == null)
+			{
+				throw new InvalidOperationException("Network stream is not available.");
 			}
 
 			var bytes = Encoding.UTF8.GetBytes(data);
@@ -124,25 +130,30 @@ namespace sdk_client
 				throw new InvalidOperationException("Not connected to server.");
 			}
 
-			var buffer = new byte[8192];
-			var readTask = _stream.ReadAsync(buffer, 0, buffer.Length);
-			var timeoutTask = Task.Delay(_requestTimeout * 1000);
-
-			var completedTask = await Task.WhenAny(readTask, timeoutTask).ConfigureAwait(false);
-
-			if (completedTask == timeoutTask)
+			if (_stream != null)
 			{
-				throw new TimeoutException($"Receive operation timed out after {_requestTimeout} seconds.");
+				var buffer = new byte[8192];
+				var readTask = _stream.ReadAsync(buffer, 0, buffer.Length);
+				var timeoutTask = Task.Delay(_requestTimeout * 1000);
+
+				var completedTask = await Task.WhenAny(readTask, timeoutTask).ConfigureAwait(false);
+
+				if (completedTask == timeoutTask)
+				{
+					throw new TimeoutException($"Receive operation timed out after {_requestTimeout} seconds.");
+				}
+
+				var bytesRead = await readTask.ConfigureAwait(false);
+
+				if (bytesRead == 0)
+				{
+					throw new InvalidOperationException("Connection closed by server.");
+				}
+
+				return Encoding.UTF8.GetString(buffer, 0, bytesRead);
 			}
 
-			var bytesRead = await readTask.ConfigureAwait(false);
-
-			if (bytesRead == 0)
-			{
-				throw new InvalidOperationException("Connection closed by server.");
-			}
-
-			return Encoding.UTF8.GetString(buffer, 0, bytesRead);
+			throw new InvalidOperationException("Network stream is not available.");
 		}
 
 		/// <summary>

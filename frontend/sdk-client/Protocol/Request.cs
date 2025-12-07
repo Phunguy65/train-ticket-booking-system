@@ -7,7 +7,7 @@ namespace sdk_client.Protocol
 	public class Request
 	{
 		public string Action { get; set; } = string.Empty;
-		public object Data { get; set; }
+		public object? Data { get; set; }
 		public string RequestId { get; set; } = string.Empty;
 	}
 }
