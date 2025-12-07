@@ -12,7 +12,8 @@ registration/login
 
 *   **Backend**: .NET 9 Background Service, TCP/Socket server, Dapper ORM
 *   **Database**: Microsoft SQL Server 2022
-*   **Frontend**: Windows Forms 4.8.1 (Admin & Client), TCP/Socket communication
+*   **Frontend**: Windows Forms 4.8.1 (Client), Avalonia UI (Admin), TCP/Socket
+  communication
 *   **Development Tools**: pnpm, Biome, Prettier, Husky, lint-staged
 
 ---
@@ -27,10 +28,10 @@ train-ticket-booking-system/
 │   ├── backend.csproj         # .NET 9 project file
 │   └── appsettings.json       # Configuration
 ├── frontend/
-│   ├── admin/                 # Admin WinForms app (.NET Framework 4.8.1)
+│   ├── admin/                 # Admin Avalonia app (.NET 9)
 │   │   ├── Program.cs         # Entry point
-│   │   ├── Form1.cs           # Main form
-│   │   └── admin.csproj       # WinForms project
+│   │   ├── MainWindow.axaml   # Main window
+│   │   └── admin.csproj       # Avalonia project
 │   └── client/                # Customer WinForms app (.NET Framework 4.8.1)
 │       ├── Program.cs         # Entry point
 │       ├── Form1.cs           # Main form
@@ -50,6 +51,7 @@ train-ticket-booking-system/
 
 *   **.NET 9 SDK** - For backend service
 *   **.NET Framework 4.8.1 Developer Pack** - For WinForms clients
+*   **Avalonia UI** - For admin clients
 *   **SQL Server 2022** - Database (via Docker or local installation)
 *   **Docker Desktop** - For containerized SQL Server
 *   **Node.js 18+** - For development tools (pnpm, linting)
@@ -110,7 +112,7 @@ docker-compose up -d
 ```
 
 **Connection String**:
-`Server=localhost,8666;Database=TrainTicketBooking;User Id=sa;Password=My$tr0ngP@ssw0rd!;TrustServerCertificate=True;`
+`Server=localhost,8666;Database=TrainTicketBooking;User Id=sa;Password=MyStr0ngP@ssw0rd!;TrustServerCertificate=True;`
 
 **Migration Files Location**: `database/migrations/`
 
@@ -329,7 +331,7 @@ cd database
 docker-compose up ttbs-flyway
 
 # Verify migration was applied
-docker exec -it ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "My`$tr0ngP@ssw0rd!" -d TrainTicketBooking -Q "SELECT * FROM flyway_schema_history ORDER BY installed_rank" -C
+docker exec -it ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "MyStr0ngP@ssw0rd!" -d TrainTicketBooking -Q "SELECT * FROM flyway_schema_history ORDER BY installed_rank" -C
 ```
 
 ### View Migration History
@@ -339,7 +341,7 @@ docker exec -it ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -
 cd database
 
 # Check Flyway migration history
-docker exec -it ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "My`$tr0ngP@ssw0rd!" -d TrainTicketBooking -Q "SELECT installed_rank, version, description, script, installed_on, success FROM flyway_schema_history ORDER BY installed_rank" -C
+docker exec -it ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "MyStr0ngP@ssw0rd!" -d TrainTicketBooking -Q "SELECT installed_rank, version, description, script, installed_on, success FROM flyway_schema_history ORDER BY installed_rank" -C
 ```
 
 ### Add NuGet Package to Backend
@@ -425,7 +427,7 @@ dotnet run --verbosity detailed
 docker ps | Select-String "ttbs-database"
 
 # Test connection
-docker exec -it ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "My`$tr0ngP@ssw0rd!" -C -Q "SELECT @@VERSION"
+docker exec -it ttbs-database /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "MyStr0ngP@ssw0rd!" -C -Q "SELECT @@VERSION"
 ```
 
 ### WinForms Build Errors
@@ -445,7 +447,7 @@ dotnet build frontend/admin/admin.csproj --no-incremental
 ```json
 {
  "ConnectionStrings": {
-  "DefaultConnection": "Server=localhost,8666;Database=TrainTicketBooking;User Id=sa;Password=My$tr0ngP@ssw0rd!;TrustServerCertificate=True;"
+  "DefaultConnection": "Server=localhost,8666;Database=TrainTicketBooking;User Id=sa;Password=MyStr0ngP@ssw0rd!;TrustServerCertificate=True;"
  },
  "TcpServer": {
   "Port": 5000,
@@ -457,7 +459,7 @@ dotnet build frontend/admin/admin.csproj --no-incremental
 ### Database (docker-compose.yml)
 
 *   `DB_PORT`: SQL Server port (default: 8666)
-*   `SA_PASSWORD`: SA user password (default: My$tr0ngP@ssw0rd!)
+*   `SA_PASSWORD`: SA user password (default: MyStr0ngP@ssw0rd!)
 
 ---
 
@@ -484,6 +486,7 @@ dotnet build frontend/admin/admin.csproj --no-incremental
 *   [.NET 9 Documentation](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9)
 *   [Dapper Documentation](https://github.com/DapperLib/Dapper)
 *   [Windows Forms .NET Framework](https://learn.microsoft.com/en-us/dotnet/desktop/winforms/)
+*   [Avalonia UI Framework](https://docs.avaloniaui.net/docs/basics/)
 *   [SQL Server 2022 Docker](https://hub.docker.com/_/microsoft-mssql-server)
 
 ---
