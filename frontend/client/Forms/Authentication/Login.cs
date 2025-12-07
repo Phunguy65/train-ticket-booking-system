@@ -37,8 +37,7 @@ namespace client.Forms.Authentication
 		private ModernTextBox _txtPassword;
 		private RoundedButton _btnLogin;
 
-		// API client và services
-		private ApiClient? _apiClient;
+		// Services
 		private AuthenticationService? _authService;
 		private bool _isLoggingIn;
 
@@ -61,10 +60,11 @@ namespace client.Forms.Authentication
 					ApiConfig.RequestTimeout
 				);
 
-				_apiClient = SessionManager.Instance.ApiClient;
-				if (_apiClient != null)
+				// Use SessionManager's ApiClient directly instead of storing local reference
+				var apiClient = SessionManager.Instance.ApiClient;
+				if (apiClient != null)
 				{
-					_authService = new AuthenticationService(_apiClient);
+					_authService = new AuthenticationService(apiClient);
 				}
 			}
 			catch (Exception ex)
@@ -196,19 +196,20 @@ namespace client.Forms.Authentication
 			lblRegister.MouseEnter += (_, _) => lblRegister.ForeColor = _clrPrimary;
 			lblRegister.MouseLeave += (_, _) => lblRegister.ForeColor = _clrTextMuted;
 
-			// --- BỔ SUNG SỰ KIỆN CLICK Ở ĐÂY ---
 			lblRegister.Click += (_, _) =>
 			{
-				// 1. Ẩn form Login hiện tại đi
 				this.Hide();
 
-				// 2. Khởi tạo và hiện form Register
-				// (Đảm bảo bạn đã có class Register trong project)
-				Register registerForm = new Register();
-				registerForm.ShowDialog(); // Hiện form Register và đợi xử lý
+				DialogResult result;
+				using (Register registerForm = new Register())
+				{
+					result = registerForm.ShowDialog();
+				}
 
-				// 3. Khi form Register đóng lại, hiện lại form Login
-				this.Show();
+				if (result != DialogResult.OK && !this.IsDisposed)
+				{
+					this.Show();
+				}
 			};
 
 			_pnlCard.Controls.Add(lblRegister);

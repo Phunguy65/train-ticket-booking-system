@@ -1,3 +1,4 @@
+using System;
 using System.Configuration;
 
 namespace client.Configuration
@@ -5,15 +6,18 @@ namespace client.Configuration
 	public static class ApiConfig
 	{
 		private const string DefaultHost = "127.0.0.1";
-		private const int DefaultPort = 5000;
-		private const int DefaultConnectionTimeout = 30;
-		private const int DefaultRequestTimeout = 30;
 
 		public static string Host
 		{
 			get
 			{
-				var host = ConfigurationManager.AppSettings["ApiHost"];
+				var host = Environment.GetEnvironmentVariable("API_HOST");
+				if (!string.IsNullOrWhiteSpace(host))
+				{
+					return host;
+				}
+
+				host = Properties.Settings.Default.ApiHost;
 				return string.IsNullOrWhiteSpace(host) ? DefaultHost : host;
 			}
 		}
@@ -22,13 +26,15 @@ namespace client.Configuration
 		{
 			get
 			{
-				var portString = ConfigurationManager.AppSettings["ApiPort"];
-				if (int.TryParse(portString, out int port))
+				var portEnv = Environment.GetEnvironmentVariable("API_PORT");
+				if (!string.IsNullOrWhiteSpace(portEnv))
 				{
-					return port;
+					return int.Parse(portEnv);
 				}
 
-				return DefaultPort;
+				var portConfig = Properties.Settings.Default.ApiPort;
+
+				return portConfig;
 			}
 		}
 
@@ -36,13 +42,15 @@ namespace client.Configuration
 		{
 			get
 			{
-				var timeoutString = ConfigurationManager.AppSettings["ConnectionTimeout"];
-				if (int.TryParse(timeoutString, out int timeout))
+				var timeoutEnv = Environment.GetEnvironmentVariable("API_CONNECTION_TIMEOUT");
+				if (!string.IsNullOrWhiteSpace(timeoutEnv))
 				{
-					return timeout;
+					return int.Parse(timeoutEnv);
 				}
 
-				return DefaultConnectionTimeout;
+				var timeoutConfig = Properties.Settings.Default.ApiConnectionTimeout;
+
+				return timeoutConfig;
 			}
 		}
 
@@ -50,13 +58,15 @@ namespace client.Configuration
 		{
 			get
 			{
-				var timeoutString = ConfigurationManager.AppSettings["RequestTimeout"];
-				if (int.TryParse(timeoutString, out int timeout))
+				var timeoutEnv = Environment.GetEnvironmentVariable("API_REQUEST_TIMEOUT");
+				if (!string.IsNullOrWhiteSpace(timeoutEnv))
 				{
-					return timeout;
+					return int.Parse(timeoutEnv);
 				}
 
-				return DefaultRequestTimeout;
+				var timeoutConfig = Properties.Settings.Default.ApiRequestTimeout;
+
+				return timeoutConfig;
 			}
 		}
 	}

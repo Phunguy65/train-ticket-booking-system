@@ -18,38 +18,42 @@ namespace client.Forms.Authentication
 	public partial class Register : Form
 	{
 		// --- 1. BẢNG MÀU (GIỐNG LOGIN) ---
-		private readonly Color ClrBackground = Color.FromArgb(30, 41, 59);
-		private readonly Color ClrCard = Color.FromArgb(15, 23, 42);
-		private readonly Color ClrInputBg = Color.FromArgb(51, 65, 85);
-		private readonly Color ClrText = Color.White;
-		private readonly Color ClrTextMuted = Color.FromArgb(148, 163, 184);
-		private readonly Color ClrPrimary = Color.FromArgb(37, 99, 235);
-		private readonly Color ClrPrimaryHover = Color.FromArgb(29, 78, 216);
+		private readonly Color _clrBackground = Color.FromArgb(30, 41, 59);
+		private readonly Color _clrCard = Color.FromArgb(15, 23, 42);
+		private readonly Color _clrInputBg = Color.FromArgb(51, 65, 85);
+		private readonly Color _clrText = Color.White;
+		private readonly Color _clrTextMuted = Color.FromArgb(148, 163, 184);
+		private readonly Color _clrPrimary = Color.FromArgb(37, 99, 235);
+		private readonly Color _clrPrimaryHover = Color.FromArgb(29, 78, 216);
 
 		// Màu nút header
-		private readonly Color ClrHeaderHover = Color.FromArgb(51, 65, 85);
-		private readonly Color ClrCloseHover = Color.FromArgb(220, 38, 38);
+		private readonly Color _clrHeaderHover = Color.FromArgb(51, 65, 85);
+		private readonly Color _clrCloseHover = Color.FromArgb(220, 38, 38);
 
 		// --- 2. CÁC CONTROL ---
-		private Panel pnlCard;
-		private Panel pnlHeader;
-		private ModernTextBox txtUsername;
-		private ModernTextBox txtFullName;
-		private ModernTextBox txtEmail;
-		private ModernTextBox txtPhoneNumber;
-		private ModernTextBox txtPassword;
-		private ModernTextBox txtConfirmPass;
-		private RoundedButton btnRegister;
+		private Panel _pnlCard;
+		private Panel _pnlHeader;
+		private ModernTextBox _txtUsername;
+		private ModernTextBox _txtFullName;
+		private ModernTextBox _txtEmail;
+		private ModernTextBox _txtPhoneNumber;
+		private ModernTextBox _txtPassword;
+		private ModernTextBox _txtConfirmPass;
+		private RoundedButton _btnRegister;
 
-		// API client và services
-		private ApiClient? _apiClient;
+		// Window control buttons (for event cleanup)
+		private Label? _btnClose;
+		private Label? _btnMax;
+		private Label? _btnMin;
+
+		// Services
 		private AuthenticationService? _authService;
 		private bool _isRegistering;
 
 		public Register()
 		{
 			InitializeComponent();
-			SetupModernUI();
+			SetupUi();
 			InitializeApiClient();
 		}
 
@@ -64,17 +68,19 @@ namespace client.Forms.Authentication
 					ApiConfig.RequestTimeout
 				);
 
-				_apiClient = SessionManager.Instance.ApiClient;
-				if (_apiClient != null)
+				// Use SessionManager's ApiClient directly instead of storing local reference
+				var apiClient = SessionManager.Instance.ApiClient;
+				if (apiClient != null)
 				{
-					_authService = new AuthenticationService(_apiClient);
+					_authService = new AuthenticationService(apiClient);
 				}
 			}
 			catch (Exception ex)
 			{
 				MessageBox.Show(
-					$"Không thể kết nối đến máy chủ.\nChi tiết: {ex.Message}",
-					"Lỗi kết nối",
+					$@"Không thể kết nối đến máy chủ.
+Chi tiết: {ex.Message}",
+					@"Lỗi kết nối",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error
 				);
@@ -82,13 +88,13 @@ namespace client.Forms.Authentication
 		}
 
 		// --- 3. HÀM DỰNG GIAO DIỆN ---
-		private void SetupModernUI()
+		private void SetupUi()
 		{
 			// Cấu hình Form (1500x850)
 			this.FormBorderStyle = FormBorderStyle.None;
 			this.StartPosition = FormStartPosition.CenterScreen;
 			this.Size = new Size(1500, 850);
-			this.BackColor = ClrBackground;
+			this.BackColor = _clrBackground;
 			this.DoubleBuffered = true;
 
 			// 1. Tạo thanh tiêu đề điều khiển (Header)
@@ -98,14 +104,14 @@ namespace client.Forms.Authentication
 			int cardW = 550;
 			int cardH = 800;
 
-			pnlCard = new Panel()
+			_pnlCard = new Panel()
 			{
 				Size = new Size(cardW, cardH),
-				BackColor = ClrCard,
+				BackColor = _clrCard,
 				Location = new Point((this.Width - cardW) / 2, (this.Height - cardH) / 2 + 15),
 			};
-			pnlCard.Paint += (s, e) => DrawRoundedPanel(s, e, 25);
-			this.Controls.Add(pnlCard);
+			_pnlCard.Paint += (s, e) => DrawRoundedPanel(s, e, 25);
+			this.Controls.Add(_pnlCard);
 
 			// --- NỘI DUNG BÊN TRONG CARD ---
 			int yPos = 30;
@@ -115,144 +121,144 @@ namespace client.Forms.Authentication
 			// 3. Tiêu đề
 			Label lblTitle = new Label()
 			{
-				Text = "ĐĂNG KÝ TÀI KHOẢN",
+				Text = @"ĐĂNG KÝ TÀI KHOẢN",
 				Font = new Font("Segoe UI", 20, FontStyle.Bold),
-				ForeColor = ClrText,
+				ForeColor = _clrText,
 				AutoSize = false,
 				Size = new Size(inputWidth, 40),
 				Location = new Point(xMargin, yPos),
 				TextAlign = ContentAlignment.MiddleCenter
 			};
-			pnlCard.Controls.Add(lblTitle);
+			_pnlCard.Controls.Add(lblTitle);
 			yPos += 45;
 
 			// 4. Subtitle
 			Label lblSub = new Label()
 			{
-				Text = "Tham gia hệ thống đặt vé tàu ngay hôm nay.",
+				Text = @"Tham gia hệ thống đặt vé tàu ngay hôm nay.",
 				Font = new Font("Segoe UI", 10, FontStyle.Regular),
-				ForeColor = ClrTextMuted,
+				ForeColor = _clrTextMuted,
 				AutoSize = false,
 				Size = new Size(inputWidth, 25),
 				Location = new Point(xMargin, yPos),
 				TextAlign = ContentAlignment.MiddleCenter
 			};
-			pnlCard.Controls.Add(lblSub);
+			_pnlCard.Controls.Add(lblSub);
 			yPos += 35;
 
 			// 5. Username Input
-			pnlCard.Controls.Add(CreateLabel("Tên đăng nhập", xMargin, yPos));
+			_pnlCard.Controls.Add(CreateLabel("Tên đăng nhập", xMargin, yPos));
 			yPos += 30;
-			txtUsername = new ModernTextBox
+			_txtUsername = new ModernTextBox
 			{
 				Location = new Point(xMargin, yPos),
 				Size = new Size(inputWidth, 50),
 				PlaceholderText = "Nhập tên đăng nhập",
-				BackColor = ClrInputBg,
-				ForeColor = ClrText,
+				BackColor = _clrInputBg,
+				ForeColor = _clrText,
 				IconText = "👤",
 				IsPasswordChar = false
 			};
-			pnlCard.Controls.Add(txtUsername);
+			_pnlCard.Controls.Add(_txtUsername);
 			yPos += 70;
 
 			// 6. Full Name Input
-			pnlCard.Controls.Add(CreateLabel("Họ và tên", xMargin, yPos));
+			_pnlCard.Controls.Add(CreateLabel("Họ và tên", xMargin, yPos));
 			yPos += 30;
-			txtFullName = new ModernTextBox
+			_txtFullName = new ModernTextBox
 			{
 				Location = new Point(xMargin, yPos),
 				Size = new Size(inputWidth, 50),
 				PlaceholderText = "Nhập họ và tên đầy đủ",
-				BackColor = ClrInputBg,
-				ForeColor = ClrText,
+				BackColor = _clrInputBg,
+				ForeColor = _clrText,
 				IconText = "📝",
 				IsPasswordChar = false
 			};
-			pnlCard.Controls.Add(txtFullName);
+			_pnlCard.Controls.Add(_txtFullName);
 			yPos += 70;
 
 			// 7. Email Input
-			pnlCard.Controls.Add(CreateLabel("Email", xMargin, yPos));
+			_pnlCard.Controls.Add(CreateLabel("Email", xMargin, yPos));
 			yPos += 30;
-			txtEmail = new ModernTextBox
+			_txtEmail = new ModernTextBox
 			{
 				Location = new Point(xMargin, yPos),
 				Size = new Size(inputWidth, 50),
 				PlaceholderText = "Nhập email của bạn",
-				BackColor = ClrInputBg,
-				ForeColor = ClrText,
+				BackColor = _clrInputBg,
+				ForeColor = _clrText,
 				IconText = "📧",
 				IsPasswordChar = false
 			};
-			pnlCard.Controls.Add(txtEmail);
+			_pnlCard.Controls.Add(_txtEmail);
 			yPos += 70;
 
 			// 8. Phone Number Input (Optional)
-			pnlCard.Controls.Add(CreateLabel("Số điện thoại (tùy chọn)", xMargin, yPos));
+			_pnlCard.Controls.Add(CreateLabel("Số điện thoại (tùy chọn)", xMargin, yPos));
 			yPos += 30;
-			txtPhoneNumber = new ModernTextBox
+			_txtPhoneNumber = new ModernTextBox
 			{
 				Location = new Point(xMargin, yPos),
 				Size = new Size(inputWidth, 50),
 				PlaceholderText = "Nhập số điện thoại",
-				BackColor = ClrInputBg,
-				ForeColor = ClrText,
+				BackColor = _clrInputBg,
+				ForeColor = _clrText,
 				IconText = "📱",
 				IsPasswordChar = false
 			};
-			pnlCard.Controls.Add(txtPhoneNumber);
+			_pnlCard.Controls.Add(_txtPhoneNumber);
 			yPos += 70;
 
 			// 9. Password Input
-			pnlCard.Controls.Add(CreateLabel("Mật khẩu", xMargin, yPos));
+			_pnlCard.Controls.Add(CreateLabel("Mật khẩu", xMargin, yPos));
 			yPos += 30;
-			txtPassword = new ModernTextBox
+			_txtPassword = new ModernTextBox
 			{
 				Location = new Point(xMargin, yPos),
 				Size = new Size(inputWidth, 50),
 				PlaceholderText = "Nhập mật khẩu",
-				BackColor = ClrInputBg,
-				ForeColor = ClrText,
+				BackColor = _clrInputBg,
+				ForeColor = _clrText,
 				IconText = "🔒",
 				IsPasswordChar = true
 			};
-			pnlCard.Controls.Add(txtPassword);
+			_pnlCard.Controls.Add(_txtPassword);
 			yPos += 70;
 
 			// 10. Confirm Password Input
-			pnlCard.Controls.Add(CreateLabel("Xác nhận mật khẩu", xMargin, yPos));
+			_pnlCard.Controls.Add(CreateLabel("Xác nhận mật khẩu", xMargin, yPos));
 			yPos += 30;
-			txtConfirmPass = new ModernTextBox
+			_txtConfirmPass = new ModernTextBox
 			{
 				Location = new Point(xMargin, yPos),
 				Size = new Size(inputWidth, 50),
 				PlaceholderText = "Nhập lại mật khẩu",
-				BackColor = ClrInputBg,
-				ForeColor = ClrText,
+				BackColor = _clrInputBg,
+				ForeColor = _clrText,
 				IconText = "🛡️",
 				IsPasswordChar = true
 			};
-			pnlCard.Controls.Add(txtConfirmPass);
+			_pnlCard.Controls.Add(_txtConfirmPass);
 			yPos += 75;
 
 			// 8. Nút Đăng ký
-			btnRegister = new RoundedButton
+			_btnRegister = new RoundedButton
 			{
-				Text = "ĐĂNG KÝ",
+				Text = @"ĐĂNG KÝ",
 				Size = new Size(inputWidth, 55),
 				Location = new Point(xMargin, yPos),
-				BackColor = ClrPrimary,
+				BackColor = _clrPrimary,
 				ForeColor = Color.White,
 				Font = new Font("Segoe UI", 12, FontStyle.Bold),
 				Cursor = Cursors.Hand,
 				FlatStyle = FlatStyle.Flat
 			};
-			btnRegister.FlatAppearance.BorderSize = 0;
-			btnRegister.Click += BtnRegister_Click;
-			btnRegister.MouseEnter += (s, e) => btnRegister.BackColor = ClrPrimaryHover;
-			btnRegister.MouseLeave += (s, e) => btnRegister.BackColor = ClrPrimary;
-			pnlCard.Controls.Add(btnRegister);
+			_btnRegister.FlatAppearance.BorderSize = 0;
+			_btnRegister.Click += BtnRegister_Click;
+			_btnRegister.MouseEnter += (_, _) => _btnRegister.BackColor = _clrPrimaryHover;
+			_btnRegister.MouseLeave += (_, _) => _btnRegister.BackColor = _clrPrimary;
+			_pnlCard.Controls.Add(_btnRegister);
 			yPos += 70;
 
 			// 9. Footer: Link quay lại Đăng nhập
@@ -267,7 +273,7 @@ namespace client.Forms.Authentication
 			};
 
 			// Vẽ chữ 2 màu
-			lblLogin.Paint += (s, e) =>
+			lblLogin.Paint += (_, e) =>
 			{
 				string text1 = "Đã có tài khoản?";
 				string text2 = "Đăng nhập ngay";
@@ -276,27 +282,25 @@ namespace client.Forms.Authentication
 				int totalWidth = size1.Width + size2.Width;
 				int startX = (lblLogin.Width - totalWidth) / 2;
 
-				TextRenderer.DrawText(e.Graphics, text1, lblLogin.Font, new Point(startX, 5), ClrTextMuted);
+				TextRenderer.DrawText(e.Graphics, text1, lblLogin.Font, new Point(startX, 5), _clrTextMuted);
 				using (Font fontBold = new Font(lblLogin.Font, FontStyle.Bold | FontStyle.Underline))
 				{
 					TextRenderer.DrawText(e.Graphics, text2, fontBold, new Point(startX + size1.Width - 5, 5),
-						ClrPrimary);
+						_clrPrimary);
 				}
 			};
 
-			lblLogin.Click += (s, e) =>
+			lblLogin.Click += (_, _) =>
 			{
-				this.Hide();
-				var loginForm = new Login(); // Chuyển về màn hình Login
-				loginForm.ShowDialog();
+				// Close Register form to return to Login
 				this.Close();
 			};
-			pnlCard.Controls.Add(lblLogin);
+			_pnlCard.Controls.Add(lblLogin);
 
 			// 10. Copyright
 			Label lblCopy = new Label
 			{
-				Text = "© 2024 VNR. All rights reserved.",
+				Text = @"© 2024 VNR. All rights reserved.",
 				Font = new Font("Segoe UI", 9, FontStyle.Regular),
 				ForeColor = Color.Gray,
 				AutoSize = false,
@@ -304,70 +308,92 @@ namespace client.Forms.Authentication
 				Location = new Point(0, cardH - 35),
 				TextAlign = ContentAlignment.MiddleCenter
 			};
-			pnlCard.Controls.Add(lblCopy);
+			_pnlCard.Controls.Add(lblCopy);
 		}
 
 		// --- HÀM TẠO THANH HEADER (COPY TỪ LOGIN) ---
 		private void SetupWindowControls()
 		{
-			pnlHeader = new Panel() { Dock = DockStyle.Top, Height = 40, BackColor = Color.Transparent };
-			pnlHeader.MouseDown += Form_MouseDown;
-			this.Controls.Add(pnlHeader);
+			_pnlHeader = new Panel() { Dock = DockStyle.Top, Height = 40, BackColor = Color.Transparent };
+			_pnlHeader.MouseDown += Form_MouseDown;
+			this.Controls.Add(_pnlHeader);
 
 			int btnSize = 45;
 
 			// Nút Đóng (X)
-			Label btnClose = CreateWindowButton("✕", this.Width - btnSize, 0, btnSize);
-			btnClose.Click += (s, e) => Application.Exit();
-			btnClose.MouseEnter += (s, e) =>
+			_btnClose = CreateWindowButton("✕", this.Width - btnSize, 0, btnSize);
+			_btnClose.Click += (_, _) => Application.Exit();
+			_btnClose.MouseEnter += (_, _) =>
 			{
-				btnClose.BackColor = ClrCloseHover;
-				btnClose.ForeColor = Color.White;
+				_btnClose.BackColor = _clrCloseHover;
+				_btnClose.ForeColor = Color.White;
 			};
-			btnClose.MouseLeave += (s, e) =>
+			_btnClose.MouseLeave += (_, _) =>
 			{
-				btnClose.BackColor = Color.Transparent;
-				btnClose.ForeColor = Color.White;
+				_btnClose.BackColor = Color.Transparent;
+				_btnClose.ForeColor = Color.White;
 			};
-			pnlHeader.Controls.Add(btnClose);
+			_pnlHeader.Controls.Add(_btnClose);
 
 			// Nút Phóng to
-			Label btnMax = CreateWindowButton("□", this.Width - (btnSize * 2), 0, btnSize);
-			btnMax.Font = new Font("Segoe UI", 13);
-			btnMax.Click += (s, e) =>
+			_btnMax = CreateWindowButton("□", this.Width - (btnSize * 2), 0, btnSize);
+			_btnMax.Font = new Font("Segoe UI", 13);
+			_btnMax.Click += (_, _) =>
 			{
 				if (this.WindowState == FormWindowState.Normal)
 				{
 					this.WindowState = FormWindowState.Maximized;
-					btnMax.Text = "❐";
+					_btnMax.Text = "❐";
 				}
 				else
 				{
 					this.WindowState = FormWindowState.Normal;
-					btnMax.Text = "□";
+					_btnMax.Text = "□";
 				}
 			};
-			btnMax.MouseEnter += (s, e) => btnMax.BackColor = ClrHeaderHover;
-			btnMax.MouseLeave += (s, e) => btnMax.BackColor = Color.Transparent;
-			pnlHeader.Controls.Add(btnMax);
+			_btnMax.MouseEnter += (_, _) => _btnMax.BackColor = _clrHeaderHover;
+			_btnMax.MouseLeave += (_, _) => _btnMax.BackColor = Color.Transparent;
+			_pnlHeader.Controls.Add(_btnMax);
 
 			// Nút Thu nhỏ
-			Label btnMin = CreateWindowButton("―", this.Width - (btnSize * 3), 0, btnSize);
-			btnMin.Click += (s, e) => this.WindowState = FormWindowState.Minimized;
-			btnMin.MouseEnter += (s, e) => btnMin.BackColor = ClrHeaderHover;
-			btnMin.MouseLeave += (s, e) => btnMin.BackColor = Color.Transparent;
-			pnlHeader.Controls.Add(btnMin);
+			_btnMin = CreateWindowButton("―", this.Width - (btnSize * 3), 0, btnSize);
+			_btnMin.Click += (_, _) => this.WindowState = FormWindowState.Minimized;
+			_btnMin.MouseEnter += (_, _) => _btnMin.BackColor = _clrHeaderHover;
+			_btnMin.MouseLeave += (_, _) => _btnMin.BackColor = Color.Transparent;
+			_pnlHeader.Controls.Add(_btnMin);
 
-			// Resize Event
-			this.Resize += (s, e) =>
+			// Resize Event - Use named method for proper cleanup
+			this.Resize += OnFormResize;
+		}
+
+		// Named event handler for Resize event (allows proper detachment)
+		private void OnFormResize(object? sender, EventArgs e)
+		{
+			// Safety check: prevent accessing disposed controls
+			if (this.IsDisposed || this.Disposing)
 			{
-				btnClose.Location = new Point(this.Width - btnSize, 0);
-				btnMax.Location = new Point(this.Width - (btnSize * 2), 0);
-				btnMin.Location = new Point(this.Width - (btnSize * 3), 0);
-				if (pnlCard != null)
-					pnlCard.Location = new Point((this.Width - pnlCard.Width) / 2,
-						(this.Height - pnlCard.Height) / 2 + 15);
-			};
+				return;
+			}
+
+			int btnSize = 45;
+
+			if (_btnClose != null)
+			{
+				_btnClose.Location = new Point(this.Width - btnSize, 0);
+			}
+
+			if (_btnMax != null)
+			{
+				_btnMax.Location = new Point(this.Width - (btnSize * 2), 0);
+			}
+
+			if (_btnMin != null)
+			{
+				_btnMin.Location = new Point(this.Width - (btnSize * 3), 0);
+			}
+
+			_pnlCard.Location = new Point((this.Width - _pnlCard.Width) / 2,
+				(this.Height - _pnlCard.Height) / 2 + 15);
 		}
 
 		// --- CÁC HÀM HỖ TRỢ ---
@@ -392,7 +418,7 @@ namespace client.Forms.Authentication
 			{
 				Text = text,
 				Font = new Font("Segoe UI", 11, FontStyle.Regular),
-				ForeColor = ClrTextMuted,
+				ForeColor = _clrTextMuted,
 				AutoSize = true,
 				Location = new Point(x, y)
 			};
@@ -400,11 +426,12 @@ namespace client.Forms.Authentication
 
 		private void DrawRoundedPanel(object sender, PaintEventArgs e, int radius)
 		{
-			Panel pnl = sender as Panel;
+			if (sender is not Panel pnl) return;
 			e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 			// Sử dụng RoundedButton.GetRoundedPath từ file Login.cs
-			using (GraphicsPath path = RoundedButton.GetRoundedPath(new Rectangle(0, 0, pnl.Width, pnl.Height), radius))
-			using (SolidBrush brush = new SolidBrush(pnl.BackColor)) { e.Graphics.FillPath(brush, path); }
+			using GraphicsPath path = RoundedButton.GetRoundedPath(new Rectangle(0, 0, pnl.Width, pnl.Height), radius);
+			using SolidBrush brush = new SolidBrush(pnl.BackColor);
+			e.Graphics.FillPath(brush, path);
 		}
 
 		private async void BtnRegister_Click(object sender, EventArgs e)
@@ -437,12 +464,12 @@ namespace client.Forms.Authentication
 
 		private string? ValidateInputs()
 		{
-			var username = txtUsername.TextValue?.Trim();
-			var fullName = txtFullName.TextValue?.Trim();
-			var email = txtEmail.TextValue?.Trim();
-			var phoneNumber = txtPhoneNumber.TextValue?.Trim();
-			var password = txtPassword.TextValue;
-			var confirmPassword = txtConfirmPass.TextValue;
+			var username = _txtUsername.TextValue.Trim();
+			var fullName = _txtFullName.TextValue.Trim();
+			var email = _txtEmail.TextValue.Trim();
+			var phoneNumber = _txtPhoneNumber.TextValue.Trim();
+			var password = _txtPassword.TextValue;
+			var confirmPassword = _txtConfirmPass.TextValue;
 
 			if (string.IsNullOrWhiteSpace(username))
 			{
@@ -507,61 +534,69 @@ namespace client.Forms.Authentication
 
 			try
 			{
-				var username = txtUsername.TextValue!.Trim();
-				var fullName = txtFullName.TextValue!.Trim();
-				var email = txtEmail.TextValue!.Trim();
-				var phoneNumber = string.IsNullOrWhiteSpace(txtPhoneNumber.TextValue)
+				var username = _txtUsername.TextValue.Trim();
+				var fullName = _txtFullName.TextValue.Trim();
+				var email = _txtEmail.TextValue.Trim();
+				var phoneNumber = string.IsNullOrWhiteSpace(_txtPhoneNumber.TextValue)
 					? null
-					: txtPhoneNumber.TextValue.Trim();
-				var password = txtPassword.TextValue!;
+					: _txtPhoneNumber.TextValue.Trim();
+				var password = _txtPassword.TextValue.Trim();
 
 				await _authService!.RegisterAsync(username, password, fullName, email, phoneNumber)
 					.ConfigureAwait(false);
 
-				this.Invoke((MethodInvoker)delegate
+				// Safety check: only invoke if form is not disposed
+				if (!this.IsDisposed && !this.Disposing)
 				{
-					MessageBox.Show(
-						"Đăng ký thành công!\nBạn có thể đăng nhập ngay bây giờ.",
-						"Thành công",
-						MessageBoxButtons.OK,
-						MessageBoxIcon.Information
-					);
-				});
+					this.Invoke((MethodInvoker)delegate
+					{
+						MessageBox.Show(
+							@"Đăng ký thành công!
+Bạn có thể đăng nhập ngay bây giờ.",
+							@"Thành công",
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Information
+						);
+					});
+				}
 
 				await AutoLoginAfterRegistrationAsync(username, password);
 			}
 			catch (ApiException apiEx)
 			{
-				this.Invoke((MethodInvoker)delegate
+				// Safety check: only invoke if form is not disposed
+				if (!this.IsDisposed && !this.Disposing)
 				{
-					var errorMessage = TranslateErrorMessage(apiEx.Message);
-					MessageBox.Show(
-						errorMessage,
-						"Đăng ký thất bại",
-						MessageBoxButtons.OK,
-						MessageBoxIcon.Error
-					);
-				});
+					this.Invoke((MethodInvoker)delegate
+					{
+						var errorMessage = TranslateErrorMessage(apiEx.Message);
+						MessageBox.Show(
+							errorMessage,
+							@"Đăng ký thất bại",
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Error
+						);
+					});
+				}
 			}
 			catch (Exception ex)
 			{
-				this.Invoke((MethodInvoker)delegate
+				// Safety check: only invoke if form is not disposed
+				if (!this.IsDisposed && !this.Disposing)
 				{
-					MessageBox.Show(
-						$"Lỗi kết nối đến máy chủ.\nVui lòng kiểm tra kết nối mạng và thử lại.\n\nChi tiết: {ex.Message}",
-						"Lỗi kết nối",
-						MessageBoxButtons.OK,
-						MessageBoxIcon.Error
-					);
-				});
-			}
-			finally
-			{
-				this.Invoke((MethodInvoker)delegate
-				{
-					SetRegisterButtonState(true, "ĐĂNG KÝ");
-					_isRegistering = false;
-				});
+					this.Invoke((MethodInvoker)delegate
+					{
+						MessageBox.Show(
+							$@"Lỗi kết nối đến máy chủ.
+Vui lòng kiểm tra kết nối mạng và thử lại.
+
+Chi tiết: {ex.Message}",
+							@"Lỗi kết nối",
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Error
+						);
+					});
+				}
 			}
 		}
 
@@ -575,36 +610,41 @@ namespace client.Forms.Authentication
 				{
 					SessionManager.Instance.SetSession(loginResponse);
 
-					this.Invoke((MethodInvoker)delegate
+					if (!this.IsDisposed && !this.Disposing)
 					{
-						this.Hide();
-						var mainForm = new TrainSearch.MainForm();
-						mainForm.FormClosed += (s, e) =>
+						this.Invoke((MethodInvoker)delegate
 						{
-							SessionManager.Instance.ClearSession();
+							this.DialogResult = DialogResult.OK;
+							var mainForm = new TrainSearch.MainForm();
+							mainForm.FormClosed += (_, _) =>
+							{
+								SessionManager.Instance.ClearSession();
+								Application.Exit();
+							};
+							mainForm.Show();
 							this.Close();
-						};
-						mainForm.Show();
-					});
+						});
+					}
 				}
 			}
 			catch
 			{
-				this.Invoke((MethodInvoker)delegate
+				if (!this.IsDisposed && !this.Disposing)
 				{
-					this.Hide();
-					var loginForm = new Login();
-					loginForm.ShowDialog();
-					this.Close();
-				});
+					this.Invoke((MethodInvoker)delegate
+					{
+						this.DialogResult = DialogResult.Cancel;
+						this.Close();
+					});
+				}
 			}
 		}
 
 		private void SetRegisterButtonState(bool enabled, string text)
 		{
-			btnRegister.Enabled = enabled;
-			btnRegister.Text = text;
-			btnRegister.BackColor = enabled ? ClrPrimary : Color.FromArgb(71, 85, 105);
+			_btnRegister.Enabled = enabled;
+			_btnRegister.Text = text;
+			_btnRegister.BackColor = enabled ? _clrPrimary : Color.FromArgb(71, 85, 105);
 		}
 
 		private string TranslateErrorMessage(string errorMessage)

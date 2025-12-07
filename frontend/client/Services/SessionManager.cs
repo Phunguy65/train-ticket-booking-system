@@ -10,6 +10,10 @@ namespace client.Services
 		private ApiClient? _apiClient;
 		private LoginResponse? _currentUser;
 		private bool _disposed;
+		private string? _currentHost;
+		private int _currentPort;
+		private int _currentConnectionTimeout;
+		private int _currentRequestTimeout;
 
 		private SessionManager()
 		{
@@ -25,12 +29,28 @@ namespace client.Services
 
 		public void Initialize(string host, int port, int connectionTimeout = 30, int requestTimeout = 30)
 		{
+			// Only reinitialize if parameters changed or ApiClient doesn't exist
+			if (_apiClient != null &&
+			    _currentHost == host &&
+			    _currentPort == port &&
+			    _currentConnectionTimeout == connectionTimeout &&
+			    _currentRequestTimeout == requestTimeout)
+			{
+				// Already initialized with same parameters, skip reinitialization
+				return;
+			}
+
+			// Dispose old client only if parameters changed
 			if (_apiClient != null)
 			{
 				_apiClient.Dispose();
 			}
 
 			_apiClient = new ApiClient(host, port, connectionTimeout, requestTimeout);
+			_currentHost = host;
+			_currentPort = port;
+			_currentConnectionTimeout = connectionTimeout;
+			_currentRequestTimeout = requestTimeout;
 		}
 
 		public void SetSession(LoginResponse loginResponse)
