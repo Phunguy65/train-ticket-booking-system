@@ -1,9 +1,14 @@
 using client.Forms.Authentication;
-using client.Forms.Booking;
 using client.Services;
+using Newtonsoft.Json;
+using sdk_client.Protocol;
+using sdk_client.Services;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace client.Forms.TrainSearch
@@ -29,10 +34,36 @@ namespace client.Forms.TrainSearch
 		private ModernTextBox _txtDepStation, _txtArrStation, _txtDate;
 		private bool _isMaximized;
 
+		// Pagination state
+		private int _currentPage = 1;
+		private int _pageSize = 10;
+		private int _totalPages;
+		private int _totalCount;
+		private bool _isLoading;
+
+		// Search criteria state
+		private string? _lastDepartureStation;
+		private string? _lastArrivalStation;
+		private DateTime? _lastDepartureDate;
+
+		// Pagination controls
+		private RoundedButton _btnPrevious;
+		private RoundedButton _btnNext;
+		private RoundedButton _btnRefresh;
+		private Label _lblPageInfo;
+		private Label _lblResultTitle;
+		private Panel _pnlLoading;
+
 		public MainForm()
 		{
 			InitializeComponent();
 			SetupUi();
+			this.Shown += MainForm_Shown;
+		}
+
+		private async void MainForm_Shown(object? sender, EventArgs e)
+		{
+			await LoadTrainsAsync(null, null, null, 1);
 		}
 
 		// =========================================================
@@ -53,7 +84,7 @@ namespace client.Forms.TrainSearch
 			};
 			Label lblLogo = new Label
 			{
-				Text = "🚆 Vé Tàu Cao Tốc",
+				Text = @"🚆 Vé Tàu Cao Tốc",
 				Font = new Font("Segoe UI", 14, FontStyle.Bold),
 				ForeColor = _clrAccent,
 				AutoSize = true,
@@ -132,7 +163,8 @@ namespace client.Forms.TrainSearch
 					using GraphicsPath path = GetRoundedPath(
 						new Rectangle(0, 0, pnlSearch.Width, pnlSearch.Height - 20),
 						15);
-					using (SolidBrush brush = new SolidBrush(_clrSidebar)) { e.Graphics.FillPath(brush, path); }
+					using SolidBrush brush = new SolidBrush(_clrSidebar);
+					e.Graphics.FillPath(brush, path);
 				};
 				this.Controls.Add(pnlSearch);
 
@@ -202,15 +234,32 @@ namespace client.Forms.TrainSearch
 				// --- KẾT QUẢ TÌM KIẾM ---
 				int contentX = 370;
 				int contentW = this.Width - 400;
-				Label lblResultTitle = new Label
+				_lblResultTitle = new Label
 				{
-					Text = "Kết quả tìm kiếm: Sài Gòn ➝ Hà Nội",
+					Text = "Tất cả chuyến tàu",
 					Font = new Font("Segoe UI", 15, FontStyle.Bold),
 					ForeColor = _clrText,
 					AutoSize = true,
 					Location = new Point(contentX, 80)
 				};
-				this.Controls.Add(lblResultTitle);
+				this.Controls.Add(_lblResultTitle);
+
+				// Refresh button
+				_btnRefresh = new RoundedButton
+				{
+					Text = "🔄 Làm mới",
+					Size = new Size(130, 40),
+					Location = new Point(this.Width - 180, 75),
+					BackColor = _clrAccent,
+					ForeColor = Color.White,
+					Font = new Font("Segoe UI", 9, FontStyle.Bold),
+					Cursor = Cursors.Hand,
+					FlatStyle = FlatStyle.Flat,
+					Anchor = AnchorStyles.Top | AnchorStyles.Right
+				};
+				_btnRefresh.FlatAppearance.BorderSize = 0;
+				_btnRefresh.Click += BtnRefresh_Click;
+				this.Controls.Add(_btnRefresh);
 
 				Panel pnlTableHeader = new Panel
 				{
@@ -221,9 +270,10 @@ namespace client.Forms.TrainSearch
 				};
 				string[] headers =
 				{
-					"MÃ TÀU", "TÊN TÀU", "GIỜ ĐI", "GIỜ ĐẾN", "THỜI GIAN", "GIÁ VÉ", "TRẠNG THÁI", ""
+					"MÃ TÀU", "TÊN TÀU", "GA ĐI", "GA ĐẾN", "GIỜ ĐI", "GIỜ ĐẾN", "THỜI GIAN", "GIÁ VÉ",
+					"TRẠNG THÁI", ""
 				};
-				int[] colWidths = { 100, 160, 100, 100, 150, 150, 120, 140 };
+				int[] colWidths = { 90, 140, 110, 110, 90, 90, 130, 130, 110, 130 };
 				int curX = 20;
 				for (int i = 0; i < headers.Length; i++)
 				{
@@ -246,7 +296,7 @@ namespace client.Forms.TrainSearch
 				_flowResults = new FlowLayoutPanel
 				{
 					Location = new Point(contentX, 170),
-					Size = new Size(contentW + 50, this.Height - 200),
+					Size = new Size(contentW + 50, this.Height - 280),
 					FlowDirection = FlowDirection.LeftToRight,
 					WrapContents = true,
 					AutoScroll = true,
@@ -254,6 +304,83 @@ namespace client.Forms.TrainSearch
 					Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
 				};
 				this.Controls.Add(_flowResults);
+
+				// --- PAGINATION CONTROLS ---
+				Panel pnlPagination = new Panel
+				{
+					Location = new Point(contentX, this.Height - 100),
+					Size = new Size(contentW, 60),
+					BackColor = Color.Transparent,
+					Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
+				};
+
+				_btnPrevious = new RoundedButton
+				{
+					Text = "◀ Trang trước",
+					Size = new Size(130, 40),
+					Location = new Point(0, 10),
+					BackColor = _clrAccent,
+					ForeColor = Color.White,
+					Font = new Font("Segoe UI", 9, FontStyle.Bold),
+					Cursor = Cursors.Hand,
+					FlatStyle = FlatStyle.Flat
+				};
+				_btnPrevious.FlatAppearance.BorderSize = 0;
+				_btnPrevious.Click += BtnPrevious_Click;
+				pnlPagination.Controls.Add(_btnPrevious);
+
+				_lblPageInfo = new Label
+				{
+					Text = "Trang 1 / 1",
+					Font = new Font("Segoe UI", 10, FontStyle.Regular),
+					ForeColor = _clrTextGray,
+					AutoSize = true,
+					Location = new Point(150, 20),
+					TextAlign = ContentAlignment.MiddleCenter
+				};
+				pnlPagination.Controls.Add(_lblPageInfo);
+
+				_btnNext = new RoundedButton
+				{
+					Text = "Trang sau ▶",
+					Size = new Size(130, 40),
+					Location = new Point(300, 10),
+					BackColor = _clrAccent,
+					ForeColor = Color.White,
+					Font = new Font("Segoe UI", 9, FontStyle.Bold),
+					Cursor = Cursors.Hand,
+					FlatStyle = FlatStyle.Flat
+				};
+				_btnNext.FlatAppearance.BorderSize = 0;
+				_btnNext.Click += BtnNext_Click;
+				pnlPagination.Controls.Add(_btnNext);
+
+				this.Controls.Add(pnlPagination);
+
+				// --- LOADING INDICATOR ---
+				_pnlLoading = new Panel
+				{
+					Location = new Point(contentX, 170),
+					Size = new Size(contentW + 50, this.Height - 280),
+					BackColor = Color.FromArgb(200, 15, 23, 42),
+					Visible = false,
+					Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
+				};
+
+				Label lblLoading = new Label
+				{
+					Text = "⏳ Đang tải dữ liệu...",
+					Font = new Font("Segoe UI", 14, FontStyle.Bold),
+					ForeColor = _clrText,
+					AutoSize = true
+				};
+				lblLoading.Location = new Point(
+					(_pnlLoading.Width - lblLoading.Width) / 2,
+					(_pnlLoading.Height - lblLoading.Height) / 2
+				);
+				_pnlLoading.Controls.Add(lblLoading);
+				this.Controls.Add(_pnlLoading);
+				//_pnlLoading.BringToFront();
 			}
 		}
 
@@ -261,11 +388,11 @@ namespace client.Forms.TrainSearch
 		// =========================================================
 		// 3. XỬ LÝ LOGIC CHỌN VÉ & MỞ BOOKING
 		// =========================================================
-		private void AddTrainItem(string code, string name, string depTime, string arrTime, string duration,
-			string price, string seatStatus, int statusType)
+		private void AddTrainItem(string code, string name, string depStation, string arrStation, string depTime,
+			string arrTime, string duration, string price, string seatStatus, int statusType)
 		{
 			int w = _flowResults.ClientSize.Width - 30;
-			if (w < 1050) w = 1050;
+			if (w < 1130) w = 1130;
 			Panel pnlItem = new Panel
 			{
 				Size = new Size(w, 80), Margin = new Padding(0, 0, 0, 15), BackColor = Color.Transparent
@@ -278,21 +405,25 @@ namespace client.Forms.TrainSearch
 				e.Graphics.FillPath(brush, path);
 			};
 
-			int[] colWidths = { 100, 160, 100, 100, 150, 150, 120, 140 };
+			int[] colWidths = { 90, 140, 110, 110, 90, 90, 130, 130, 110, 130 };
 			int curX = 20;
 
 			pnlItem.Controls.Add(CreateLabel(code, 11, FontStyle.Bold, _clrText, curX, 30));
 			curX += colWidths[0];
 			pnlItem.Controls.Add(CreateLabel(name, 10, FontStyle.Regular, _clrTextGray, curX, 30));
 			curX += colWidths[1];
-			pnlItem.Controls.Add(CreateLabel(depTime, 11, FontStyle.Regular, _clrText, curX, 30));
+			pnlItem.Controls.Add(CreateLabel(depStation, 10, FontStyle.Regular, _clrText, curX, 30));
 			curX += colWidths[2];
-			pnlItem.Controls.Add(CreateLabel(arrTime, 11, FontStyle.Regular, _clrTextGray, curX, 30));
+			pnlItem.Controls.Add(CreateLabel(arrStation, 10, FontStyle.Regular, _clrText, curX, 30));
 			curX += colWidths[3];
-			pnlItem.Controls.Add(CreateLabel(duration, 10, FontStyle.Regular, _clrTextGray, curX, 30));
+			pnlItem.Controls.Add(CreateLabel(depTime, 11, FontStyle.Regular, _clrText, curX, 30));
 			curX += colWidths[4];
-			pnlItem.Controls.Add(CreateLabel(price, 11, FontStyle.Bold, _clrText, curX, 30));
+			pnlItem.Controls.Add(CreateLabel(arrTime, 11, FontStyle.Regular, _clrTextGray, curX, 30));
 			curX += colWidths[5];
+			pnlItem.Controls.Add(CreateLabel(duration, 10, FontStyle.Regular, _clrTextGray, curX, 30));
+			curX += colWidths[6];
+			pnlItem.Controls.Add(CreateLabel(price, 11, FontStyle.Bold, _clrText, curX, 30));
+			curX += colWidths[7];
 
 			Label lblSeat = new Label
 			{
@@ -422,9 +553,231 @@ namespace client.Forms.TrainSearch
 			_isMaximized = !_isMaximized;
 		}
 
-		private void BtnSearch_Click(object sender, EventArgs e)
+		private async void BtnSearch_Click(object sender, EventArgs e)
 		{
-			MessageBox.Show($"Tìm kiếm: {_txtDepStation.TextValue} -> {_txtArrStation.TextValue}", "Đang xử lý");
+			string? depStation = string.IsNullOrWhiteSpace(_txtDepStation.TextValue)
+				? null
+				: _txtDepStation.TextValue.Trim();
+			string? arrStation = string.IsNullOrWhiteSpace(_txtArrStation.TextValue)
+				? null
+				: _txtArrStation.TextValue.Trim();
+
+			DateTime? depDate = null;
+			if (!string.IsNullOrWhiteSpace(_txtDate.TextValue))
+			{
+				if (DateTime.TryParse(_txtDate.TextValue, out DateTime parsed))
+				{
+					depDate = parsed;
+				}
+			}
+
+			await LoadTrainsAsync(depStation, arrStation, depDate, 1);
+		}
+
+		private async void BtnPrevious_Click(object sender, EventArgs e)
+		{
+			if (_currentPage > 1)
+			{
+				await LoadTrainsAsync(_lastDepartureStation, _lastArrivalStation, _lastDepartureDate,
+					_currentPage - 1);
+			}
+		}
+
+		private async void BtnNext_Click(object sender, EventArgs e)
+		{
+			if (_currentPage < _totalPages)
+			{
+				await LoadTrainsAsync(_lastDepartureStation, _lastArrivalStation, _lastDepartureDate,
+					_currentPage + 1);
+			}
+		}
+
+		private async void BtnRefresh_Click(object sender, EventArgs e)
+		{
+			await LoadTrainsAsync(_lastDepartureStation, _lastArrivalStation, _lastDepartureDate, _currentPage);
+		}
+
+		private async Task LoadTrainsAsync(string? depStation, string? arrStation, DateTime? depDate, int pageNumber)
+		{
+			if (_isLoading) return;
+
+			_isLoading = true;
+			ShowLoadingIndicator();
+			DisableControls();
+
+			try
+			{
+				var apiClient = SessionManager.Instance.ApiClient;
+				if (apiClient == null)
+				{
+					MessageBox.Show("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", "Lỗi",
+						MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
+
+				var trainService = new TrainService(apiClient);
+				var response = await trainService.SearchTrainsAsync(depStation, arrStation, depDate, pageNumber,
+					_pageSize);
+
+				if (response == null)
+				{
+					MessageBox.Show("Không nhận được dữ liệu từ server.", "Lỗi", MessageBoxButtons.OK,
+						MessageBoxIcon.Error);
+					return;
+				}
+
+				var jsonString = JsonConvert.SerializeObject(response);
+				var pagedResult = JsonConvert.DeserializeObject<PagedResult<Train>>(jsonString);
+
+				if (pagedResult == null)
+				{
+					MessageBox.Show("Lỗi xử lý dữ liệu từ server.", "Lỗi", MessageBoxButtons.OK,
+						MessageBoxIcon.Error);
+					return;
+				}
+
+				_currentPage = pagedResult.PageNumber;
+				_totalPages = pagedResult.TotalPages;
+				_totalCount = pagedResult.TotalCount;
+
+				_lastDepartureStation = depStation;
+				_lastArrivalStation = arrStation;
+				_lastDepartureDate = depDate;
+
+				DisplayTrains(pagedResult.Items.ToList());
+				UpdatePaginationControls();
+				UpdateResultTitle();
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Lỗi tải dữ liệu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+			finally
+			{
+				_isLoading = false;
+				HideLoadingIndicator();
+				EnableControls();
+			}
+		}
+
+		private void DisplayTrains(IList<Train> trains)
+		{
+			_flowResults.SuspendLayout();
+			_flowResults.Controls.Clear();
+
+			if (!trains.Any())
+			{
+				ShowNoResultsMessage();
+				_flowResults.ResumeLayout();
+				return;
+			}
+
+			foreach (var train in trains)
+			{
+				string code = train.TrainNumber;
+				string name = train.TrainName;
+				string depStation = train.DepartureStation;
+				string arrStation = train.ArrivalStation;
+				string depTime = train.DepartureTime.ToString("HH:mm");
+				string arrTime = train.ArrivalTime.ToString("HH:mm");
+				string duration = CalculateDuration(train.DepartureTime, train.ArrivalTime);
+				string price = FormatPrice(train.TicketPrice);
+
+				string seatStatus = "Còn vé";
+				int statusType = 1;
+
+				AddTrainItem(code, name, depStation, arrStation, depTime, arrTime, duration, price, seatStatus,
+					statusType);
+			}
+
+			_flowResults.ResumeLayout();
+		}
+
+		private void ShowNoResultsMessage()
+		{
+			Label lblNoResults = new Label
+			{
+				Text = "🚂 Không tìm thấy chuyến tàu phù hợp\n\nThử thay đổi ga đi/đến hoặc ngày khởi hành",
+				Font = new Font("Segoe UI", 12, FontStyle.Regular),
+				ForeColor = _clrTextGray,
+				AutoSize = true,
+				TextAlign = ContentAlignment.MiddleCenter
+			};
+			lblNoResults.Location = new Point(
+				(_flowResults.Width - lblNoResults.Width) / 2,
+				100
+			);
+			_flowResults.Controls.Add(lblNoResults);
+		}
+
+		private void UpdatePaginationControls()
+		{
+			_lblPageInfo.Text = _totalPages > 0
+				? $"Trang {_currentPage} / {_totalPages} (Tổng: {_totalCount} chuyến)"
+				: "Không có dữ liệu";
+
+			_btnPrevious.Enabled = _currentPage > 1;
+			_btnNext.Enabled = _currentPage < _totalPages;
+
+			_btnPrevious.BackColor = _btnPrevious.Enabled ? _clrAccent : Color.FromArgb(51, 65, 85);
+			_btnNext.BackColor = _btnNext.Enabled ? _clrAccent : Color.FromArgb(51, 65, 85);
+		}
+
+		private void UpdateResultTitle()
+		{
+			if (!string.IsNullOrEmpty(_lastDepartureStation) || !string.IsNullOrEmpty(_lastArrivalStation))
+			{
+				string dep = _lastDepartureStation ?? "Tất cả";
+				string arr = _lastArrivalStation ?? "Tất cả";
+				string dateStr = _lastDepartureDate.HasValue
+					? $" ({_lastDepartureDate.Value:dd/MM/yyyy})"
+					: "";
+				_lblResultTitle.Text = $"Kết quả: {dep} ➝ {arr}{dateStr}";
+			}
+			else
+			{
+				_lblResultTitle.Text = "Tất cả chuyến tàu";
+			}
+		}
+
+		private string CalculateDuration(DateTime departure, DateTime arrival)
+		{
+			TimeSpan duration = arrival - departure;
+			int hours = (int)duration.TotalHours;
+			int minutes = duration.Minutes;
+			return $"{hours}h {minutes}m";
+		}
+
+		private string FormatPrice(decimal price)
+		{
+			return price.ToString("N0") + "đ";
+		}
+
+		private void ShowLoadingIndicator()
+		{
+			_pnlLoading.Visible = true;
+			_pnlLoading.BringToFront();
+		}
+
+		private void HideLoadingIndicator()
+		{
+			_pnlLoading.Visible = false;
+			_pnlLoading.SendToBack();
+			_flowResults.BringToFront();
+			_flowResults.Refresh();
+		}
+
+		private void DisableControls()
+		{
+			_btnPrevious.Enabled = false;
+			_btnNext.Enabled = false;
+			_btnRefresh.Enabled = false;
+		}
+
+		private void EnableControls()
+		{
+			_btnRefresh.Enabled = true;
+			UpdatePaginationControls();
 		}
 
 		private Label CreateLabel(string text, float size, FontStyle style, Color color, int x, int y)
