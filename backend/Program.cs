@@ -2,6 +2,7 @@ using backend;
 using backend.Business.Services;
 using backend.DataAccess.DbContext;
 using backend.DataAccess.Repositories;
+using backend.DataAccess.Seeding;
 using backend.DataAccess.UnitOfWork;
 using backend.Infrastructure.Security;
 using backend.Presentation;
@@ -34,6 +35,8 @@ builder.Services.AddScoped<ITrainService, TrainService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
+builder.Services.AddScoped<DatabaseSeeder>();
+
 builder.Services.AddTransient<AuthenticationHandler>();
 builder.Services.AddTransient<TrainHandler>();
 builder.Services.AddTransient<BookingHandler>();
@@ -45,4 +48,13 @@ builder.Services.AddSingleton<TcpServer>();
 builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();
+
+var enableSeeding = builder.Configuration.GetValue<bool>("Database:EnableSeeding");
+if (enableSeeding)
+{
+	using var scope = host.Services.CreateScope();
+	var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+	await seeder.SeedAsync();
+}
+
 host.Run();
