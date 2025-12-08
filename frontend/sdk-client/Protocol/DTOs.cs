@@ -115,6 +115,7 @@ namespace sdk_client.Protocol
 		public string SessionToken { get; set; } = string.Empty;
 		public int TrainId { get; set; }
 		public int SeatId { get; set; }
+		public List<int>? SeatIds { get; set; }
 	}
 
 	public class CancelBookingRequest

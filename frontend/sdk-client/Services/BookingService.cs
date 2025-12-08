@@ -2,6 +2,7 @@ using Newtonsoft.Json.Linq;
 using sdk_client.Protocol;
 using sdk_client.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace sdk_client.Services
@@ -46,6 +47,21 @@ namespace sdk_client.Services
 		public async Task<Response> BookTicketAsync(int trainId, int seatId)
 		{
 			var request = new BookTicketRequest { TrainId = trainId, SeatId = seatId };
+
+			return await _apiClient.SendRequestAsync("Booking.BookTicket", request).ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Books multiple tickets for specific seats on a train.
+		/// Requires an active session token for authentication.
+		/// All seats must be available or the entire booking fails.
+		/// </summary>
+		/// <param name="trainId">Unique train identifier</param>
+		/// <param name="seatIds">List of seat identifiers to book</param>
+		/// <returns>Response containing list of booking IDs and confirmation</returns>
+		public async Task<Response> BookMultipleTicketsAsync(int trainId, List<int> seatIds)
+		{
+			var request = new BookTicketRequest { TrainId = trainId, SeatIds = seatIds };
 
 			return await _apiClient.SendRequestAsync("Booking.BookTicket", request).ConfigureAwait(false);
 		}
