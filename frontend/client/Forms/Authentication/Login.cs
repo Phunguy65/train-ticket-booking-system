@@ -9,6 +9,7 @@ using System.Drawing.Drawing2D;
 using System.Resources;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.ComponentModel;
 
 namespace client.Forms.Authentication
 {
@@ -70,8 +71,9 @@ namespace client.Forms.Authentication
 			catch (Exception ex)
 			{
 				MessageBox.Show(
-					$"Không thể kết nối đến máy chủ.\nChi tiết: {ex.Message}",
-					"Lỗi kết nối",
+					$@"Không thể kết nối đến máy chủ.
+Chi tiết: {ex.Message}",
+					@"Lỗi kết nối",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error
 				);
@@ -330,8 +332,8 @@ namespace client.Forms.Authentication
 			if (string.IsNullOrWhiteSpace(username))
 			{
 				MessageBox.Show(
-					"Vui lòng nhập tên đăng nhập.",
-					"Thông báo",
+					@"Vui lòng nhập tên đăng nhập.",
+					@"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -341,8 +343,8 @@ namespace client.Forms.Authentication
 			if (string.IsNullOrWhiteSpace(password))
 			{
 				MessageBox.Show(
-					"Vui lòng nhập mật khẩu.",
-					"Thông báo",
+					@"Vui lòng nhập mật khẩu.",
+					@"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -352,8 +354,8 @@ namespace client.Forms.Authentication
 			if (_authService == null)
 			{
 				MessageBox.Show(
-					"Không thể kết nối đến máy chủ. Vui lòng khởi động lại ứng dụng.",
-					"Lỗi",
+					@"Không thể kết nối đến máy chủ. Vui lòng khởi động lại ứng dụng.",
+					@"Lỗi",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error
 				);
@@ -398,7 +400,7 @@ namespace client.Forms.Authentication
 					var errorMessage = TranslateErrorMessage(apiEx.Message);
 					MessageBox.Show(
 						errorMessage,
-						"Đăng nhập thất bại",
+						@"Đăng nhập thất bại",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Error
 					);
@@ -409,8 +411,11 @@ namespace client.Forms.Authentication
 				this.Invoke((MethodInvoker)delegate
 				{
 					MessageBox.Show(
-						$"Lỗi kết nối đến máy chủ.\nVui lòng kiểm tra kết nối mạng và thử lại.\n\nChi tiết: {ex.Message}",
-						"Lỗi kết nối",
+						$@"Lỗi kết nối đến máy chủ.
+Vui lòng kiểm tra kết nối mạng và thử lại.
+
+Chi tiết: {ex.Message}",
+						@"Lỗi kết nối",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Error
 					);
@@ -540,6 +545,7 @@ namespace client.Forms.Authentication
 			SetPlaceholder();
 		}
 
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public string PlaceholderText
 		{
 			get => _placeholder;
@@ -550,8 +556,10 @@ namespace client.Forms.Authentication
 			}
 		}
 
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public string IconText { get => _lblIcon.Text; set => _lblIcon.Text = value; }
 
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public bool IsPasswordChar
 		{
 			get => _isPassword;

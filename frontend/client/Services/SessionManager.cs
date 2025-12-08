@@ -55,12 +55,7 @@ namespace client.Services
 
 		public void SetSession(LoginResponse loginResponse)
 		{
-			if (loginResponse == null)
-			{
-				throw new ArgumentNullException(nameof(loginResponse));
-			}
-
-			_currentUser = loginResponse;
+			_currentUser = loginResponse ?? throw new ArgumentNullException(nameof(loginResponse));
 
 			if (_apiClient != null)
 			{

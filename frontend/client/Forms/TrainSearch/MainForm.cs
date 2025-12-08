@@ -441,7 +441,8 @@ namespace client.Forms.TrainSearch
 		// 3. XỬ LÝ LOGIC CHỌN VÉ & MỞ BOOKING
 		// =========================================================
 		private void AddTrainItem(string code, string name, string depStation, string arrStation, string depTime,
-			string arrTime, string duration, string price, string seatStatus, int statusType)
+			string arrTime, string duration, string price, string seatStatus, int statusType,
+			sdk_client.Protocol.Train train)
 		{
 			int w = _flowResults.ClientSize.Width - 30;
 			if (w < 1130) w = 1130;
@@ -488,8 +489,7 @@ namespace client.Forms.TrainSearch
 			pnlItem.Controls.Add(lblSeat);
 			curX += colWidths[6];
 
-			// --- PHẦN LOGIC NÚT BẤM ĐƯỢC CHỈNH SỬA TẠI ĐÂY ---
-			if (statusType != 3) // Nếu còn vé
+			if (statusType != 3)
 			{
 				RoundedButton btnSelect = new RoundedButton
 				{
@@ -504,14 +504,11 @@ namespace client.Forms.TrainSearch
 				};
 				btnSelect.FlatAppearance.BorderSize = 0;
 
-				// --- CẬP NHẬT TẠI ĐÂY: Truyền dữ liệu sang form Booking ---
 				btnSelect.Click += (_, _) =>
 				{
-					// Truyền Mã tàu, Tên tàu, Giá vé vào Constructor mới
-					var bookingForm = new client.Forms.Booking.Booking(code, name, price);
+					var bookingForm = new client.Forms.Booking.Booking(train);
 					bookingForm.ShowDialog();
 				};
-				// -----------------------------------------------------------
 
 				pnlItem.Controls.Add(btnSelect);
 			}
@@ -575,8 +572,8 @@ namespace client.Forms.TrainSearch
 		private void HandleLogout(object? sender, EventArgs e)
 		{
 			var result = MessageBox.Show(
-				"Bạn có chắc chắn muốn đăng xuất?",
-				"Xác nhận đăng xuất",
+				@"Bạn có chắc chắn muốn đăng xuất?",
+				@"Xác nhận đăng xuất",
 				MessageBoxButtons.YesNo,
 				MessageBoxIcon.Question
 			);
@@ -633,8 +630,9 @@ namespace client.Forms.TrainSearch
 				else
 				{
 					MessageBox.Show(
-						"Định dạng ngày không hợp lệ. Vui lòng nhập theo định dạng: dd/MM/yyyy\nVí dụ: 24/12/2025",
-						"Lỗi định dạng",
+						@"Định dạng ngày không hợp lệ. Vui lòng nhập theo định dạng: dd/MM/yyyy
+Ví dụ: 24/12/2025",
+						@"Lỗi định dạng",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Warning
 					);
@@ -713,7 +711,7 @@ namespace client.Forms.TrainSearch
 				var apiClient = SessionManager.Instance.ApiClient;
 				if (apiClient == null)
 				{
-					MessageBox.Show("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", "Lỗi",
+					MessageBox.Show(@"Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", @"Lỗi",
 						MessageBoxButtons.OK, MessageBoxIcon.Error);
 					return;
 				}
@@ -724,7 +722,7 @@ namespace client.Forms.TrainSearch
 
 				if (response == null)
 				{
-					MessageBox.Show("Không nhận được dữ liệu từ server.", "Lỗi", MessageBoxButtons.OK,
+					MessageBox.Show(@"Không nhận được dữ liệu từ server.", @"Lỗi", MessageBoxButtons.OK,
 						MessageBoxIcon.Error);
 					return;
 				}
@@ -734,7 +732,7 @@ namespace client.Forms.TrainSearch
 
 				if (pagedResult == null)
 				{
-					MessageBox.Show("Lỗi xử lý dữ liệu từ server.", "Lỗi", MessageBoxButtons.OK,
+					MessageBox.Show(@"Lỗi xử lý dữ liệu từ server.", @"Lỗi", MessageBoxButtons.OK,
 						MessageBoxIcon.Error);
 					return;
 				}
@@ -753,7 +751,7 @@ namespace client.Forms.TrainSearch
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"Lỗi tải dữ liệu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show($@"Lỗi tải dữ liệu: {ex.Message}", @"Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 			finally
 			{
@@ -790,7 +788,7 @@ namespace client.Forms.TrainSearch
 				int statusType = 1;
 
 				AddTrainItem(code, name, depStation, arrStation, depTime, arrTime, duration, price, seatStatus,
-					statusType);
+					statusType, train);
 			}
 
 			_flowResults.ResumeLayout();
