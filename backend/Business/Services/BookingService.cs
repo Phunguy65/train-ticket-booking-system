@@ -101,6 +101,100 @@ public class BookingService : IBookingService
 		}
 	}
 
+	public async Task<(bool Success, string Message, List<int> BookingIds)> BookMultipleTicketsAsync(int userId,
+		int trainId, List<int> seatIds)
+	{
+		const int maxSeatsPerBooking = 10;
+
+		if (seatIds == null || seatIds.Count == 0)
+		{
+			return (false, "No seats selected.", new List<int>());
+		}
+
+		if (seatIds.Count > maxSeatsPerBooking)
+		{
+			return (false, $"Cannot book more than {maxSeatsPerBooking} seats at once.", new List<int>());
+		}
+
+		if (seatIds.Distinct().Count() != seatIds.Count)
+		{
+			return (false, "Duplicate seat IDs detected.", new List<int>());
+		}
+
+		try
+		{
+			_unitOfWork.BeginTransaction();
+
+			var train = await _trainRepository.GetByIdAsync(trainId);
+			if (train == null)
+			{
+				_unitOfWork.Rollback();
+				return (false, "Train not found.", new List<int>());
+			}
+
+			if (train.Status != "Active")
+			{
+				_unitOfWork.Rollback();
+				return (false, "Train is not available for booking.", new List<int>());
+			}
+
+			var seats = (await _seatRepository.GetMultipleSeatsWithLockAsync(seatIds)).ToList();
+
+			if (seats.Count != seatIds.Count)
+			{
+				_unitOfWork.Rollback();
+				return (false, "One or more seats not found.", new List<int>());
+			}
+
+			if (seats.Any(s => s.TrainId != trainId))
+			{
+				_unitOfWork.Rollback();
+				return (false, "One or more seats do not belong to this train.", new List<int>());
+			}
+
+			var unavailableSeats = seats.Where(s => !s.IsAvailable).Select(s => s.SeatNumber).ToList();
+			if (unavailableSeats.Any())
+			{
+				_unitOfWork.Rollback();
+				return (false, $"Seats already booked: {string.Join(", ", unavailableSeats)}", new List<int>());
+			}
+
+			var bookingIds = new List<int>();
+			var totalAmount = train.TicketPrice * seatIds.Count;
+
+			foreach (var seat in seats)
+			{
+				var booking = new Booking
+				{
+					UserId = userId,
+					TrainId = trainId,
+					SeatId = seat.SeatId,
+					BookingStatus = "Confirmed",
+					TotalAmount = train.TicketPrice,
+					PaymentStatus = "Paid"
+				};
+
+				var bookingId = await _bookingRepository.CreateAsync(booking);
+				bookingIds.Add(bookingId);
+			}
+
+			await _seatRepository.UpdateMultipleSeatsAvailabilityAsync(seatIds, false);
+
+			_unitOfWork.Commit();
+
+			var seatNumbers = string.Join(", ", seats.Select(s => s.SeatNumber));
+			await _auditService.LogAsync(userId, "Multiple Tickets Booked", "Booking", bookingIds.First(),
+				$"User booked {seatIds.Count} seats ({seatNumbers}) on train {train.TrainNumber}. Total: {totalAmount:C}");
+
+			return (true, $"Successfully booked {seatIds.Count} tickets.", bookingIds);
+		}
+		catch (Exception ex)
+		{
+			_unitOfWork.Rollback();
+			return (false, $"Booking failed: {ex.Message}", new List<int>());
+		}
+	}
+
 	public async Task<(bool Success, string Message)> CancelBookingAsync(int bookingId, int userId, bool isAdmin)
 	{
 		var booking = await _bookingRepository.GetByIdAsync(bookingId);

@@ -12,8 +12,10 @@ public interface ISeatRepository
 	Task<IEnumerable<Seat>> GetByTrainIdAsync(int trainId);
 	Task<IEnumerable<Seat>> GetAvailableSeatsByTrainIdAsync(int trainId);
 	Task<Seat?> GetByIdWithLockAsync(int seatId);
+	Task<IEnumerable<Seat>> GetMultipleSeatsWithLockAsync(IEnumerable<int> seatIds);
 	Task<int> CreateAsync(Seat seat);
 	Task<bool> UpdateAsync(Seat seat);
 	Task<bool> UpdateAvailabilityAsync(int seatId, bool isAvailable);
+	Task<bool> UpdateMultipleSeatsAvailabilityAsync(IEnumerable<int> seatIds, bool isAvailable);
 	Task<int> CreateSeatsForTrainAsync(int trainId, int totalSeats);
 }

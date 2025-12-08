@@ -48,6 +48,14 @@ public class SeatRepository : ISeatRepository
 			_unitOfWork.Transaction);
 	}
 
+	public async Task<IEnumerable<Seat>> GetMultipleSeatsWithLockAsync(IEnumerable<int> seatIds)
+	{
+		var seatIdList = seatIds.OrderBy(id => id).ToList();
+		var sql = "SELECT * FROM Seat WITH (UPDLOCK, ROWLOCK) WHERE SeatId IN @SeatIds ORDER BY SeatId ASC";
+		return await _unitOfWork.Connection.QueryAsync<Seat>(sql, new { SeatIds = seatIdList },
+			_unitOfWork.Transaction);
+	}
+
 	public async Task<int> CreateAsync(Seat seat)
 	{
 		using var connection = _context.CreateConnection();
@@ -77,6 +85,17 @@ public class SeatRepository : ISeatRepository
 			WHERE SeatId = @SeatId";
 		var rowsAffected = await _unitOfWork.Connection.ExecuteAsync(sql,
 			new { SeatId = seatId, IsAvailable = isAvailable }, _unitOfWork.Transaction);
+		return rowsAffected > 0;
+	}
+
+	public async Task<bool> UpdateMultipleSeatsAvailabilityAsync(IEnumerable<int> seatIds, bool isAvailable)
+	{
+		var sql = @"
+			UPDATE Seat
+			SET IsAvailable = @IsAvailable, [Version] = [Version] + 1
+			WHERE SeatId IN @SeatIds";
+		var rowsAffected = await _unitOfWork.Connection.ExecuteAsync(sql,
+			new { SeatIds = seatIds, IsAvailable = isAvailable }, _unitOfWork.Transaction);
 		return rowsAffected > 0;
 	}
 
