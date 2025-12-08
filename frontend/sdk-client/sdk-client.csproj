@@ -11,6 +11,7 @@
 		<None Remove=".markdownlint-cli2.mjs" />
 		<None Remove="biome.json" />
 		<None Remove="prettier.config.cjs" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 	</ItemGroup>
 

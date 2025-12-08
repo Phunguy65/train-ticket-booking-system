@@ -165,4 +165,24 @@ namespace sdk_client.Protocol
 		public int PageNumber { get; set; } = 1;
 		public int PageSize { get; set; } = 10;
 	}
+
+	/// <summary>
+	/// SignalR event data for seat booking notifications.
+	/// Sent when one or more seats are successfully booked.
+	/// </summary>
+	public class SeatBookedEvent
+	{
+		public int TrainId { get; set; }
+		public List<int> SeatIds { get; set; } = new List<int>();
+	}
+
+	/// <summary>
+	/// SignalR event data for seat release notifications.
+	/// Sent when bookings are cancelled and seats become available again.
+	/// </summary>
+	public class SeatReleasedEvent
+	{
+		public int TrainId { get; set; }
+		public List<int> SeatIds { get; set; } = new List<int>();
+	}
 }

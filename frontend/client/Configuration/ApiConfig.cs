@@ -1,5 +1,4 @@
 using System;
-using System.Configuration;
 
 namespace client.Configuration
 {
@@ -67,6 +66,35 @@ namespace client.Configuration
 				var timeoutConfig = Properties.Settings.Default.ApiRequestTimeout;
 
 				return timeoutConfig;
+			}
+		}
+
+		public static string SignalRHost
+		{
+			get
+			{
+				var host = Environment.GetEnvironmentVariable("SIGNALR_HOST");
+				if (!string.IsNullOrWhiteSpace(host))
+				{
+					return host;
+				}
+
+				host = Properties.Settings.Default.SignalRHost;
+				return string.IsNullOrWhiteSpace(host) ? DefaultHost : host;
+			}
+		}
+
+		public static int SignalRPort
+		{
+			get
+			{
+				var portEnv = Environment.GetEnvironmentVariable("SIGNALR_PORT");
+				if (!string.IsNullOrWhiteSpace(portEnv))
+				{
+					return int.Parse(portEnv);
+				}
+
+				return Properties.Settings.Default.SignalRPort;
 			}
 		}
 	}

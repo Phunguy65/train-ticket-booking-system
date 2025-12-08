@@ -65,7 +65,9 @@ namespace client.Forms.Authentication
 					ApiConfig.Host,
 					ApiConfig.Port,
 					ApiConfig.ConnectionTimeout,
-					ApiConfig.RequestTimeout
+					ApiConfig.RequestTimeout,
+					ApiConfig.SignalRHost,
+					ApiConfig.SignalRPort
 				);
 
 				// Use SessionManager's ApiClient directly instead of storing local reference

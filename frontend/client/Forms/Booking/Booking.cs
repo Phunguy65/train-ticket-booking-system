@@ -31,6 +31,7 @@ namespace client.Forms.Booking
 
 		private readonly Train _train;
 		private readonly BookingService _bookingService;
+		private readonly ISignalRService? _signalRService;
 
 		private List<Seat> _allSeats = new List<Seat>();
 		private Dictionary<int, string> _selectedSeatInfo = new Dictionary<int, string>();
@@ -59,9 +60,65 @@ namespace client.Forms.Booking
 			}
 
 			_bookingService = new BookingService(apiClient);
+			_signalRService = SessionManager.Instance.SignalRService;
 
 			SetupUi();
-			this.Load += async (_, _) => await LoadSeatsAsync();
+			this.Load += async (_, _) => await InitializeAsync();
+			this.FormClosing += Booking_FormClosing;
+		}
+
+		private async Task InitializeAsync()
+		{
+			await LoadSeatsAsync();
+			await SetupSignalRAsync();
+		}
+
+		private async Task SetupSignalRAsync()
+		{
+			if (_signalRService == null) return;
+
+			try
+			{
+				_signalRService.SeatBooked += OnSeatBooked;
+				_signalRService.SeatReleased += OnSeatReleased;
+
+				if (!_signalRService.IsConnected)
+				{
+					await _signalRService.StartAsync();
+				}
+
+				await _signalRService.JoinTrainGroupAsync(_train.TrainId);
+			}
+			catch (Exception ex)
+			{
+				// SignalR connection failure is not critical, log but continue
+				System.Diagnostics.Debug.WriteLine($"SignalR setup failed: {ex.Message}");
+			}
+		}
+
+		private void Booking_FormClosing(object? sender, FormClosingEventArgs e)
+		{
+			CleanupSignalR();
+		}
+
+		private void CleanupSignalR()
+		{
+			if (_signalRService == null) return;
+
+			try
+			{
+				_signalRService.SeatBooked -= OnSeatBooked;
+				_signalRService.SeatReleased -= OnSeatReleased;
+
+				if (_signalRService.IsConnected)
+				{
+					_signalRService.LeaveTrainGroupAsync(_train.TrainId).GetAwaiter().GetResult();
+				}
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"SignalR cleanup failed: {ex.Message}");
+			}
 		}
 
 		private void SetupUi()
@@ -355,6 +412,55 @@ namespace client.Forms.Booking
 			}
 		}
 
+		private void OnSeatBooked(object? sender, SeatBookedEvent e)
+		{
+			if (e.TrainId != _train.TrainId) return;
+
+			if (InvokeRequired)
+			{
+				Invoke(() => OnSeatBooked(sender, e));
+				return;
+			}
+
+			foreach (var seatId in e.SeatIds)
+			{
+				var seat = _allSeats.FirstOrDefault(s => s.SeatId == seatId);
+				if (seat != null)
+				{
+					seat.IsAvailable = false;
+
+					if (_selectedSeatInfo.Remove(seatId))
+					{
+						UpdateSummary();
+					}
+				}
+			}
+
+			DisplayCurrentPage();
+		}
+
+		private void OnSeatReleased(object? sender, SeatReleasedEvent e)
+		{
+			if (e.TrainId != _train.TrainId) return;
+
+			if (InvokeRequired)
+			{
+				Invoke(() => OnSeatReleased(sender, e));
+				return;
+			}
+
+			foreach (var seatId in e.SeatIds)
+			{
+				var seat = _allSeats.FirstOrDefault(s => s.SeatId == seatId);
+				if (seat != null)
+				{
+					seat.IsAvailable = true;
+				}
+			}
+
+			DisplayCurrentPage();
+		}
+
 		private void DisplayCurrentPage()
 		{
 			int startIndex = (_currentPage - 1) * _pageSize;
@@ -443,7 +549,7 @@ namespace client.Forms.Booking
 			_lblTotalPrice.Text = $"{total:N0} VNĐ";
 		}
 
-		private void BtnPreviousPage_Click(object sender, EventArgs e)
+		private void BtnPreviousPage_Click(object? sender, EventArgs e)
 		{
 			if (_currentPage > 1)
 			{
@@ -453,7 +559,7 @@ namespace client.Forms.Booking
 			}
 		}
 
-		private void BtnNextPage_Click(object sender, EventArgs e)
+		private void BtnNextPage_Click(object? sender, EventArgs e)
 		{
 			if (_currentPage < _totalPages)
 			{
