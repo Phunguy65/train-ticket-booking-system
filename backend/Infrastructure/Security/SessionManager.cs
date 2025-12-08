@@ -1,6 +1,6 @@
-using System.Collections.Concurrent;
 using backend.Business.Models;
 using Microsoft.Extensions.Configuration;
+using System.Collections.Concurrent;
 
 namespace backend.Infrastructure.Security;
 

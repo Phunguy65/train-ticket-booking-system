@@ -50,8 +50,10 @@ namespace client.Forms.TrainSearch
 		private RoundedButton _btnPrevious;
 		private RoundedButton _btnNext;
 		private RoundedButton _btnRefresh;
+		private RoundedButton _btnClearFilters;
 		private Label _lblPageInfo;
 		private Label _lblResultTitle;
+		private Label _lblFilterCount;
 		private Panel _pnlLoading;
 
 		public MainForm()
@@ -172,47 +174,66 @@ namespace client.Forms.TrainSearch
 				int xMargin = 25;
 				int inputW = sidebarW - (xMargin * 2);
 				pnlSearch.Controls.Add(CreateLabel("Tìm chuyến tàu", 14, FontStyle.Bold, _clrText, xMargin, yPos));
-				yPos += 50;
+				yPos += 40;
 
-				pnlSearch.Controls.Add(CreateLabel("Ga đi", 10, FontStyle.Regular, _clrTextGray, xMargin, yPos));
+				Label lblInstruction = new Label
+				{
+					Text = "Nhập thông tin để tìm kiếm hoặc để trống để xem tất cả",
+					Font = new Font("Segoe UI", 8, FontStyle.Italic),
+					ForeColor = _clrTextGray,
+					AutoSize = false,
+					Size = new Size(inputW, 30),
+					Location = new Point(xMargin, yPos),
+					TextAlign = ContentAlignment.TopLeft
+				};
+				pnlSearch.Controls.Add(lblInstruction);
+				yPos += 40;
+
+				pnlSearch.Controls.Add(CreateLabel("Ga đi (tùy chọn)", 10, FontStyle.Regular, _clrTextGray, xMargin,
+					yPos));
 				yPos += 30;
 				_txtDepStation = new ModernTextBox
 				{
 					Location = new Point(xMargin, yPos),
 					Size = new Size(inputW, 45),
-					PlaceholderText = "Sài Gòn",
+					PlaceholderText = "VD: Sài Gòn, Hà Nội...",
 					IconText = "🚉",
 					BackColor = _clrBackground,
 					ForeColor = _clrText
 				};
+				_txtDepStation.InputKeyDown += SearchField_KeyDown;
 				pnlSearch.Controls.Add(_txtDepStation);
 				yPos += 70;
 
-				pnlSearch.Controls.Add(CreateLabel("Ga đến", 10, FontStyle.Regular, _clrTextGray, xMargin, yPos));
+				pnlSearch.Controls.Add(CreateLabel("Ga đến (tùy chọn)", 10, FontStyle.Regular, _clrTextGray, xMargin,
+					yPos));
 				yPos += 30;
 				_txtArrStation = new ModernTextBox
 				{
 					Location = new Point(xMargin, yPos),
 					Size = new Size(inputW, 45),
-					PlaceholderText = "Hà Nội",
+					PlaceholderText = "VD: Đà Nẵng, Nha Trang...",
 					IconText = "🏁",
 					BackColor = _clrBackground,
 					ForeColor = _clrText
 				};
+				_txtArrStation.InputKeyDown += SearchField_KeyDown;
 				pnlSearch.Controls.Add(_txtArrStation);
 				yPos += 70;
 
-				pnlSearch.Controls.Add(CreateLabel("Ngày đi", 10, FontStyle.Regular, _clrTextGray, xMargin, yPos));
+				pnlSearch.Controls.Add(CreateLabel("Ngày đi (tùy chọn)", 10, FontStyle.Regular, _clrTextGray, xMargin,
+					yPos));
 				yPos += 30;
 				_txtDate = new ModernTextBox
 				{
 					Location = new Point(xMargin, yPos),
 					Size = new Size(inputW, 45),
-					PlaceholderText = "24/05/2024",
+					PlaceholderText = "VD: 24/12/2025",
 					IconText = "📅",
 					BackColor = _clrBackground,
 					ForeColor = _clrText
 				};
+				_txtDate.InputKeyDown += SearchField_KeyDown;
 				pnlSearch.Controls.Add(_txtDate);
 				yPos += 80;
 
@@ -230,6 +251,37 @@ namespace client.Forms.TrainSearch
 				btnSearch.FlatAppearance.BorderSize = 0;
 				btnSearch.Click += BtnSearch_Click;
 				pnlSearch.Controls.Add(btnSearch);
+				yPos += 60;
+
+				// Clear filters button
+				_btnClearFilters = new RoundedButton
+				{
+					Text = "🗑️ Xóa bộ lọc",
+					Size = new Size(inputW, 45),
+					Location = new Point(xMargin, yPos),
+					BackColor = Color.FromArgb(51, 65, 85),
+					ForeColor = _clrTextGray,
+					Font = new Font("Segoe UI", 10, FontStyle.Regular),
+					Cursor = Cursors.Hand,
+					FlatStyle = FlatStyle.Flat,
+					Visible = false
+				};
+				_btnClearFilters.FlatAppearance.BorderSize = 0;
+				_btnClearFilters.Click += BtnClearFilters_Click;
+				pnlSearch.Controls.Add(_btnClearFilters);
+				yPos += 55;
+
+				// Filter count label
+				_lblFilterCount = new Label
+				{
+					Text = "",
+					Font = new Font("Segoe UI", 9, FontStyle.Regular),
+					ForeColor = _clrTextGray,
+					AutoSize = true,
+					Location = new Point(xMargin, yPos),
+					Visible = false
+				};
+				pnlSearch.Controls.Add(_lblFilterCount);
 
 				// --- KẾT QUẢ TÌM KIẾM ---
 				int contentX = 370;
@@ -553,6 +605,15 @@ namespace client.Forms.TrainSearch
 			_isMaximized = !_isMaximized;
 		}
 
+		private void SearchField_KeyDown(object? sender, KeyEventArgs e)
+		{
+			if (e.KeyCode == Keys.Enter)
+			{
+				e.SuppressKeyPress = true;
+				BtnSearch_Click(sender, EventArgs.Empty);
+			}
+		}
+
 		private async void BtnSearch_Click(object sender, EventArgs e)
 		{
 			string? depStation = string.IsNullOrWhiteSpace(_txtDepStation.TextValue)
@@ -569,9 +630,51 @@ namespace client.Forms.TrainSearch
 				{
 					depDate = parsed;
 				}
+				else
+				{
+					MessageBox.Show(
+						"Định dạng ngày không hợp lệ. Vui lòng nhập theo định dạng: dd/MM/yyyy\nVí dụ: 24/12/2025",
+						"Lỗi định dạng",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Warning
+					);
+					return;
+				}
 			}
 
 			await LoadTrainsAsync(depStation, arrStation, depDate, 1);
+			UpdateFilterUI();
+		}
+
+		private void BtnClearFilters_Click(object sender, EventArgs e)
+		{
+			_txtDepStation.Clear();
+			_txtArrStation.Clear();
+			_txtDate.Clear();
+
+			_ = LoadTrainsAsync(null, null, null, 1);
+			UpdateFilterUI();
+		}
+
+		private void UpdateFilterUI()
+		{
+			int filterCount = 0;
+			if (!string.IsNullOrWhiteSpace(_txtDepStation.TextValue)) filterCount++;
+			if (!string.IsNullOrWhiteSpace(_txtArrStation.TextValue)) filterCount++;
+			if (!string.IsNullOrWhiteSpace(_txtDate.TextValue)) filterCount++;
+
+			if (filterCount > 0)
+			{
+				_btnClearFilters.Visible = true;
+				_lblFilterCount.Visible = true;
+				_lblFilterCount.Text = $"✓ {filterCount} bộ lọc đang áp dụng";
+				_lblFilterCount.ForeColor = _clrAccent;
+			}
+			else
+			{
+				_btnClearFilters.Visible = false;
+				_lblFilterCount.Visible = false;
+			}
 		}
 
 		private async void BtnPrevious_Click(object sender, EventArgs e)
@@ -725,18 +828,19 @@ namespace client.Forms.TrainSearch
 
 		private void UpdateResultTitle()
 		{
-			if (!string.IsNullOrEmpty(_lastDepartureStation) || !string.IsNullOrEmpty(_lastArrivalStation))
+			if (!string.IsNullOrEmpty(_lastDepartureStation) || !string.IsNullOrEmpty(_lastArrivalStation) ||
+			    _lastDepartureDate.HasValue)
 			{
-				string dep = _lastDepartureStation ?? "Tất cả";
-				string arr = _lastArrivalStation ?? "Tất cả";
+				string dep = _lastDepartureStation ?? "Tất cả ga";
+				string arr = _lastArrivalStation ?? "Tất cả ga";
 				string dateStr = _lastDepartureDate.HasValue
-					? $" ({_lastDepartureDate.Value:dd/MM/yyyy})"
+					? $" - {_lastDepartureDate.Value:dd/MM/yyyy}"
 					: "";
-				_lblResultTitle.Text = $"Kết quả: {dep} ➝ {arr}{dateStr}";
+				_lblResultTitle.Text = $"🔍 {dep} ➝ {arr}{dateStr}";
 			}
 			else
 			{
-				_lblResultTitle.Text = "Tất cả chuyến tàu";
+				_lblResultTitle.Text = "📋 Tất cả chuyến tàu";
 			}
 		}
 

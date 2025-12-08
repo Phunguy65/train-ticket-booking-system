@@ -13,10 +13,10 @@ public interface ITrainService
 	Task<PagedResult<Train>> GetAllTrainsAsync(int pageNumber, int pageSize);
 
 	Task<IEnumerable<Train>> SearchTrainsAsync(string? departureStation, string? arrivalStation,
-		DateTime? departureDate);
+		DateTime? departureDate, string? status = null);
 
 	Task<PagedResult<Train>> SearchTrainsAsync(string? departureStation, string? arrivalStation,
-		DateTime? departureDate, int pageNumber, int pageSize);
+		DateTime? departureDate, int pageNumber, int pageSize, string? status = null);
 
 	Task<(bool Success, string Message, int TrainId)> CreateTrainAsync(Train train);
 	Task<(bool Success, string Message)> UpdateTrainAsync(Train train);

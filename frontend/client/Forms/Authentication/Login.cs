@@ -528,6 +528,12 @@ namespace client.Forms.Authentication
 		private bool _isPassword;
 		public string TextValue => _txtInput.Text == _placeholder ? "" : _txtInput.Text;
 
+		public event KeyEventHandler? InputKeyDown
+		{
+			add => _txtInput.KeyDown += value;
+			remove => _txtInput.KeyDown -= value;
+		}
+
 		public void Clear()
 		{
 			_txtInput.Text = "";

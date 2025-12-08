@@ -58,6 +58,7 @@ public class SearchTrainRequest
 	public string? DepartureStation { get; set; }
 	public string? ArrivalStation { get; set; }
 	public DateTime? DepartureDate { get; set; }
+	public string? Status { get; set; }
 }
 
 public class BookTicketRequest

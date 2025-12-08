@@ -68,7 +68,7 @@ namespace sdk_client.Services
 		/// <param name="pageSize">Number of items per page (1-100)</param>
 		/// <returns>List of matching trains or paginated result with local time</returns>
 		public async Task<object?> SearchTrainsAsync(string? departureStation = null, string? arrivalStation = null,
-			DateTime? departureDate = null, int? pageNumber = null, int? pageSize = null)
+			DateTime? departureDate = null, int? pageNumber = null, int? pageSize = null, string? status = null)
 		{
 			var jObject = new JObject();
 
@@ -95,6 +95,11 @@ namespace sdk_client.Services
 			if (pageSize.HasValue)
 			{
 				jObject["PageSize"] = pageSize.Value;
+			}
+
+			if (!string.IsNullOrEmpty(status))
+			{
+				jObject["Status"] = status;
 			}
 
 			var response = await _apiClient.SendRequestAsync("Train.SearchTrains", jObject).ConfigureAwait(false);

@@ -107,6 +107,7 @@ namespace sdk_client.Protocol
 		public string DepartureStation { get; set; } = string.Empty;
 		public string ArrivalStation { get; set; } = string.Empty;
 		public DateTime? DepartureDate { get; set; }
+		public string? Status { get; set; }
 	}
 
 	public class BookTicketRequest
