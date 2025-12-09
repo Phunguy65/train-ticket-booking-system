@@ -106,7 +106,7 @@ public class BookingService : IBookingService
 	{
 		const int maxSeatsPerBooking = 10;
 
-		if (seatIds == null || seatIds.Count == 0)
+		if (seatIds.Count == 0)
 		{
 			return (false, "No seats selected.", new List<int>());
 		}
@@ -159,12 +159,10 @@ public class BookingService : IBookingService
 				return (false, $"Seats already booked: {string.Join(", ", unavailableSeats)}", new List<int>());
 			}
 
-			var bookingIds = new List<int>();
 			var totalAmount = train.TicketPrice * seatIds.Count;
 
-			foreach (var seat in seats)
-			{
-				var booking = new Booking
+			var bookingIds = (await Task.WhenAll(seats.Select(async seat =>
+				await _bookingRepository.CreateAsync(new Booking
 				{
 					UserId = userId,
 					TrainId = trainId,
@@ -172,11 +170,7 @@ public class BookingService : IBookingService
 					BookingStatus = "Confirmed",
 					TotalAmount = train.TicketPrice,
 					PaymentStatus = "Paid"
-				};
-
-				var bookingId = await _bookingRepository.CreateAsync(booking);
-				bookingIds.Add(bookingId);
-			}
+				})))).ToList();
 
 			await _seatRepository.UpdateMultipleSeatsAvailabilityAsync(seatIds, false);
 

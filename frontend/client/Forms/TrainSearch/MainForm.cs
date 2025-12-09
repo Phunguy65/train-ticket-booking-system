@@ -1,6 +1,5 @@
 using client.Forms.Authentication;
 using client.Services;
-using Newtonsoft.Json;
 using sdk_client.Protocol;
 using sdk_client.Services;
 using System;
@@ -442,7 +441,7 @@ namespace client.Forms.TrainSearch
 		// =========================================================
 		private void AddTrainItem(string code, string name, string depStation, string arrStation, string depTime,
 			string arrTime, string duration, string price, string seatStatus, int statusType,
-			sdk_client.Protocol.Train train)
+			Train train)
 		{
 			int w = _flowResults.ClientSize.Width - 30;
 			if (w < 1130) w = 1130;
@@ -611,7 +610,7 @@ namespace client.Forms.TrainSearch
 			}
 		}
 
-		private async void BtnSearch_Click(object sender, EventArgs e)
+		private async void BtnSearch_Click(object? sender, EventArgs e)
 		{
 			string? depStation = string.IsNullOrWhiteSpace(_txtDepStation.TextValue)
 				? null
@@ -644,7 +643,7 @@ Ví dụ: 24/12/2025",
 			UpdateFilterUI();
 		}
 
-		private void BtnClearFilters_Click(object sender, EventArgs e)
+		private void BtnClearFilters_Click(object? sender, EventArgs e)
 		{
 			_txtDepStation.Clear();
 			_txtArrStation.Clear();
@@ -675,7 +674,7 @@ Ví dụ: 24/12/2025",
 			}
 		}
 
-		private async void BtnPrevious_Click(object sender, EventArgs e)
+		private async void BtnPrevious_Click(object? sender, EventArgs e)
 		{
 			if (_currentPage > 1)
 			{
@@ -684,7 +683,7 @@ Ví dụ: 24/12/2025",
 			}
 		}
 
-		private async void BtnNext_Click(object sender, EventArgs e)
+		private async void BtnNext_Click(object? sender, EventArgs e)
 		{
 			if (_currentPage < _totalPages)
 			{
@@ -693,7 +692,7 @@ Ví dụ: 24/12/2025",
 			}
 		}
 
-		private async void BtnRefresh_Click(object sender, EventArgs e)
+		private async void BtnRefresh_Click(object? sender, EventArgs e)
 		{
 			await LoadTrainsAsync(_lastDepartureStation, _lastArrivalStation, _lastDepartureDate, _currentPage);
 		}
@@ -727,8 +726,7 @@ Ví dụ: 24/12/2025",
 					return;
 				}
 
-				var jsonString = JsonConvert.SerializeObject(response);
-				var pagedResult = JsonConvert.DeserializeObject<PagedResult<Train>>(jsonString);
+				var pagedResult = response as PagedResult<Train>;
 
 				if (pagedResult == null)
 				{

@@ -53,8 +53,9 @@ builder.Services.AddHostedService<Worker>();
 
 var app = builder.Build();
 
+var signalRHost = builder.Configuration.GetValue("SignalR:Host", "localhost");
 var signalRPort = builder.Configuration.GetValue("SignalR:Port", 5001);
-app.Urls.Add($"http://0.0.0.0:{signalRPort}");
+app.Urls.Add($"http://{signalRHost}:{signalRPort}");
 
 app.MapHub<BookingHub>("/bookingHub");
 

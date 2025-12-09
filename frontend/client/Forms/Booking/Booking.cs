@@ -449,13 +449,10 @@ namespace client.Forms.Booking
 				return;
 			}
 
-			foreach (var seatId in e.SeatIds)
+			foreach (var seat in e.SeatIds.Select(seatId => _allSeats.FirstOrDefault(s => s.SeatId == seatId))
+				         .OfType<Seat>())
 			{
-				var seat = _allSeats.FirstOrDefault(s => s.SeatId == seatId);
-				if (seat != null)
-				{
-					seat.IsAvailable = true;
-				}
+				seat.IsAvailable = true;
 			}
 
 			DisplayCurrentPage();

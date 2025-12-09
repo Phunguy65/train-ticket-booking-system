@@ -38,17 +38,16 @@ namespace sdk_client.Services
 				throw new ObjectDisposedException(nameof(SignalRService));
 			}
 
-			if (_hubConnection != null && _hubConnection.State == HubConnectionState.Connected)
+			if (_hubConnection is { State: HubConnectionState.Connected })
 			{
 				return;
 			}
 
 			_hubConnection = new HubConnectionBuilder()
 				.WithUrl(_hubUrl)
-				.WithAutomaticReconnect(new[]
-				{
+				.WithAutomaticReconnect([
 					TimeSpan.Zero, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10)
-				})
+				])
 				.Build();
 
 			RegisterEventHandlers();
