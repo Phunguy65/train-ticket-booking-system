@@ -75,6 +75,25 @@ public class CancelBookingRequest
 	public int BookingId { get; set; }
 }
 
+public class HoldSeatsRequest
+{
+	public string SessionToken { get; set; } = string.Empty;
+	public int TrainId { get; set; }
+	public List<int> SeatIds { get; set; } = new List<int>();
+}
+
+public class ConfirmHeldSeatsRequest
+{
+	public string SessionToken { get; set; } = string.Empty;
+	public List<int> BookingIds { get; set; } = new List<int>();
+}
+
+public class ReleaseHeldSeatsRequest
+{
+	public string SessionToken { get; set; } = string.Empty;
+	public List<int> BookingIds { get; set; } = new List<int>();
+}
+
 public class UpdateUserRequest
 {
 	public string SessionToken { get; set; } = string.Empty;

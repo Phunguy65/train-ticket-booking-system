@@ -6,6 +6,7 @@ using backend.DataAccess.Seeding;
 using backend.DataAccess.UnitOfWork;
 using backend.Hubs;
 using backend.Infrastructure.Security;
+using backend.Infrastructure.Services;
 using backend.Presentation;
 using backend.Presentation.Handlers;
 using Microsoft.AspNetCore.Builder;
@@ -50,6 +51,7 @@ builder.Services.AddSingleton<TcpServer>();
 builder.Services.AddSignalR();
 
 builder.Services.AddHostedService<Worker>();
+builder.Services.AddHostedService<SeatHoldCleanupService>();
 
 var app = builder.Build();
 

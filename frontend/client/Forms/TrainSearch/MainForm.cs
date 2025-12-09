@@ -321,10 +321,10 @@ namespace client.Forms.TrainSearch
 					Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
 				};
 				string[] headers =
-				{
+				[
 					"MÃ TÀU", "TÊN TÀU", "GA ĐI", "GA ĐẾN", "GIỜ ĐI", "GIỜ ĐẾN", "THỜI GIAN", "GIÁ VÉ",
 					"TRẠNG THÁI", ""
-				};
+				];
 				int[] colWidths = { 90, 140, 110, 110, 90, 90, 130, 130, 110, 130 };
 				int curX = 20;
 				for (int i = 0; i < headers.Length; i++)
@@ -442,7 +442,7 @@ namespace client.Forms.TrainSearch
 		// =========================================================
 		private void AddTrainItem(string code, string name, string depStation, string arrStation, string depTime,
 			string arrTime, string duration, string price, string seatStatus, int statusType,
-			sdk_client.Protocol.Train train)
+			Train train)
 		{
 			int w = _flowResults.ClientSize.Width - 30;
 			if (w < 1130) w = 1130;
@@ -611,7 +611,7 @@ namespace client.Forms.TrainSearch
 			}
 		}
 
-		private async void BtnSearch_Click(object sender, EventArgs e)
+		private async void BtnSearch_Click(object? sender, EventArgs e)
 		{
 			string? depStation = string.IsNullOrWhiteSpace(_txtDepStation.TextValue)
 				? null
@@ -641,20 +641,20 @@ Ví dụ: 24/12/2025",
 			}
 
 			await LoadTrainsAsync(depStation, arrStation, depDate, 1);
-			UpdateFilterUI();
+			UpdateFilterUi();
 		}
 
-		private void BtnClearFilters_Click(object sender, EventArgs e)
+		private void BtnClearFilters_Click(object? sender, EventArgs e)
 		{
 			_txtDepStation.Clear();
 			_txtArrStation.Clear();
 			_txtDate.Clear();
 
 			_ = LoadTrainsAsync(null, null, null, 1);
-			UpdateFilterUI();
+			UpdateFilterUi();
 		}
 
-		private void UpdateFilterUI()
+		private void UpdateFilterUi()
 		{
 			int filterCount = 0;
 			if (!string.IsNullOrWhiteSpace(_txtDepStation.TextValue)) filterCount++;
@@ -675,7 +675,7 @@ Ví dụ: 24/12/2025",
 			}
 		}
 
-		private async void BtnPrevious_Click(object sender, EventArgs e)
+		private async void BtnPrevious_Click(object? sender, EventArgs e)
 		{
 			if (_currentPage > 1)
 			{
@@ -684,7 +684,7 @@ Ví dụ: 24/12/2025",
 			}
 		}
 
-		private async void BtnNext_Click(object sender, EventArgs e)
+		private async void BtnNext_Click(object? sender, EventArgs e)
 		{
 			if (_currentPage < _totalPages)
 			{
@@ -693,7 +693,7 @@ Ví dụ: 24/12/2025",
 			}
 		}
 
-		private async void BtnRefresh_Click(object sender, EventArgs e)
+		private async void BtnRefresh_Click(object? sender, EventArgs e)
 		{
 			await LoadTrainsAsync(_lastDepartureStation, _lastArrivalStation, _lastDepartureDate, _currentPage);
 		}

@@ -124,6 +124,25 @@ namespace sdk_client.Protocol
 		public int BookingId { get; set; }
 	}
 
+	public class HoldSeatsRequest
+	{
+		public string SessionToken { get; set; } = string.Empty;
+		public int TrainId { get; set; }
+		public List<int> SeatIds { get; set; } = new List<int>();
+	}
+
+	public class ConfirmHeldSeatsRequest
+	{
+		public string SessionToken { get; set; } = string.Empty;
+		public List<int> BookingIds { get; set; } = new List<int>();
+	}
+
+	public class ReleaseHeldSeatsRequest
+	{
+		public string SessionToken { get; set; } = string.Empty;
+		public List<int> BookingIds { get; set; } = new List<int>();
+	}
+
 	public class UpdateUserRequest
 	{
 		public string SessionToken { get; set; } = string.Empty;
@@ -184,5 +203,33 @@ namespace sdk_client.Protocol
 	{
 		public int TrainId { get; set; }
 		public List<int> SeatIds { get; set; } = new List<int>();
+	}
+
+	/// <summary>
+	/// SignalR event data for seat hold notifications.
+	/// Sent when one or more seats are temporarily held (Pending status).
+	/// </summary>
+	public class SeatHeldEvent
+	{
+		public int TrainId { get; set; }
+		public List<int> SeatIds { get; set; } = new List<int>();
+	}
+
+	/// <summary>
+	/// Represents a ticket booking transaction.
+	/// All DateTime properties are in local timezone (converted by BookingService).
+	/// </summary>
+	public class Booking
+	{
+		public int BookingId { get; set; }
+		public int UserId { get; set; }
+		public int TrainId { get; set; }
+		public int SeatId { get; set; }
+		public string BookingStatus { get; set; } = string.Empty;
+		public DateTime BookingDate { get; set; }
+		public decimal TotalAmount { get; set; }
+		public string PaymentStatus { get; set; } = string.Empty;
+		public DateTime? CancelledAt { get; set; }
+		public DateTime? HoldExpiresAt { get; set; }
 	}
 }

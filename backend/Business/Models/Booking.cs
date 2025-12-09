@@ -27,4 +27,13 @@ public class Booking
 	/// Frontend should convert to local time for display.
 	/// </summary>
 	public DateTime? CancelledAt { get; set; }
+
+	/// <summary>
+	/// Hold expiration timestamp in UTC timezone (null for permanent bookings).
+	/// Used for temporary seat holds with Pending status.
+	/// When non-null, indicates seat is temporarily held until this time.
+	/// Background service automatically releases holds when HoldExpiresAt &lt; GETUTCDATE().
+	/// Frontend should convert to local time for countdown display.
+	/// </summary>
+	public DateTime? HoldExpiresAt { get; set; }
 }

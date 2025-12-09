@@ -23,6 +23,12 @@ namespace sdk_client.Services
 		event EventHandler<SeatReleasedEvent>? SeatReleased;
 
 		/// <summary>
+		/// Event fired when seats are temporarily held on a train.
+		/// Subscribers receive real-time notifications when other users hold seats.
+		/// </summary>
+		event EventHandler<SeatHeldEvent>? SeatHeld;
+
+		/// <summary>
 		/// Event fired when the SignalR connection state changes.
 		/// Useful for displaying connection status in the UI.
 		/// </summary>

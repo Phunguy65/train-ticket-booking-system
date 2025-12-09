@@ -19,4 +19,11 @@ public interface IBookingService
 	Task<IEnumerable<Booking>> GetAllBookingsAsync();
 	Task<PagedResult<Booking>> GetAllBookingsAsync(int pageNumber, int pageSize);
 	Task<Booking?> GetBookingByIdAsync(int bookingId);
+
+	Task<(bool Success, string Message, List<int> BookingIds, DateTime ExpiresAt)> HoldSeatsAsync(int userId,
+		int trainId, List<int> seatIds);
+
+	Task<(bool Success, string Message)> ConfirmHeldSeatsAsync(int userId, List<int> bookingIds);
+	Task<(bool Success, string Message)> ReleaseHeldSeatsAsync(int userId, List<int> bookingIds);
+	Task<int> CleanupExpiredHoldsAsync();
 }

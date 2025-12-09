@@ -18,4 +18,9 @@ public interface IBookingRepository
 	Task<bool> UpdateAsync(Booking booking);
 	Task<bool> UpdateStatusAsync(int bookingId, string bookingStatus, string paymentStatus);
 	Task<bool> CancelBookingAsync(int bookingId);
+	Task<List<int>> CreateBatchWithHoldAsync(List<Booking> bookings, DateTime holdExpiresAt);
+	Task<bool> ConfirmHeldBookingsAsync(List<int> bookingIds, int userId);
+	Task<bool> ReleaseHeldBookingsAsync(List<int> bookingIds, int userId);
+	Task<List<Booking>> GetExpiredHoldsAsync();
+	Task<List<Booking>> GetUserActiveHoldsAsync(int userId);
 }

@@ -179,6 +179,77 @@ namespace sdk_client.Services
 					bookingObject["CancelledAt"] = cancelledAt.Value.ToLocalTimeSafe();
 				}
 			}
+
+			if (bookingObject["HoldExpiresAt"] != null)
+			{
+				var holdExpiresAt = (bookingObject["HoldExpiresAt"] ??
+				                     throw new InvalidOperationException(
+					                     $"{nameof(bookingObject)}[\"HoldExpiresAt\"] is null"))
+					.Value<DateTime?>();
+				if (holdExpiresAt.HasValue)
+				{
+					bookingObject["HoldExpiresAt"] = holdExpiresAt.Value.ToLocalTimeSafe();
+				}
+			}
+		}
+
+		/// <summary>
+		/// Temporarily holds seats for a user with configurable timeout.
+		/// Creates bookings with Pending status and HoldExpiresAt timestamp.
+		/// ExpiresAt timestamp is converted from UTC to local time.
+		/// </summary>
+		/// <param name="trainId">Unique train identifier</param>
+		/// <param name="seatIds">List of seat IDs to hold</param>
+		/// <returns>Response containing booking IDs and expiration time in local timezone</returns>
+		public async Task<Response> HoldSeatsAsync(int trainId, List<int> seatIds)
+		{
+			var request = new HoldSeatsRequest { TrainId = trainId, SeatIds = seatIds };
+
+			var response = await _apiClient.SendRequestAsync("Booking.HoldSeats", request).ConfigureAwait(false);
+
+			// Convert ExpiresAt from UTC to local time
+			if (response is { Success: true, Data: not null })
+			{
+				var dataObject = JObject.FromObject(response.Data);
+				if (dataObject["ExpiresAt"] != null)
+				{
+					var expiresAt = dataObject["ExpiresAt"]!.Value<DateTime>();
+					dataObject["ExpiresAt"] = expiresAt.ToLocalTimeSafe();
+					response.Data = dataObject;
+				}
+			}
+
+			return response;
+		}
+
+		/// <summary>
+		/// Confirms held seats by updating booking status to Confirmed and payment status to Paid.
+		/// Validates that bookings belong to the user, are in Pending status, and have not expired.
+		/// </summary>
+		/// <param name="bookingIds">List of booking IDs to confirm</param>
+		/// <returns>Response indicating success or failure</returns>
+		public async Task<Response> ConfirmHeldSeatsAsync(List<int> bookingIds)
+		{
+			var request = new ConfirmHeldSeatsRequest { BookingIds = bookingIds };
+
+			var response =
+				await _apiClient.SendRequestAsync("Booking.ConfirmHeldSeats", request).ConfigureAwait(false);
+			return response;
+		}
+
+		/// <summary>
+		/// Releases held seats by updating booking status to Cancelled and releasing seat availability.
+		/// Validates that bookings belong to the user and are in Pending status.
+		/// </summary>
+		/// <param name="bookingIds">List of booking IDs to release</param>
+		/// <returns>Response indicating success or failure</returns>
+		public async Task<Response> ReleaseHeldSeatsAsync(List<int> bookingIds)
+		{
+			var request = new ReleaseHeldSeatsRequest { BookingIds = bookingIds };
+
+			var response =
+				await _apiClient.SendRequestAsync("Booking.ReleaseHeldSeats", request).ConfigureAwait(false);
+			return response;
 		}
 	}
 }
