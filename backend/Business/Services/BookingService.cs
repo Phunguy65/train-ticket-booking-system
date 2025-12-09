@@ -503,19 +503,21 @@ public class BookingService : IBookingService
 	/// <summary>
 	/// Background cleanup service method to release expired holds.
 	/// Queries all bookings with HoldExpiresAt in the past and releases them.
-	/// Returns count of released bookings for monitoring.
+	/// Returns count of released bookings and seat information grouped by train for SignalR notifications.
 	/// </summary>
-	public async Task<int> CleanupExpiredHoldsAsync()
+	public async Task<(int ReleasedCount, Dictionary<int, List<int>> ReleasedSeatsByTrain)>
+		CleanupExpiredHoldsAsync()
 	{
 		try
 		{
 			List<Booking> expiredHolds = await _bookingRepository.GetExpiredHoldsAsync();
 			if (expiredHolds.Count == 0)
 			{
-				return 0;
+				return (0, new Dictionary<int, List<int>>());
 			}
 
 			int releasedCount = 0;
+			var releasedSeatsByTrain = new Dictionary<int, List<int>>();
 
 			// Group by user to process in batches
 			var groupedByUser = expiredHolds.GroupBy(b => b.UserId);
@@ -537,6 +539,14 @@ public class BookingService : IBookingService
 						foreach (Booking booking in userGroup)
 						{
 							await _seatRepository.UpdateAvailabilityAsync(booking.SeatId, true);
+
+							// Track released seats by train for SignalR notifications
+							if (!releasedSeatsByTrain.ContainsKey(booking.TrainId))
+							{
+								releasedSeatsByTrain[booking.TrainId] = new List<int>();
+							}
+
+							releasedSeatsByTrain[booking.TrainId].Add(booking.SeatId);
 						}
 
 						_unitOfWork.Commit();
@@ -557,11 +567,11 @@ public class BookingService : IBookingService
 				}
 			}
 
-			return releasedCount;
+			return (releasedCount, releasedSeatsByTrain);
 		}
 		catch (Exception)
 		{
-			return 0;
+			return (0, new Dictionary<int, List<int>>());
 		}
 	}
 }

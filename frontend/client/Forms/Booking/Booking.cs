@@ -23,7 +23,7 @@ namespace client.Forms.Booking
 		private readonly Color _clrAccent = Color.FromArgb(37, 99, 235);
 		private readonly Color _clrSeatEmpty = Color.FromArgb(30, 41, 59);
 		private readonly Color _clrSeatSold = Color.FromArgb(51, 65, 85);
-		private readonly Color _clrSeatHeldByMe = Color.FromArgb(37, 99, 235);
+		private readonly Color _clrSeatHeldByMe = Color.FromArgb(251, 146, 60);
 		private readonly Color _clrWarning = Color.FromArgb(239, 68, 68);
 
 		private FlowLayoutPanel _flowSeats;
@@ -868,6 +868,9 @@ namespace client.Forms.Booking
 		{
 			try
 			{
+				var seatList = _lblSelectedList.Text;
+				var totalPrice = _lblTotalPrice.Text;
+
 				var response = await _bookingService.ConfirmHeldSeatsAsync(_heldBookingIds);
 
 				if (!response.Success)
@@ -897,8 +900,8 @@ namespace client.Forms.Booking
 
 				MessageBox.Show(
 					$"Đặt vé thành công cho tàu {_train.TrainNumber}!\n" +
-					$"Ghế: {_lblSelectedList.Text}\n" +
-					$"Tổng tiền: {_lblTotalPrice.Text}",
+					$"Ghế: {seatList}\n" +
+					$"Tổng tiền: {totalPrice}",
 					"Thành công",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Information);
@@ -962,6 +965,8 @@ namespace client.Forms.Booking
 			if (_lblCountdown != null) _lblCountdown.Visible = true;
 
 			DisableSeatSelection();
+
+			DisplayCurrentPage();
 
 			_countdownTimer?.Start();
 		}

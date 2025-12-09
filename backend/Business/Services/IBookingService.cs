@@ -25,5 +25,5 @@ public interface IBookingService
 
 	Task<(bool Success, string Message)> ConfirmHeldSeatsAsync(int userId, List<int> bookingIds);
 	Task<(bool Success, string Message)> ReleaseHeldSeatsAsync(int userId, List<int> bookingIds);
-	Task<int> CleanupExpiredHoldsAsync();
+	Task<(int ReleasedCount, Dictionary<int, List<int>> ReleasedSeatsByTrain)> CleanupExpiredHoldsAsync();
 }
