@@ -55,6 +55,7 @@ namespace client.Forms.Booking
 		private RoundedButton? _btnConfirmBooking;
 		private RoundedButton? _btnCancelHold;
 		private bool _isCleaningUp;
+		private readonly HashSet<int> _heldSeatIds = new HashSet<int>();
 
 		public Booking(Train train)
 		{
@@ -611,7 +612,7 @@ namespace client.Forms.Booking
 			foreach (var seat in seats)
 			{
 				bool isSelected = _selectedSeatInfo.ContainsKey(seat.SeatId);
-				bool isHeldByMe = _isHoldMode && _selectedSeatInfo.ContainsKey(seat.SeatId);
+				bool isHeldByMe = _isHoldMode && _heldSeatIds.Contains(seat.SeatId);
 				bool isSold = !seat.IsAvailable;
 
 				RoundedButton btnSeat = new RoundedButton
@@ -621,7 +622,7 @@ namespace client.Forms.Booking
 					Margin = new Padding(15),
 					Font = new Font("Segoe UI", 11, FontStyle.Bold),
 					FlatStyle = FlatStyle.Flat,
-					Cursor = (isSold || isHeldByMe) ? Cursors.No : Cursors.Hand,
+					Cursor = (isSold || isHeldByMe || _isHoldMode) ? Cursors.No : Cursors.Hand,
 					Tag = seat.SeatId
 				};
 				btnSeat.FlatAppearance.BorderSize = 0;
@@ -636,18 +637,33 @@ namespace client.Forms.Booking
 				{
 					btnSeat.BackColor = _clrSeatSold;
 					btnSeat.ForeColor = Color.FromArgb(100, 116, 139);
+					btnSeat.Enabled = false;
 				}
 				else if (isSelected)
 				{
 					btnSeat.BackColor = _clrAccent;
 					btnSeat.ForeColor = _clrText;
-					btnSeat.Click += Seat_Click;
+					if (!_isHoldMode)
+					{
+						btnSeat.Click += Seat_Click;
+					}
+					else
+					{
+						btnSeat.Enabled = false;
+					}
 				}
 				else
 				{
 					btnSeat.BackColor = _clrSeatEmpty;
 					btnSeat.ForeColor = _clrText;
-					btnSeat.Click += Seat_Click;
+					if (!_isHoldMode)
+					{
+						btnSeat.Click += Seat_Click;
+					}
+					else
+					{
+						btnSeat.Enabled = false;
+					}
 				}
 
 				_flowSeats.Controls.Add(btnSeat);
@@ -656,6 +672,9 @@ namespace client.Forms.Booking
 
 		private void Seat_Click(object? sender, EventArgs? e)
 		{
+			if (_isHoldMode)
+				return;
+
 			if (sender is not RoundedButton btn || btn.Tag == null)
 				return;
 
@@ -959,6 +978,12 @@ namespace client.Forms.Booking
 		{
 			_isHoldMode = true;
 
+			_heldSeatIds.Clear();
+			foreach (var seatId in _selectedSeatInfo.Keys)
+			{
+				_heldSeatIds.Add(seatId);
+			}
+
 			if (_btnHoldSeats != null) _btnHoldSeats.Visible = false;
 			if (_btnConfirmBooking != null) _btnConfirmBooking.Visible = true;
 			if (_btnCancelHold != null) _btnCancelHold.Visible = true;
@@ -975,6 +1000,7 @@ namespace client.Forms.Booking
 		{
 			_isHoldMode = false;
 			_heldBookingIds.Clear();
+			_heldSeatIds.Clear();
 			_holdExpiresAt = null;
 
 			_countdownTimer?.Stop();

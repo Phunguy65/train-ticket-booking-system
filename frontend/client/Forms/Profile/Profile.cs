@@ -68,7 +68,7 @@ namespace client.Forms.Profile
 				Location = new Point(30, 15),
 				Cursor = Cursors.Hand
 			};
-			lblLogo.Click += (s, e) => this.Close();
+			lblLogo.Click += (_, _) => this.Close();
 			pnlHeader.Controls.Add(lblLogo);
 			AddWindowControls(pnlHeader);
 			SetupHeaderMenu(pnlHeader);
@@ -89,11 +89,11 @@ namespace client.Forms.Profile
 			// TABS
 			Panel pnlTabs = new Panel { Dock = DockStyle.Top, Height = 50, Padding = new Padding(50, 0, 50, 0) };
 			btnTabHistory = CreateTabButton("Lịch sử đặt vé", 50);
-			btnTabHistory.Click += (s, e) => SwitchTab("HISTORY");
+			btnTabHistory.Click += (_, _) => SwitchTab("HISTORY");
 			pnlTabs.Controls.Add(btnTabHistory);
 
 			btnTabProfile = CreateTabButton("Hồ sơ cá nhân", 250);
-			btnTabProfile.Click += (s, e) => SwitchTab("PROFILE");
+			btnTabProfile.Click += (_, _) => SwitchTab("PROFILE");
 			pnlTabs.Controls.Add(btnTabProfile);
 
 			lineActiveTab = new Panel
@@ -120,7 +120,7 @@ namespace client.Forms.Profile
 			{
 				btnTabHistory.ForeColor = _clrText;
 				btnTabProfile.ForeColor = _clrTextGray;
-				lineActiveTab.Location = new Point(btnTabHistory.Location.X, 46);
+				lineActiveTab.Location = btnTabHistory.Location with { Y = 46 };
 				lineActiveTab.Width = btnTabHistory.Width;
 				LoadHistoryContent();
 			}
@@ -128,7 +128,7 @@ namespace client.Forms.Profile
 			{
 				btnTabHistory.ForeColor = _clrTextGray;
 				btnTabProfile.ForeColor = _clrText;
-				lineActiveTab.Location = new Point(btnTabProfile.Location.X, 46);
+				lineActiveTab.Location = btnTabProfile.Location with { Y = 46 };
 				lineActiveTab.Width = btnTabProfile.Width;
 				LoadProfileContent();
 			}
@@ -147,7 +147,7 @@ namespace client.Forms.Profile
 				BackColor = _clrBackground // Đổi màu nền trùng background để che chắn tốt hơn
 			};
 
-			string[] headers = { "MÃ VÉ", "THÔNG TIN TÀU", "NGÀY ĐI", "TRẠNG THÁI", "TỔNG TIỀN" };
+			string[] headers = ["MÃ VÉ", "THÔNG TIN TÀU", "NGÀY ĐI", "TRẠNG THÁI", "TỔNG TIỀN"];
 			int curX = 20;
 			for (int i = 0; i < headers.Length; i++)
 			{
@@ -213,12 +213,13 @@ namespace client.Forms.Profile
 				Size = new Size(itemWidth, 70), Margin = new Padding(0, 0, 0, 15), BackColor = Color.Transparent
 			};
 
-			pnlItem.Paint += (s, e) =>
+			pnlItem.Paint += (_, e) =>
 			{
 				e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 				Rectangle rect = new Rectangle(0, 0, pnlItem.Width - 1, pnlItem.Height - 1);
-				using (GraphicsPath path = GetRoundedPath(rect, 15))
-				using (SolidBrush brush = new SolidBrush(_clrItemBg)) { e.Graphics.FillPath(brush, path); }
+				using GraphicsPath path = GetRoundedPath(rect, 15);
+				using SolidBrush brush = new SolidBrush(_clrItemBg);
+				e.Graphics.FillPath(brush, path);
 			};
 
 			int curX = 20;
@@ -321,7 +322,7 @@ namespace client.Forms.Profile
 				FlatStyle = FlatStyle.Flat
 			};
 			btnUpdate.FlatAppearance.BorderSize = 0;
-			btnUpdate.Click += (s, e) => MessageBox.Show(@"Cập nhật thông tin thành công!", @"Hệ thống");
+			btnUpdate.Click += (_, _) => MessageBox.Show(@"Cập nhật thông tin thành công!", @"Hệ thống");
 			pnlProfile.Controls.Add(btnUpdate);
 
 			pnlContent.Controls.Add(pnlProfile);
@@ -347,19 +348,19 @@ namespace client.Forms.Profile
 				};
 				lblMenu.Location = new Point(menuX - 80, 20);
 
-				lblMenu.MouseEnter += (s, e) => lblMenu.ForeColor = Color.White;
-				lblMenu.MouseLeave += (s, e) => lblMenu.ForeColor = _clrTextGray;
+				lblMenu.MouseEnter += (_, _) => lblMenu.ForeColor = Color.White;
+				lblMenu.MouseLeave += (_, _) => lblMenu.ForeColor = _clrTextGray;
 
 				// --- XỬ LÝ SỰ KIỆN CLICK TẠI ĐÂY ---
 				if (item == "Đăng xuất")
 				{
 					// Đóng hết ứng dụng hoặc quay về Login tùy logic
-					lblMenu.Click += (s, e) => Application.Exit();
+					lblMenu.Click += (_, _) => Application.Exit();
 				}
 				else if (item == "Trang chủ")
 				{
 					// CHỈ CẦN ĐÓNG PROFILE LÀ TỰ QUAY VỀ MAINFORM
-					lblMenu.Click += (s, e) => this.Close();
+					lblMenu.Click += (_, _) => this.Close();
 				}
 				// ------------------------------------
 
@@ -373,15 +374,15 @@ namespace client.Forms.Profile
 			int btnSize = 45;
 			int startX = parent.Width - (btnSize * 3) - 10;
 			Label btnClose = CreateWindowButton("✕", startX + (btnSize * 2), ClrError);
-			btnClose.Click += (s, e) => this.Close();
+			btnClose.Click += (_, _) => this.Close();
 			btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			parent.Controls.Add(btnClose);
 			Label btnMax = CreateWindowButton("☐", startX + btnSize, _clrItemBg);
-			btnMax.Click += (s, e) => ToggleMaximize();
+			btnMax.Click += (_, _) => ToggleMaximize();
 			btnMax.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			parent.Controls.Add(btnMax);
 			Label btnMin = CreateWindowButton("―", startX, _clrItemBg);
-			btnMin.Click += (s, e) => this.WindowState = FormWindowState.Minimized;
+			btnMin.Click += (_, _) => this.WindowState = FormWindowState.Minimized;
 			btnMin.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			parent.Controls.Add(btnMin);
 		}
@@ -399,8 +400,8 @@ namespace client.Forms.Profile
 				TextAlign = ContentAlignment.MiddleCenter,
 				Cursor = Cursors.Hand
 			};
-			lbl.MouseEnter += (s, e) => lbl.BackColor = hoverColor;
-			lbl.MouseLeave += (s, e) => lbl.BackColor = Color.Transparent;
+			lbl.MouseEnter += (_, _) => lbl.BackColor = hoverColor;
+			lbl.MouseLeave += (_, _) => lbl.BackColor = Color.Transparent;
 			return lbl;
 		}
 
