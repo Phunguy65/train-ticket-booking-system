@@ -161,16 +161,18 @@ public class BookingService : IBookingService
 
 			var totalAmount = train.TicketPrice * seatIds.Count;
 
-			var bookingIds = (await Task.WhenAll(seats.Select(async seat =>
-				await _bookingRepository.CreateAsync(new Booking
-				{
-					UserId = userId,
-					TrainId = trainId,
-					SeatId = seat.SeatId,
-					BookingStatus = "Confirmed",
-					TotalAmount = train.TicketPrice,
-					PaymentStatus = "Paid"
-				})))).ToList();
+			// Create all bookings in a single batch operation for better performance
+			var bookingsToCreate = seats.Select(seat => new Booking
+			{
+				UserId = userId,
+				TrainId = trainId,
+				SeatId = seat.SeatId,
+				BookingStatus = "Confirmed",
+				TotalAmount = train.TicketPrice,
+				PaymentStatus = "Paid"
+			}).ToList();
+
+			var bookingIds = await _bookingRepository.CreateBatchAsync(bookingsToCreate);
 
 			await _seatRepository.UpdateMultipleSeatsAvailabilityAsync(seatIds, false);
 

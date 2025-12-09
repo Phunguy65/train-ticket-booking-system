@@ -76,6 +76,43 @@ public class BookingRepository : IBookingRepository
 		return await _unitOfWork.Connection.ExecuteScalarAsync<int>(sql, booking, _unitOfWork.Transaction);
 	}
 
+	/// <summary>
+	/// Creates multiple bookings in a single batch operation using OUTPUT clause.
+	/// Returns all generated booking IDs in the same order as the input bookings.
+	/// Uses a single database round trip for better performance and eliminates MARS dependency.
+	/// </summary>
+	public async Task<List<int>> CreateBatchAsync(List<Booking> bookings)
+	{
+		if (bookings.Count == 0)
+			return new List<int>();
+
+		// Build dynamic VALUES clause with parameterized values
+		var valuesClauses = new List<string>();
+		var parameters = new DynamicParameters();
+
+		for (int i = 0; i < bookings.Count; i++)
+		{
+			var booking = bookings[i];
+			valuesClauses.Add(
+				$"(@UserId{i}, @TrainId{i}, @SeatId{i}, @BookingStatus{i}, @TotalAmount{i}, @PaymentStatus{i})");
+
+			parameters.Add($"@UserId{i}", booking.UserId);
+			parameters.Add($"@TrainId{i}", booking.TrainId);
+			parameters.Add($"@SeatId{i}", booking.SeatId);
+			parameters.Add($"@BookingStatus{i}", booking.BookingStatus);
+			parameters.Add($"@TotalAmount{i}", booking.TotalAmount);
+			parameters.Add($"@PaymentStatus{i}", booking.PaymentStatus);
+		}
+
+		var sql = $@"
+			INSERT INTO Booking (UserId, TrainId, SeatId, BookingStatus, TotalAmount, PaymentStatus)
+			OUTPUT INSERTED.BookingId
+			VALUES {string.Join(", ", valuesClauses)}";
+
+		var ids = await _unitOfWork.Connection.QueryAsync<int>(sql, parameters, _unitOfWork.Transaction);
+		return ids.ToList();
+	}
+
 	public async Task<bool> UpdateAsync(Booking booking)
 	{
 		using var connection = _context.CreateConnection();

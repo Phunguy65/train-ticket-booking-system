@@ -14,6 +14,7 @@ public interface IBookingRepository
 	Task<IEnumerable<Booking>> GetAllAsync();
 	Task<(IEnumerable<Booking> Items, int TotalCount)> GetAllAsync(int pageNumber, int pageSize);
 	Task<int> CreateAsync(Booking booking);
+	Task<List<int>> CreateBatchAsync(List<Booking> bookings);
 	Task<bool> UpdateAsync(Booking booking);
 	Task<bool> UpdateStatusAsync(int bookingId, string bookingStatus, string paymentStatus);
 	Task<bool> CancelBookingAsync(int bookingId);
