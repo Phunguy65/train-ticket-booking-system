@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
@@ -8,10 +8,33 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Remove="node_modules\**" />
+		<Content Remove="node_modules\**" />
+		<EmbeddedResource Remove="node_modules\**" />
+		<None Remove="node_modules\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Remove="biome.json" />
+		<Content Remove="package.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove=".gitignore" />
+		<None Remove=".markdownlint-cli2.mjs" />
+		<None Remove="prettier.config.cjs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
 		<PackageReference Include="Dapper" Version="2.1.66" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.11" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 </Project>

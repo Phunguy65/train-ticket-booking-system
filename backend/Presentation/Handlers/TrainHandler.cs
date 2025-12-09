@@ -102,12 +102,12 @@ public class TrainHandler
 			}
 
 			var pagedTrains = await _trainService.SearchTrainsAsync(request?.DepartureStation, request?.ArrivalStation,
-				request?.DepartureDate, pageNumber.Value, pageSize.Value);
+				request?.DepartureDate, pageNumber.Value, pageSize.Value, request?.Status);
 			return new Response { Success = true, Data = pagedTrains };
 		}
 
 		var trains = await _trainService.SearchTrainsAsync(request?.DepartureStation, request?.ArrivalStation,
-			request?.DepartureDate);
+			request?.DepartureDate, request?.Status);
 		return new Response { Success = true, Data = trains };
 	}
 

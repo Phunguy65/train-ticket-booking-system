@@ -1,5 +1,7 @@
 using backend.Business.Services;
+using backend.Hubs;
 using backend.Presentation.Protocol;
+using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json.Linq;
 
 namespace backend.Presentation.Handlers;
@@ -7,16 +9,20 @@ namespace backend.Presentation.Handlers;
 /// <summary>
 /// Handler for booking-related commands (book ticket, cancel booking, view history).
 /// Processes booking requests with session validation and returns appropriate responses.
+/// Integrates with SignalR for real-time seat availability notifications.
 /// </summary>
 public class BookingHandler
 {
 	private readonly IBookingService _bookingService;
 	private readonly IAuthenticationService _authenticationService;
+	private readonly IHubContext<BookingHub> _hubContext;
 
-	public BookingHandler(IBookingService bookingService, IAuthenticationService authenticationService)
+	public BookingHandler(IBookingService bookingService, IAuthenticationService authenticationService,
+		IHubContext<BookingHub> hubContext)
 	{
 		_bookingService = bookingService;
 		_authenticationService = authenticationService;
+		_hubContext = hubContext;
 	}
 
 	public async Task<Response> HandleAsync(string action, JObject? data)
@@ -68,13 +74,39 @@ public class BookingHandler
 			return new Response { Success = false, ErrorMessage = "Invalid or expired session." };
 		}
 
-		var result = await _bookingService.BookTicketAsync(session.UserId, request.TrainId, request.SeatId);
-		return new Response
+		if (request.SeatIds is { Count: > 0 })
 		{
-			Success = result.Success,
-			ErrorMessage = result.Success ? null : result.Message,
-			Data = result.Success ? new { result.BookingId, result.Message } : null
-		};
+			var result = await _bookingService.BookMultipleTicketsAsync(session.UserId, request.TrainId,
+				request.SeatIds);
+
+			if (result.Success)
+			{
+				await NotifySeatBookedAsync(request.TrainId, request.SeatIds);
+			}
+
+			return new Response
+			{
+				Success = result.Success,
+				ErrorMessage = result.Success ? null : result.Message,
+				Data = result.Success ? new { result.BookingIds, result.Message } : null
+			};
+		}
+		else
+		{
+			var result = await _bookingService.BookTicketAsync(session.UserId, request.TrainId, request.SeatId);
+
+			if (result.Success)
+			{
+				await NotifySeatBookedAsync(request.TrainId, [request.SeatId]);
+			}
+
+			return new Response
+			{
+				Success = result.Success,
+				ErrorMessage = result.Success ? null : result.Message,
+				Data = result.Success ? new { result.BookingId, result.Message } : null
+			};
+		}
 	}
 
 	private async Task<Response> HandleCancelBookingAsync(JObject? data)
@@ -97,13 +129,34 @@ public class BookingHandler
 		}
 
 		var isAdmin = session.Role == "Admin";
+		var booking = await _bookingService.GetBookingByIdAsync(request.BookingId);
 		var result = await _bookingService.CancelBookingAsync(request.BookingId, session.UserId, isAdmin);
+
+		if (result.Success && booking != null)
+		{
+			await NotifySeatReleasedAsync(booking.TrainId, [booking.SeatId]);
+		}
+
 		return new Response
 		{
 			Success = result.Success,
 			ErrorMessage = result.Success ? null : result.Message,
 			Data = result.Success ? new { result.Message } : null
 		};
+	}
+
+	private async Task NotifySeatBookedAsync(int trainId, List<int> seatIds)
+	{
+		var groupName = $"train_{trainId}";
+		await _hubContext.Clients.Group(groupName)
+			.SendAsync("SeatBooked", new { TrainId = trainId, SeatIds = seatIds });
+	}
+
+	private async Task NotifySeatReleasedAsync(int trainId, List<int> seatIds)
+	{
+		var groupName = $"train_{trainId}";
+		await _hubContext.Clients.Group(groupName)
+			.SendAsync("SeatReleased", new { TrainId = trainId, SeatIds = seatIds });
 	}
 
 	private async Task<Response> HandleGetBookingHistoryAsync(JObject? data)

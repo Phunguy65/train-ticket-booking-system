@@ -58,6 +58,7 @@ public class SearchTrainRequest
 	public string? DepartureStation { get; set; }
 	public string? ArrivalStation { get; set; }
 	public DateTime? DepartureDate { get; set; }
+	public string? Status { get; set; }
 }
 
 public class BookTicketRequest
@@ -65,6 +66,7 @@ public class BookTicketRequest
 	public string SessionToken { get; set; } = string.Empty;
 	public int TrainId { get; set; }
 	public int SeatId { get; set; }
+	public List<int>? SeatIds { get; set; }
 }
 
 public class CancelBookingRequest

@@ -65,7 +65,9 @@ namespace client.Forms.Authentication
 					ApiConfig.Host,
 					ApiConfig.Port,
 					ApiConfig.ConnectionTimeout,
-					ApiConfig.RequestTimeout
+					ApiConfig.RequestTimeout,
+					ApiConfig.SignalRHost,
+					ApiConfig.SignalRPort
 				);
 
 				// Use SessionManager's ApiClient directly instead of storing local reference
@@ -444,15 +446,15 @@ Chi tiết: {ex.Message}",
 			var validationError = ValidateInputs();
 			if (!string.IsNullOrEmpty(validationError))
 			{
-				MessageBox.Show(validationError, "Lỗi xác thực", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show(validationError, @"Lỗi xác thực", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 
 			if (_authService == null)
 			{
 				MessageBox.Show(
-					"Không thể kết nối đến máy chủ. Vui lòng khởi động lại ứng dụng.",
-					"Lỗi",
+					@"Không thể kết nối đến máy chủ. Vui lòng khởi động lại ứng dụng.",
+					@"Lỗi",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error
 				);

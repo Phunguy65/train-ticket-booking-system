@@ -61,11 +61,21 @@ public class TrainRepository : ITrainRepository
 	}
 
 	public async Task<IEnumerable<Train>> SearchAsync(string? departureStation, string? arrivalStation,
-		DateTime? departureDate)
+		DateTime? departureDate, string? status = null)
 	{
 		using var connection = _context.CreateConnection();
-		var sql = "SELECT * FROM Train WHERE [Status] = 'Active'";
+		var sql = "SELECT * FROM Train WHERE 1=1";
 		var parameters = new DynamicParameters();
+
+		if (!string.IsNullOrEmpty(status))
+		{
+			sql += " AND [Status] = @Status";
+			parameters.Add("Status", status);
+		}
+		else
+		{
+			sql += " AND [Status] = 'Active'";
+		}
 
 		if (!string.IsNullOrEmpty(departureStation))
 		{
@@ -91,11 +101,21 @@ public class TrainRepository : ITrainRepository
 
 	public async Task<(IEnumerable<Train> Items, int TotalCount)> SearchAsync(string? departureStation,
 		string? arrivalStation,
-		DateTime? departureDate, int pageNumber, int pageSize)
+		DateTime? departureDate, int pageNumber, int pageSize, string? status = null)
 	{
 		using var connection = _context.CreateConnection();
-		var whereClause = "WHERE [Status] = 'Active'";
+		var whereClause = "WHERE 1=1";
 		var parameters = new DynamicParameters();
+
+		if (!string.IsNullOrEmpty(status))
+		{
+			whereClause += " AND [Status] = @Status";
+			parameters.Add("Status", status);
+		}
+		else
+		{
+			whereClause += " AND [Status] = 'Active'";
+		}
 
 		if (!string.IsNullOrEmpty(departureStation))
 		{

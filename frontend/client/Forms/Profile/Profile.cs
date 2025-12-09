@@ -11,12 +11,12 @@ namespace client.Forms.Profile
 		// =========================================================
 		// 1. CẤU HÌNH MÀU SẮC & THEME
 		// =========================================================
-		private readonly Color ClrBackground = Color.FromArgb(15, 23, 42);
-		private readonly Color ClrHeader = Color.FromArgb(15, 23, 42);
-		private readonly Color ClrTabActive = Color.FromArgb(37, 99, 235);
-		private readonly Color ClrText = Color.White;
-		private readonly Color ClrTextGray = Color.FromArgb(148, 163, 184);
-		private readonly Color ClrItemBg = Color.FromArgb(30, 41, 59);
+		private readonly Color _clrBackground = Color.FromArgb(15, 23, 42);
+		private readonly Color _clrHeader = Color.FromArgb(15, 23, 42);
+		private readonly Color _clrTabActive = Color.FromArgb(37, 99, 235);
+		private readonly Color _clrText = Color.White;
+		private readonly Color _clrTextGray = Color.FromArgb(148, 163, 184);
+		private readonly Color _clrItemBg = Color.FromArgb(30, 41, 59);
 
 		private readonly Color ClrSuccess = Color.FromArgb(34, 197, 94);
 		private readonly Color ClrWarning = Color.FromArgb(249, 115, 22);
@@ -51,19 +51,19 @@ namespace client.Forms.Profile
 			this.FormBorderStyle = FormBorderStyle.None;
 			this.StartPosition = FormStartPosition.CenterScreen;
 			this.Size = new Size(1500, 850);
-			this.BackColor = ClrBackground;
+			this.BackColor = _clrBackground;
 			this.DoubleBuffered = true;
 
 			// HEADER
 			Panel pnlHeader = new Panel
 			{
-				Dock = DockStyle.Top, Height = 60, Padding = new Padding(30, 0, 30, 0), BackColor = ClrHeader
+				Dock = DockStyle.Top, Height = 60, Padding = new Padding(30, 0, 30, 0), BackColor = _clrHeader
 			};
 			Label lblLogo = new Label
 			{
 				Text = "🚆 Vé Tàu Cao Tốc",
 				Font = new Font("Segoe UI", 16, FontStyle.Bold),
-				ForeColor = ClrTabActive,
+				ForeColor = _clrTabActive,
 				AutoSize = true,
 				Location = new Point(30, 15),
 				Cursor = Cursors.Hand
@@ -98,7 +98,7 @@ namespace client.Forms.Profile
 
 			lineActiveTab = new Panel
 			{
-				Height = 4, BackColor = ClrTabActive, Location = new Point(50, 46), Size = new Size(100, 4)
+				Height = 4, BackColor = _clrTabActive, Location = new Point(50, 46), Size = new Size(100, 4)
 			};
 			pnlTabs.Controls.Add(lineActiveTab);
 
@@ -118,16 +118,16 @@ namespace client.Forms.Profile
 
 			if (tabName == "HISTORY")
 			{
-				btnTabHistory.ForeColor = ClrText;
-				btnTabProfile.ForeColor = ClrTextGray;
+				btnTabHistory.ForeColor = _clrText;
+				btnTabProfile.ForeColor = _clrTextGray;
 				lineActiveTab.Location = new Point(btnTabHistory.Location.X, 46);
 				lineActiveTab.Width = btnTabHistory.Width;
 				LoadHistoryContent();
 			}
 			else
 			{
-				btnTabHistory.ForeColor = ClrTextGray;
-				btnTabProfile.ForeColor = ClrText;
+				btnTabHistory.ForeColor = _clrTextGray;
+				btnTabProfile.ForeColor = _clrText;
 				lineActiveTab.Location = new Point(btnTabProfile.Location.X, 46);
 				lineActiveTab.Width = btnTabProfile.Width;
 				LoadProfileContent();
@@ -144,7 +144,7 @@ namespace client.Forms.Profile
 			{
 				Dock = DockStyle.Top,
 				Height = 50,
-				BackColor = ClrBackground // Đổi màu nền trùng background để che chắn tốt hơn
+				BackColor = _clrBackground // Đổi màu nền trùng background để che chắn tốt hơn
 			};
 
 			string[] headers = { "MÃ VÉ", "THÔNG TIN TÀU", "NGÀY ĐI", "TRẠNG THÁI", "TỔNG TIỀN" };
@@ -154,7 +154,7 @@ namespace client.Forms.Profile
 				Label lblH = new Label
 				{
 					Text = headers[i],
-					ForeColor = ClrTextGray,
+					ForeColor = _clrTextGray,
 					Font = new Font("Segoe UI", 10, FontStyle.Bold),
 					AutoSize = false,
 					Size = new Size(colWidths[i], 40),
@@ -218,15 +218,15 @@ namespace client.Forms.Profile
 				e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 				Rectangle rect = new Rectangle(0, 0, pnlItem.Width - 1, pnlItem.Height - 1);
 				using (GraphicsPath path = GetRoundedPath(rect, 15))
-				using (SolidBrush brush = new SolidBrush(ClrItemBg)) { e.Graphics.FillPath(brush, path); }
+				using (SolidBrush brush = new SolidBrush(_clrItemBg)) { e.Graphics.FillPath(brush, path); }
 			};
 
 			int curX = 20;
-			pnlItem.Controls.Add(CreateLabel(code, 11, FontStyle.Bold, ClrText, curX, 25));
+			pnlItem.Controls.Add(CreateLabel(code, 11, FontStyle.Bold, _clrText, curX, 25));
 			curX += colWidths[0];
-			pnlItem.Controls.Add(CreateLabel(train, 11, FontStyle.Regular, ClrText, curX, 25));
+			pnlItem.Controls.Add(CreateLabel(train, 11, FontStyle.Regular, _clrText, curX, 25));
 			curX += colWidths[1];
-			pnlItem.Controls.Add(CreateLabel(date, 11, FontStyle.Regular, ClrTextGray, curX, 25));
+			pnlItem.Controls.Add(CreateLabel(date, 11, FontStyle.Regular, _clrTextGray, curX, 25));
 			curX += colWidths[2];
 			Label lblStatus = new Label
 			{
@@ -238,7 +238,7 @@ namespace client.Forms.Profile
 			};
 			pnlItem.Controls.Add(lblStatus);
 			curX += colWidths[3];
-			pnlItem.Controls.Add(CreateLabel(price, 12, FontStyle.Bold, ClrText, curX, 23));
+			pnlItem.Controls.Add(CreateLabel(price, 12, FontStyle.Bold, _clrText, curX, 23));
 
 			parent.Controls.Add(pnlItem);
 		}
@@ -253,7 +253,7 @@ namespace client.Forms.Profile
 			{
 				Text = "Thông tin cá nhân",
 				Font = new Font("Segoe UI", 14, FontStyle.Bold),
-				ForeColor = ClrText,
+				ForeColor = _clrText,
 				AutoSize = true,
 				Location = new Point(0, 0)
 			};
@@ -261,7 +261,7 @@ namespace client.Forms.Profile
 			{
 				Text = "Cập nhật thông tin định danh và liên hệ của bạn.",
 				Font = new Font("Segoe UI", 10, FontStyle.Regular),
-				ForeColor = ClrTextGray,
+				ForeColor = _clrTextGray,
 				AutoSize = true,
 				Location = new Point(0, 35)
 			};
@@ -269,8 +269,8 @@ namespace client.Forms.Profile
 			pnlProfile.Controls.Add(lblSub);
 
 			int yPos = 80;
-			pnlProfile.Controls.Add(CreateLabel("Họ và Tên", 10, FontStyle.Regular, ClrTextGray, 0, yPos));
-			pnlProfile.Controls.Add(CreateLabel("Số điện thoại", 10, FontStyle.Regular, ClrTextGray, 420, yPos));
+			pnlProfile.Controls.Add(CreateLabel("Họ và Tên", 10, FontStyle.Regular, _clrTextGray, 0, yPos));
+			pnlProfile.Controls.Add(CreateLabel("Số điện thoại", 10, FontStyle.Regular, _clrTextGray, 420, yPos));
 			yPos += 30;
 
 			ModernTextBox txtName = new ModernTextBox
@@ -278,8 +278,8 @@ namespace client.Forms.Profile
 				Location = new Point(0, yPos),
 				Size = new Size(380, 50),
 				PlaceholderText = "Nguyễn Văn A",
-				BackColor = ClrItemBg,
-				ForeColor = ClrText,
+				BackColor = _clrItemBg,
+				ForeColor = _clrText,
 				IconText = "👤"
 			};
 			pnlProfile.Controls.Add(txtName);
@@ -288,22 +288,22 @@ namespace client.Forms.Profile
 				Location = new Point(420, yPos),
 				Size = new Size(380, 50),
 				PlaceholderText = "0909123456",
-				BackColor = ClrItemBg,
-				ForeColor = ClrText,
+				BackColor = _clrItemBg,
+				ForeColor = _clrText,
 				IconText = "📞"
 			};
 			pnlProfile.Controls.Add(txtPhone);
 			yPos += 70;
 
-			pnlProfile.Controls.Add(CreateLabel("Địa chỉ Email", 10, FontStyle.Regular, ClrTextGray, 0, yPos));
+			pnlProfile.Controls.Add(CreateLabel("Địa chỉ Email", 10, FontStyle.Regular, _clrTextGray, 0, yPos));
 			yPos += 30;
 			ModernTextBox txtEmail = new ModernTextBox
 			{
 				Location = new Point(0, yPos),
 				Size = new Size(800, 50),
 				PlaceholderText = "example@email.com",
-				BackColor = ClrItemBg,
-				ForeColor = ClrText,
+				BackColor = _clrItemBg,
+				ForeColor = _clrText,
 				IconText = "📧"
 			};
 			pnlProfile.Controls.Add(txtEmail);
@@ -312,7 +312,7 @@ namespace client.Forms.Profile
 			RoundedButton btnUpdate = new RoundedButton
 			{
 				Text = "Lưu thay đổi",
-				BackColor = ClrTabActive,
+				BackColor = _clrTabActive,
 				ForeColor = Color.White,
 				Size = new Size(200, 50),
 				Location = new Point(0, yPos),
@@ -321,7 +321,7 @@ namespace client.Forms.Profile
 				FlatStyle = FlatStyle.Flat
 			};
 			btnUpdate.FlatAppearance.BorderSize = 0;
-			btnUpdate.Click += (s, e) => MessageBox.Show("Cập nhật thông tin thành công!", "Hệ thống");
+			btnUpdate.Click += (s, e) => MessageBox.Show(@"Cập nhật thông tin thành công!", @"Hệ thống");
 			pnlProfile.Controls.Add(btnUpdate);
 
 			pnlContent.Controls.Add(pnlProfile);
@@ -340,7 +340,7 @@ namespace client.Forms.Profile
 				{
 					Text = item,
 					Font = new Font("Segoe UI", 11, FontStyle.Regular),
-					ForeColor = ClrTextGray,
+					ForeColor = _clrTextGray,
 					AutoSize = true,
 					Cursor = Cursors.Hand,
 					Anchor = AnchorStyles.Top | AnchorStyles.Right
@@ -348,7 +348,7 @@ namespace client.Forms.Profile
 				lblMenu.Location = new Point(menuX - 80, 20);
 
 				lblMenu.MouseEnter += (s, e) => lblMenu.ForeColor = Color.White;
-				lblMenu.MouseLeave += (s, e) => lblMenu.ForeColor = ClrTextGray;
+				lblMenu.MouseLeave += (s, e) => lblMenu.ForeColor = _clrTextGray;
 
 				// --- XỬ LÝ SỰ KIỆN CLICK TẠI ĐÂY ---
 				if (item == "Đăng xuất")
@@ -376,11 +376,11 @@ namespace client.Forms.Profile
 			btnClose.Click += (s, e) => this.Close();
 			btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			parent.Controls.Add(btnClose);
-			Label btnMax = CreateWindowButton("☐", startX + btnSize, ClrItemBg);
+			Label btnMax = CreateWindowButton("☐", startX + btnSize, _clrItemBg);
 			btnMax.Click += (s, e) => ToggleMaximize();
 			btnMax.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			parent.Controls.Add(btnMax);
-			Label btnMin = CreateWindowButton("―", startX, ClrItemBg);
+			Label btnMin = CreateWindowButton("―", startX, _clrItemBg);
 			btnMin.Click += (s, e) => this.WindowState = FormWindowState.Minimized;
 			btnMin.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			parent.Controls.Add(btnMin);
@@ -423,7 +423,7 @@ namespace client.Forms.Profile
 			{
 				Text = text,
 				Font = new Font("Segoe UI", 12, FontStyle.Bold),
-				ForeColor = ClrTextGray,
+				ForeColor = _clrTextGray,
 				AutoSize = true,
 				Location = new Point(x, 10),
 				Cursor = Cursors.Hand

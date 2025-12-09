@@ -43,16 +43,17 @@ public class TrainService : ITrainService
 	}
 
 	public async Task<IEnumerable<Train>> SearchTrainsAsync(string? departureStation, string? arrivalStation,
-		DateTime? departureDate)
+		DateTime? departureDate, string? status = null)
 	{
-		return await _trainRepository.SearchAsync(departureStation, arrivalStation, departureDate);
+		return await _trainRepository.SearchAsync(departureStation, arrivalStation, departureDate, status);
 	}
 
 	public async Task<PagedResult<Train>> SearchTrainsAsync(string? departureStation, string? arrivalStation,
-		DateTime? departureDate, int pageNumber, int pageSize)
+		DateTime? departureDate, int pageNumber, int pageSize, string? status = null)
 	{
 		var (items, totalCount) =
-			await _trainRepository.SearchAsync(departureStation, arrivalStation, departureDate, pageNumber, pageSize);
+			await _trainRepository.SearchAsync(departureStation, arrivalStation, departureDate, pageNumber, pageSize,
+				status);
 		return new PagedResult<Train>
 		{
 			Items = items, TotalCount = totalCount, PageNumber = pageNumber, PageSize = pageSize

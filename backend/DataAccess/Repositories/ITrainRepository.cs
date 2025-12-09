@@ -12,10 +12,12 @@ public interface ITrainRepository
 	Task<Train?> GetByTrainNumberAsync(string trainNumber);
 	Task<IEnumerable<Train>> GetAllAsync();
 	Task<(IEnumerable<Train> Items, int TotalCount)> GetAllAsync(int pageNumber, int pageSize);
-	Task<IEnumerable<Train>> SearchAsync(string? departureStation, string? arrivalStation, DateTime? departureDate);
+
+	Task<IEnumerable<Train>> SearchAsync(string? departureStation, string? arrivalStation, DateTime? departureDate,
+		string? status = null);
 
 	Task<(IEnumerable<Train> Items, int TotalCount)> SearchAsync(string? departureStation, string? arrivalStation,
-		DateTime? departureDate, int pageNumber, int pageSize);
+		DateTime? departureDate, int pageNumber, int pageSize, string? status = null);
 
 	Task<int> CreateAsync(Train train);
 	Task<bool> UpdateAsync(Train train);
