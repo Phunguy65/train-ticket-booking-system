@@ -8,7 +8,7 @@ namespace sdk_client.Services
 	/// Interface for SignalR real-time communication service.
 	/// Manages WebSocket connections to the backend SignalR hub for real-time seat availability updates.
 	/// </summary>
-	public interface ISignalRService : IDisposable
+	public interface ISignalRService : IDisposable, IAsyncDisposable
 	{
 		/// <summary>
 		/// Event fired when seats are booked on a train.

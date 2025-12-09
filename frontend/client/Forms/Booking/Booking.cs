@@ -96,14 +96,24 @@ namespace client.Forms.Booking
 			}
 		}
 
-		private void Booking_FormClosing(object? sender, FormClosingEventArgs e)
+		private async void Booking_FormClosing(object? sender, FormClosingEventArgs e)
 		{
-			CleanupSignalR();
+			if (_signalRService != null && !_isCleaningUp)
+			{
+				e.Cancel = true;
+				await CleanupSignalRAsync();
+				e.Cancel = false;
+				Close();
+			}
 		}
 
-		private void CleanupSignalR()
+		private bool _isCleaningUp = false;
+
+		private async Task CleanupSignalRAsync()
 		{
-			if (_signalRService == null) return;
+			if (_signalRService == null || _isCleaningUp) return;
+
+			_isCleaningUp = true;
 
 			try
 			{
@@ -112,12 +122,16 @@ namespace client.Forms.Booking
 
 				if (_signalRService.IsConnected)
 				{
-					_signalRService.LeaveTrainGroupAsync(_train.TrainId).GetAwaiter().GetResult();
+					await _signalRService.LeaveTrainGroupAsync(_train.TrainId).ConfigureAwait(false);
 				}
 			}
 			catch (Exception ex)
 			{
 				System.Diagnostics.Debug.WriteLine($"SignalR cleanup failed: {ex.Message}");
+			}
+			finally
+			{
+				_isCleaningUp = false;
 			}
 		}
 

@@ -1,8 +1,8 @@
+using admin.ViewModels;
+using admin.Views;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using admin.ViewModels;
-using admin.Views;
 
 namespace admin;
 

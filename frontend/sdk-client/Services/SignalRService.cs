@@ -142,7 +142,22 @@ namespace sdk_client.Services
 			ConnectionStateChanged?.Invoke(this, state);
 		}
 
-		public void Dispose()
+		/// <summary>
+		/// Asynchronously disposes the SignalR connection and releases all resources.
+		/// This is the preferred disposal method for proper async cleanup.
+		/// </summary>
+		public async ValueTask DisposeAsync()
+		{
+			await DisposeAsyncCore().ConfigureAwait(false);
+
+			Dispose(disposing: false);
+			GC.SuppressFinalize(this);
+		}
+
+		/// <summary>
+		/// Core async disposal logic for cleaning up the HubConnection.
+		/// </summary>
+		protected virtual async ValueTask DisposeAsyncCore()
 		{
 			if (_disposed)
 			{
@@ -151,12 +166,71 @@ namespace sdk_client.Services
 
 			if (_hubConnection != null)
 			{
-				_hubConnection.StopAsync().GetAwaiter().GetResult();
-				_hubConnection.DisposeAsync().GetAwaiter().GetResult();
+				try
+				{
+					if (_hubConnection.State == HubConnectionState.Connected)
+					{
+						await _hubConnection.StopAsync().ConfigureAwait(false);
+						OnConnectionStateChanged("Disconnected");
+					}
+				}
+				catch
+				{
+					// Ignore exceptions during disposal
+				}
+
+				await _hubConnection.DisposeAsync().ConfigureAwait(false);
 				_hubConnection = null;
 			}
 
 			_disposed = true;
+		}
+
+		/// <summary>
+		/// Synchronously disposes the SignalR connection.
+		/// Note: This is a fallback method. Use DisposeAsync() for proper async disposal.
+		/// </summary>
+		public void Dispose()
+		{
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
+		}
+
+		/// <summary>
+		/// Protected disposal method for synchronous cleanup.
+		/// </summary>
+		/// <param name="disposing">True if called from Dispose(), false if called from DisposeAsync()</param>
+		protected virtual void Dispose(bool disposing)
+		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			if (disposing)
+			{
+				// Synchronous disposal fallback - not ideal but necessary for IDisposable compatibility
+				if (_hubConnection != null)
+				{
+					try
+					{
+						if (_hubConnection.State == HubConnectionState.Connected)
+						{
+							_hubConnection.StopAsync().GetAwaiter().GetResult();
+							OnConnectionStateChanged("Disconnected");
+						}
+
+						_hubConnection.DisposeAsync().GetAwaiter().GetResult();
+						_hubConnection = null;
+					}
+					catch
+					{
+						// Ignore exceptions during disposal
+					}
+				}
+
+				_disposed = true;
+			}
 		}
 	}
 }

@@ -13,6 +13,21 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<AvaloniaXaml Remove="node_modules\**" />
+		<Compile Remove="node_modules\**" />
+		<EmbeddedResource Remove="node_modules\**" />
+		<None Remove="node_modules\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove=".gitignore" />
+		<None Remove=".markdownlint-cli2.mjs" />
+		<None Remove="biome.json" />
+		<None Remove="package.json" />
+		<None Remove="prettier.config.cjs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Avalonia" Version="11.3.9" />
 		<PackageReference Include="Avalonia.Desktop" Version="11.3.9" />
 		<PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.9" />
