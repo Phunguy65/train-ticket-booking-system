@@ -268,7 +268,9 @@ public class BookingRepository : IBookingRepository
 	/// </summary>
 	public async Task<List<BookingDetail>> GetBookingDetailsAsync(List<int> bookingIds, int userId)
 	{
-		using var connection = _context.CreateConnection();
+		var connection = _unitOfWork.Transaction != null
+			? _unitOfWork.Connection
+			: _context.CreateConnection();
 		var sql = @"
 			SELECT
 				b.BookingId,
@@ -288,7 +290,7 @@ public class BookingRepository : IBookingRepository
 			ORDER BY s.SeatNumber ASC";
 
 		var details = await connection.QueryAsync<BookingDetail>(sql,
-			new { BookingIds = bookingIds, UserId = userId });
+			new { BookingIds = bookingIds, UserId = userId }, _unitOfWork.Transaction);
 		return details.ToList();
 	}
 }
