@@ -88,7 +88,29 @@ namespace sdk_client.Services
 		public async Task<object?> GetBookingHistoryAsync()
 		{
 			var response = await _apiClient.SendRequestAsync("Booking.GetBookingHistory").ConfigureAwait(false);
-			return ConvertBookingTimesToLocal(response.Data);
+			return ConvertBookingHistoryTimesToLocal(response.Data);
+		}
+
+		/// <summary>
+		/// Retrieves paginated booking history for the current authenticated user.
+		/// DateTime values in the response are converted from UTC to local time.
+		/// Requires an active session token for authentication.
+		/// </summary>
+		/// <param name="pageNumber">Page number (1-based)</param>
+		/// <param name="pageSize">Number of items per page (1-100)</param>
+		/// <returns>Paginated list of user's bookings with local time</returns>
+		public async Task<object?> GetBookingHistoryAsync(int? pageNumber, int? pageSize)
+		{
+			object? requestData = null;
+
+			if (pageNumber.HasValue && pageSize.HasValue)
+			{
+				requestData = new { PageNumber = pageNumber.Value, PageSize = pageSize.Value };
+			}
+
+			var response = await _apiClient.SendRequestAsync("Booking.GetBookingHistory", requestData)
+				.ConfigureAwait(false);
+			return ConvertBookingHistoryTimesToLocal(response.Data);
 		}
 
 		/// <summary>
@@ -189,6 +211,64 @@ namespace sdk_client.Services
 				if (holdExpiresAt.HasValue)
 				{
 					bookingObject["HoldExpiresAt"] = holdExpiresAt.Value.ToLocalTimeSafe();
+				}
+			}
+		}
+
+		/// <summary>
+		/// Converts booking history DateTime fields from UTC to local time.
+		/// Handles BookingHistoryDTO objects with DepartureTime, BookingDate, and CancelledAt.
+		/// </summary>
+		/// <param name="data">Booking history data from server response</param>
+		/// <returns>Booking history data with DateTime fields converted to local time</returns>
+		private object? ConvertBookingHistoryTimesToLocal(object? data)
+		{
+			if (data == null) return null;
+
+			var jToken = data as JToken;
+			if (jToken == null) return data;
+
+			if (jToken is JArray jArray)
+			{
+				foreach (var item in jArray)
+				{
+					ConvertBookingHistoryJObjectTimesToLocal(item as JObject);
+				}
+			}
+			else if (jToken is JObject jObject)
+			{
+				ConvertBookingHistoryJObjectTimesToLocal(jObject);
+			}
+
+			return data;
+		}
+
+		/// <summary>
+		/// Converts DateTime fields in a single booking history JObject from UTC to local time.
+		/// </summary>
+		/// <param name="historyObject">Booking history JObject</param>
+		private void ConvertBookingHistoryJObjectTimesToLocal(JObject? historyObject)
+		{
+			if (historyObject == null) return;
+
+			if (historyObject["DepartureTime"] != null)
+			{
+				var departureTime = historyObject["DepartureTime"]!.Value<DateTime>();
+				historyObject["DepartureTime"] = departureTime.ToLocalTimeSafe();
+			}
+
+			if (historyObject["BookingDate"] != null)
+			{
+				var bookingDate = historyObject["BookingDate"]!.Value<DateTime>();
+				historyObject["BookingDate"] = bookingDate.ToLocalTimeSafe();
+			}
+
+			if (historyObject["CancelledAt"] != null)
+			{
+				var cancelledAt = historyObject["CancelledAt"]!.Value<DateTime?>();
+				if (cancelledAt.HasValue)
+				{
+					historyObject["CancelledAt"] = cancelledAt.Value.ToLocalTimeSafe();
 				}
 			}
 		}

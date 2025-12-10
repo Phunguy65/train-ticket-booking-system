@@ -1,8 +1,14 @@
 using client.Forms.Authentication; // Sử dụng lại RoundedButton & ModernTextBox
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using client.Services;
+using Newtonsoft.Json;
+using sdk_client.Protocol;
 
 namespace client.Forms.Profile
 {
@@ -30,6 +36,18 @@ namespace client.Forms.Profile
 
 		// Cấu hình cột: [Mã vé, Tàu, Ngày đi, Trạng thái, Giá tiền]
 		private readonly int[] _colWidths = [200, 350, 250, 250, 200];
+
+		// Pagination state variables
+		private int _currentPage = 1;
+		private int _totalPages = 1;
+		private int _totalCount = 0;
+		private const int _pageSize = 10; // 10 items per page
+
+		// Pagination UI controls
+		private Panel _pnlPagination;
+		private Label _lblPageInfo;
+		private RoundedButton _btnPrevious, _btnNext;
+		private FlowLayoutPanel _flowList;
 
 		public Profile()
 		{
@@ -135,17 +153,18 @@ namespace client.Forms.Profile
 		}
 
 		// =========================================================
-		// 3. TAB LỊCH SỬ (ĐÃ SỬA LỖI CHỒNG LẤP)
+		// 3. TAB LỊCH SỬ - LOAD REAL DATA WITH PAGINATION
 		// =========================================================
-		private void LoadHistoryContent()
+		private async void LoadHistoryContent()
 		{
+			// Reset pagination state
+			_currentPage = 1;
+
+			// Clear content panel
+			_pnlContent.Controls.Clear();
+
 			// 1. Tạo Header Bảng
-			Panel pnlTableHeader = new Panel
-			{
-				Dock = DockStyle.Top,
-				Height = 50,
-				BackColor = _clrBackground // Đổi màu nền trùng background để che chắn tốt hơn
-			};
+			Panel pnlTableHeader = new Panel { Dock = DockStyle.Top, Height = 50, BackColor = _clrBackground };
 
 			string[] headers = ["MÃ VÉ", "THÔNG TIN TÀU", "NGÀY ĐI", "TRẠNG THÁI", "TỔNG TIỀN"];
 			int curX = 20;
@@ -166,40 +185,282 @@ namespace client.Forms.Profile
 			}
 
 			// 2. Container danh sách
-			FlowLayoutPanel flowList = new FlowLayoutPanel
+			_flowList = new FlowLayoutPanel
 			{
 				Dock = DockStyle.Fill,
 				FlowDirection = FlowDirection.TopDown,
 				WrapContents = false,
 				AutoScroll = true,
-				Padding = new Padding(0, 10, 0, 0), // Khoảng cách nhỏ giữa header và item đầu tiên
+				Padding = new Padding(0, 10, 0, 0),
 				BackColor = Color.Transparent
 			};
 
-			// --- [QUAN TRỌNG: SỬA LẠI THỨ TỰ ADD CONTROL] ---
+			// 3. Create pagination panel
+			_pnlPagination = CreatePaginationPanel();
 
-			// Bước 1: Add Header vào trước
+			// 4. Add controls in correct dock order
+			_pnlContent.Controls.Add(_flowList);
+			_pnlContent.Controls.Add(_pnlPagination);
 			_pnlContent.Controls.Add(pnlTableHeader);
 
-			// Bước 2: Add List vào sau
-			_pnlContent.Controls.Add(flowList);
+			// Ensure proper docking
+			pnlTableHeader.Dock = DockStyle.Top;
+			_flowList.Dock = DockStyle.Fill;
+			_pnlPagination.Dock = DockStyle.Bottom;
 
-			// Bước 3: Đảo ngược quyền ưu tiên Docking
-			// SendToBack() -> Đẩy xuống đáy danh sách quản lý -> Được ưu tiên xếp Layout ĐẦU TIÊN
-			// Giúp Header chiếm chỗ phần Top trước, sau đó List mới điền vào phần còn lại (Fill)
-			pnlTableHeader.SendToBack();
-			flowList.BringToFront();
+			// 5. Load first page
+			await LoadBookingHistoryPageAsync(_currentPage);
+		}
 
-			// 3. Thêm dữ liệu mẫu (Giữ nguyên)
-			AddHistoryItem(flowList, "#VE12345", "Tàu SE1 - Toa 5 (Ghế 12A)", "15/08/2024", "Đã hoàn tất", _clrSuccess,
-				"450,000đ");
-			AddHistoryItem(flowList, "#VE67890", "Tàu TN2 - Toa 3 (Ghế 05B)", "22/09/2024", "Sắp tới", _clrWarning,
-				"500,000đ");
-			AddHistoryItem(flowList, "#VE13579", "Tàu SE7 - Toa 1 (Ghế 01C)", "01/07/2024", "Đã hủy", _clrError,
-				"380,000đ");
-			AddHistoryItem(flowList, "#VE99999", "Tàu HN1 - Toa VIP", "30/12/2024", "Sắp tới", _clrWarning,
-				"1,200,000đ");
-			AddHistoryItem(flowList, "#VE88888", "Tàu SE3 - Toa 2", "10/01/2025", "Sắp tới", _clrWarning, "600,000đ");
+		private async Task LoadBookingHistoryPageAsync(int pageNumber)
+		{
+			try
+			{
+				// Show loading indicator
+				_flowList.Controls.Clear();
+				Label lblLoading = new Label
+				{
+					Text = "⏳ Đang tải lịch sử đặt vé...",
+					Font = new Font("Segoe UI", 12, FontStyle.Regular),
+					ForeColor = _clrTextGray,
+					AutoSize = true,
+					Location = new Point(20, 20)
+				};
+				_flowList.Controls.Add(lblLoading);
+
+				// Get API client from session manager
+				var apiClient = SessionManager.Instance.ApiClient;
+				if (apiClient == null)
+				{
+					ShowErrorMessage(_flowList, "Không thể kết nối đến máy chủ. Vui lòng đăng nhập lại.");
+					return;
+				}
+
+				// Create booking service and fetch paginated history
+				var bookingService = new sdk_client.Services.BookingService(apiClient);
+				var response = await bookingService.GetBookingHistoryAsync(pageNumber, _pageSize);
+
+				// Remove loading indicator
+				_flowList.Controls.Remove(lblLoading);
+
+				// Parse response
+				if (response == null)
+				{
+					ShowEmptyState(_flowList);
+					return;
+				}
+
+				// Deserialize to PagedResult
+				var jsonString = JsonConvert.SerializeObject(response);
+				var pagedResult = JsonConvert.DeserializeObject<PagedResult<BookingHistoryDTO>>(jsonString);
+
+				if (pagedResult == null || !pagedResult.Items.Any())
+				{
+					ShowEmptyState(_flowList);
+					return;
+				}
+
+				// Update pagination state
+				_currentPage = pagedResult.PageNumber;
+				_totalPages = pagedResult.TotalPages;
+				_totalCount = pagedResult.TotalCount;
+
+				// Render booking history items
+				foreach (var booking in pagedResult.Items)
+				{
+					AddHistoryItemFromData(_flowList, booking);
+				}
+
+				// Update pagination controls
+				UpdatePaginationControls();
+			}
+			catch (Exception ex)
+			{
+				ShowErrorMessage(_flowList, $"Lỗi khi tải lịch sử: {ex.Message}");
+			}
+		}
+
+		private Panel CreatePaginationPanel()
+		{
+			Panel pnlPagination = new Panel
+			{
+				Height = 80,
+				Dock = DockStyle.Bottom,
+				BackColor = Color.Transparent,
+				Padding = new Padding(50, 20, 50, 20)
+			};
+
+			// Previous button
+			_btnPrevious = new RoundedButton
+			{
+				Text = "← Trang trước",
+				Size = new Size(150, 40),
+				Location = new Point(50, 20),
+				BackColor = _clrItemBg,
+				ForeColor = _clrText,
+				Font = new Font("Segoe UI", 10, FontStyle.Regular),
+				Cursor = Cursors.Hand,
+				FlatStyle = FlatStyle.Flat,
+				Enabled = false
+			};
+			_btnPrevious.FlatAppearance.BorderSize = 0;
+			_btnPrevious.Click += async (_, _) => await OnPreviousPage();
+
+			// Page info label
+			_lblPageInfo = new Label
+			{
+				Text = "Trang 1/1 (0 vé)",
+				Font = new Font("Segoe UI", 11, FontStyle.Regular),
+				ForeColor = _clrTextGray,
+				AutoSize = true,
+				Location = new Point(220, 30),
+				TextAlign = ContentAlignment.MiddleCenter
+			};
+
+			// Next button
+			_btnNext = new RoundedButton
+			{
+				Text = "Trang sau →",
+				Size = new Size(150, 40),
+				Location = new Point(450, 20),
+				BackColor = _clrTabActive,
+				ForeColor = Color.White,
+				Font = new Font("Segoe UI", 10, FontStyle.Regular),
+				Cursor = Cursors.Hand,
+				FlatStyle = FlatStyle.Flat,
+				Enabled = false
+			};
+			_btnNext.FlatAppearance.BorderSize = 0;
+			_btnNext.Click += async (_, _) => await OnNextPage();
+
+			pnlPagination.Controls.Add(_btnPrevious);
+			pnlPagination.Controls.Add(_lblPageInfo);
+			pnlPagination.Controls.Add(_btnNext);
+
+			return pnlPagination;
+		}
+
+		private async Task OnPreviousPage()
+		{
+			if (_currentPage <= 1) return;
+			await LoadBookingHistoryPageAsync(_currentPage - 1);
+		}
+
+		private async Task OnNextPage()
+		{
+			if (_currentPage >= _totalPages) return;
+			await LoadBookingHistoryPageAsync(_currentPage + 1);
+		}
+
+		private void UpdatePaginationControls()
+		{
+			if (_lblPageInfo == null || _btnPrevious == null || _btnNext == null) return;
+
+			_lblPageInfo.Text = $"Trang {_currentPage}/{_totalPages} ({_totalCount} vé)";
+			_btnPrevious.Enabled = _currentPage > 1;
+			_btnNext.Enabled = _currentPage < _totalPages;
+
+			// Visual feedback for disabled buttons
+			_btnPrevious.BackColor = _btnPrevious.Enabled ? _clrItemBg : Color.FromArgb(20, 30, 45);
+			_btnNext.BackColor = _btnNext.Enabled ? _clrTabActive : Color.FromArgb(20, 50, 100);
+		}
+
+		private async Task LoadBookingHistoryDataAsync(FlowLayoutPanel flowList)
+		{
+			try
+			{
+				// Show loading indicator
+				Label lblLoading = new Label
+				{
+					Text = "⏳ Đang tải lịch sử đặt vé...",
+					Font = new Font("Segoe UI", 12, FontStyle.Regular),
+					ForeColor = _clrTextGray,
+					AutoSize = true,
+					Location = new Point(20, 20)
+				};
+				flowList.Controls.Add(lblLoading);
+
+				// Get API client from session manager
+				var apiClient = SessionManager.Instance.ApiClient;
+				if (apiClient == null)
+				{
+					ShowErrorMessage(flowList, "Không thể kết nối đến máy chủ. Vui lòng đăng nhập lại.");
+					return;
+				}
+
+				// Create booking service and fetch history
+				var bookingService = new sdk_client.Services.BookingService(apiClient);
+				var response = await bookingService.GetBookingHistoryAsync();
+
+				// Remove loading indicator
+				flowList.Controls.Remove(lblLoading);
+
+				// Parse response
+				if (response == null)
+				{
+					ShowEmptyState(flowList);
+					return;
+				}
+
+				var bookingHistory = ParseBookingHistory(response);
+
+				if (bookingHistory == null || bookingHistory.Count == 0)
+				{
+					ShowEmptyState(flowList);
+					return;
+				}
+
+				// Render booking history items
+				foreach (var booking in bookingHistory)
+				{
+					AddHistoryItemFromData(flowList, booking);
+				}
+			}
+			catch (Exception ex)
+			{
+				ShowErrorMessage(flowList, $"Lỗi khi tải lịch sử: {ex.Message}");
+			}
+		}
+
+		private List<BookingHistoryDTO>? ParseBookingHistory(object response)
+		{
+			try
+			{
+				var jsonString = JsonConvert.SerializeObject(response);
+				return JsonConvert.DeserializeObject<List<BookingHistoryDTO>>(jsonString);
+			}
+			catch
+			{
+				return null;
+			}
+		}
+
+		private void ShowEmptyState(FlowLayoutPanel flowList)
+		{
+			flowList.Controls.Clear();
+			Label lblEmpty = new Label
+			{
+				Text = "📋 Bạn chưa có lịch sử đặt vé nào",
+				Font = new Font("Segoe UI", 14, FontStyle.Regular),
+				ForeColor = _clrTextGray,
+				AutoSize = true,
+				Location = new Point(20, 20)
+			};
+			flowList.Controls.Add(lblEmpty);
+		}
+
+		private void ShowErrorMessage(FlowLayoutPanel flowList, string message)
+		{
+			flowList.Controls.Clear();
+			Label lblError = new Label
+			{
+				Text = $"❌ {message}",
+				Font = new Font("Segoe UI", 12, FontStyle.Regular),
+				ForeColor = _clrError,
+				AutoSize = true,
+				Location = new Point(20, 20)
+			};
+			flowList.Controls.Add(lblError);
 		}
 
 		private void AddHistoryItem(FlowLayoutPanel parent, string code, string train, string date, string status,
@@ -242,6 +503,48 @@ namespace client.Forms.Profile
 			pnlItem.Controls.Add(CreateLabel(price, 12, FontStyle.Bold, _clrText, curX, 23));
 
 			parent.Controls.Add(pnlItem);
+		}
+
+		private void AddHistoryItemFromData(FlowLayoutPanel parent, BookingHistoryDTO booking)
+		{
+			// Format booking code
+			string code = $"#VE{booking.BookingId:00000}";
+
+			// Format train info: Train Name - Station to Station (Seats)
+			string seatText = string.Join(", ", booking.SeatNumbers);
+			string train = $"{booking.TrainName} - {booking.DepartureStation} → {booking.ArrivalStation} ({seatText})";
+
+			// Format date
+			string date = booking.DepartureTime.ToString("dd/MM/yyyy HH:mm");
+
+			// Determine status and color based on booking status
+			string status;
+			Color statusColor;
+			switch (booking.BookingStatus)
+			{
+				case "Confirmed":
+					status = "Đã xác nhận";
+					statusColor = _clrSuccess;
+					break;
+				case "Pending":
+					status = "Chờ xác nhận";
+					statusColor = _clrWarning;
+					break;
+				case "Cancelled":
+					status = "Đã hủy";
+					statusColor = _clrError;
+					break;
+				default:
+					status = booking.BookingStatus;
+					statusColor = _clrTextGray;
+					break;
+			}
+
+			// Format price
+			string price = $"{booking.TotalAmount:N0}đ";
+
+			// Use existing AddHistoryItem method to render
+			AddHistoryItem(parent, code, train, date, status, statusColor, price);
 		}
 
 		// =========================================================

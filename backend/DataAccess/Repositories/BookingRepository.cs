@@ -375,15 +375,17 @@ public class BookingRepository : IBookingRepository
 		// Get paginated booking IDs first (to handle grouping properly)
 		var offset = (pageNumber - 1) * pageSize;
 		var bookingIdsSql = @"
-            SELECT DISTINCT b.BookingId
+            SELECT DISTINCT b.BookingId, b.BookingDate
             FROM Booking b
             WHERE b.UserId = @UserId
             ORDER BY b.BookingDate DESC
             OFFSET @Offset ROWS
             FETCH NEXT @PageSize ROWS ONLY";
 
-		var bookingIds = (await connection.QueryAsync<int>(bookingIdsSql,
-			new { UserId = userId, Offset = offset, PageSize = pageSize })).ToList();
+		var bookingIds = (await connection.QueryAsync<dynamic>(bookingIdsSql,
+				new { UserId = userId, Offset = offset, PageSize = pageSize }))
+			.Select(x => (int)x.BookingId)
+			.ToList();
 
 		if (!bookingIds.Any())
 		{

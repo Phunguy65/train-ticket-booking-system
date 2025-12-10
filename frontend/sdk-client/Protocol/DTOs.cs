@@ -279,4 +279,26 @@ namespace sdk_client.Protocol
 		public DateTime? CancelledAt { get; set; }
 		public DateTime? HoldExpiresAt { get; set; }
 	}
+
+	/// <summary>
+	/// Represents enriched booking history information with complete train and seat details.
+	/// Used for displaying booking history in client applications.
+	/// All DateTime properties are in local timezone (converted by BookingService).
+	/// </summary>
+	public class BookingHistoryDTO
+	{
+		public int BookingId { get; set; }
+		public int TrainId { get; set; }
+		public string TrainNumber { get; set; } = string.Empty;
+		public string TrainName { get; set; } = string.Empty;
+		public string DepartureStation { get; set; } = string.Empty;
+		public string ArrivalStation { get; set; } = string.Empty;
+		public DateTime DepartureTime { get; set; }
+		public List<string> SeatNumbers { get; set; } = new List<string>();
+		public DateTime BookingDate { get; set; }
+		public string BookingStatus { get; set; } = string.Empty;
+		public string PaymentStatus { get; set; } = string.Empty;
+		public decimal TotalAmount { get; set; }
+		public DateTime? CancelledAt { get; set; }
+	}
 }
