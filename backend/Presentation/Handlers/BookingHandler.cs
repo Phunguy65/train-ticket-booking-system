@@ -299,7 +299,28 @@ public class BookingHandler
 			return new Response { Success = false, ErrorMessage = "No bookings selected." };
 		}
 
+		// Get booking details for SignalR notification
+		var bookings = new List<(int TrainId, int SeatId)>();
+		foreach (var bookingId in request.BookingIds)
+		{
+			var booking = await _bookingService.GetBookingByIdAsync(bookingId);
+			if (booking != null && booking.UserId == session.UserId && booking.BookingStatus == "Pending")
+			{
+				bookings.Add((booking.TrainId, booking.SeatId));
+			}
+		}
+
 		var result = await _bookingService.ConfirmHeldSeatsAsync(session.UserId, request.BookingIds);
+
+		if (result.Success && bookings.Count > 0)
+		{
+			// Group by train and notify
+			var groupedByTrain = bookings.GroupBy(b => b.TrainId);
+			foreach (var group in groupedByTrain)
+			{
+				await NotifySeatBookedAsync(group.Key, group.Select(b => b.SeatId).ToList());
+			}
+		}
 
 		return new Response
 		{
