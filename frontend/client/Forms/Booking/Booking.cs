@@ -887,9 +887,6 @@ namespace client.Forms.Booking
 		{
 			try
 			{
-				var seatList = _lblSelectedList.Text;
-				var totalPrice = _lblTotalPrice.Text;
-
 				var response = await _bookingService.ConfirmHeldSeatsAsync(_heldBookingIds);
 
 				if (!response.Success)
@@ -916,9 +913,39 @@ namespace client.Forms.Booking
 				}
 
 				_countdownTimer?.Stop();
+				_heldBookingIds.Clear();
+				_isCleaningUp = true;
+
+				// Parse booking details from server response
+				string seatList = "";
+				string totalPrice = "0 VNĐ";
+				string trainNumber = _train.TrainNumber;
+
+				if (response.Data != null)
+				{
+					try
+					{
+						// Deserialize the response data to ConfirmBookingResponse
+						var jsonData = JsonConvert.SerializeObject(response.Data);
+						var bookingDetails = JsonConvert.DeserializeObject<ConfirmBookingResponse>(jsonData);
+
+						if (bookingDetails != null)
+						{
+							seatList = string.Join(", ", bookingDetails.SeatNumbers);
+							totalPrice = $"{bookingDetails.TotalAmount:N0} VNĐ";
+							trainNumber = bookingDetails.TrainNumber;
+						}
+					}
+					catch
+					{
+						// Fallback to empty values if parsing fails
+						seatList = "N/A";
+						totalPrice = "N/A";
+					}
+				}
 
 				MessageBox.Show(
-					$"Đặt vé thành công cho tàu {_train.TrainNumber}!\n" +
+					$"Đặt vé thành công cho tàu {trainNumber}!\n" +
 					$"Ghế: {seatList}\n" +
 					$"Tổng tiền: {totalPrice}",
 					"Thành công",

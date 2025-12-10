@@ -23,4 +23,13 @@ public interface IBookingRepository
 	Task<bool> ReleaseHeldBookingsAsync(List<int> bookingIds, int userId);
 	Task<List<Booking>> GetExpiredHoldsAsync();
 	Task<List<Booking>> GetUserActiveHoldsAsync(int userId);
+
+	/// <summary>
+	/// Gets detailed booking information including seat numbers and train details.
+	/// Joins Booking, Seat, and Train tables to retrieve complete booking information.
+	/// </summary>
+	/// <param name="bookingIds">List of booking IDs to retrieve</param>
+	/// <param name="userId">User ID to verify ownership</param>
+	/// <returns>List of booking details with seat and train information</returns>
+	Task<List<BookingDetail>> GetBookingDetailsAsync(List<int> bookingIds, int userId);
 }

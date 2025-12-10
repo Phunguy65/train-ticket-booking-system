@@ -305,7 +305,7 @@ public class BookingHandler
 		{
 			Success = result.Success,
 			ErrorMessage = result.Success ? null : result.Message,
-			Data = result.Success ? new { result.Message } : null
+			Data = result.Success ? result.Data : null
 		};
 	}
 

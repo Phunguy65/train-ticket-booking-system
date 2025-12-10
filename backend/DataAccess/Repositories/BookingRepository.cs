@@ -260,4 +260,35 @@ public class BookingRepository : IBookingRepository
 		var bookings = await connection.QueryAsync<Booking>(sql, new { UserId = userId });
 		return bookings.ToList();
 	}
+
+	/// <summary>
+	/// Gets detailed booking information with seat and train data.
+	/// Performs JOIN across Booking, Seat, and Train tables to retrieve complete information.
+	/// Validates that bookings belong to the specified user.
+	/// </summary>
+	public async Task<List<BookingDetail>> GetBookingDetailsAsync(List<int> bookingIds, int userId)
+	{
+		using var connection = _context.CreateConnection();
+		var sql = @"
+			SELECT
+				b.BookingId,
+				b.SeatId,
+				s.SeatNumber,
+				b.TotalAmount,
+				b.TrainId,
+				t.TrainNumber,
+				t.TrainName,
+				t.DepartureStation,
+				t.ArrivalStation
+			FROM Booking b
+			INNER JOIN Seat s ON b.SeatId = s.SeatId
+			INNER JOIN Train t ON b.TrainId = t.TrainId
+			WHERE b.BookingId IN @BookingIds
+			  AND b.UserId = @UserId
+			ORDER BY s.SeatNumber ASC";
+
+		var details = await connection.QueryAsync<BookingDetail>(sql,
+			new { BookingIds = bookingIds, UserId = userId });
+		return details.ToList();
+	}
 }

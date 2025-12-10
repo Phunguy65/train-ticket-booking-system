@@ -1,4 +1,5 @@
 using backend.Business.Models;
+using backend.Presentation.Protocol;
 
 namespace backend.Business.Services;
 
@@ -23,7 +24,15 @@ public interface IBookingService
 	Task<(bool Success, string Message, List<int> BookingIds, DateTime ExpiresAt)> HoldSeatsAsync(int userId,
 		int trainId, List<int> seatIds);
 
-	Task<(bool Success, string Message)> ConfirmHeldSeatsAsync(int userId, List<int> bookingIds);
+	/// <summary>
+	/// Confirms held seats and returns detailed booking information.
+	/// </summary>
+	/// <param name="userId">User ID who owns the bookings</param>
+	/// <param name="bookingIds">List of booking IDs to confirm</param>
+	/// <returns>Success status, message, and booking details if successful</returns>
+	Task<(bool Success, string Message, ConfirmBookingResponse? Data)> ConfirmHeldSeatsAsync(int userId,
+		List<int> bookingIds);
+
 	Task<(bool Success, string Message)> ReleaseHeldSeatsAsync(int userId, List<int> bookingIds);
 	Task<(int ReleasedCount, Dictionary<int, List<int>> ReleasedSeatsByTrain)> CleanupExpiredHoldsAsync();
 }

@@ -1,6 +1,7 @@
 using backend.Business.Models;
 using backend.DataAccess.Repositories;
 using backend.DataAccess.UnitOfWork;
+using backend.Presentation.Protocol;
 
 namespace backend.Business.Services;
 
@@ -357,12 +358,14 @@ public class BookingService : IBookingService
 	/// Confirms held seats by updating booking status to Confirmed and payment status to Paid.
 	/// Validates that bookings belong to the user, are in Pending status, and have not expired.
 	/// Clears HoldExpiresAt timestamp to make booking permanent.
+	/// Returns detailed booking information including seat numbers and train details.
 	/// </summary>
-	public async Task<(bool Success, string Message)> ConfirmHeldSeatsAsync(int userId, List<int> bookingIds)
+	public async Task<(bool Success, string Message, ConfirmBookingResponse? Data)> ConfirmHeldSeatsAsync(
+		int userId, List<int> bookingIds)
 	{
 		if (bookingIds.Count == 0)
 		{
-			return (false, "No bookings selected.");
+			return (false, "No bookings selected.", null);
 		}
 
 		try
@@ -376,19 +379,19 @@ public class BookingService : IBookingService
 				if (booking == null)
 				{
 					_unitOfWork.Rollback();
-					return (false, $"Booking {bookingId} not found.");
+					return (false, $"Booking {bookingId} not found.", null);
 				}
 
 				if (booking.UserId != userId)
 				{
 					_unitOfWork.Rollback();
-					return (false, $"Booking {bookingId} does not belong to you.");
+					return (false, $"Booking {bookingId} does not belong to you.", null);
 				}
 
 				if (booking.BookingStatus != "Pending")
 				{
 					_unitOfWork.Rollback();
-					return (false, $"Booking {bookingId} is not in Pending status.");
+					return (false, $"Booking {bookingId} is not in Pending status.", null);
 				}
 
 				// Check if hold has expired (with grace period)
@@ -399,7 +402,7 @@ public class BookingService : IBookingService
 					if (DateTime.UtcNow > graceDeadline)
 					{
 						_unitOfWork.Rollback();
-						return (false, $"Hold has expired for booking {bookingId}.");
+						return (false, $"Hold has expired for booking {bookingId}.", null);
 					}
 				}
 			}
@@ -409,20 +412,42 @@ public class BookingService : IBookingService
 			if (!confirmed)
 			{
 				_unitOfWork.Rollback();
-				return (false, "Failed to confirm bookings. Some bookings may have expired or been modified.");
+				return (false, "Failed to confirm bookings. Some bookings may have expired or been modified.", null);
+			}
+
+			// Get detailed booking information after confirmation
+			List<BookingDetail> bookingDetails = await _bookingRepository.GetBookingDetailsAsync(bookingIds, userId);
+
+			if (bookingDetails.Count == 0)
+			{
+				_unitOfWork.Rollback();
+				return (false, "Failed to retrieve booking details after confirmation.", null);
 			}
 
 			_unitOfWork.Commit();
 
-			await _auditService.LogAsync(userId, "ConfirmHeldSeats", "Booking", null,
-				$"Confirmed {bookingIds.Count} held seats");
+			// Build response with aggregated booking details
+			ConfirmBookingResponse response = new ConfirmBookingResponse
+			{
+				SeatNumbers = bookingDetails.Select(d => d.SeatNumber).OrderBy(s => s).ToList(),
+				TotalAmount = bookingDetails.Sum(d => d.TotalAmount),
+				TrainNumber = bookingDetails.First().TrainNumber,
+				TrainName = bookingDetails.First().TrainName,
+				DepartureStation = bookingDetails.First().DepartureStation,
+				ArrivalStation = bookingDetails.First().ArrivalStation,
+				BookingCount = bookingDetails.Count,
+				BookingIds = bookingDetails.Select(d => d.BookingId).ToList()
+			};
 
-			return (true, $"Successfully confirmed {bookingIds.Count} bookings.");
+			await _auditService.LogAsync(userId, "ConfirmHeldSeats", "Booking", null,
+				$"Confirmed {bookingIds.Count} held seats: {string.Join(", ", response.SeatNumbers)}");
+
+			return (true, $"Successfully confirmed {bookingIds.Count} bookings.", response);
 		}
 		catch (Exception ex)
 		{
 			_unitOfWork.Rollback();
-			return (false, $"Failed to confirm held seats: {ex.Message}");
+			return (false, $"Failed to confirm held seats: {ex.Message}", null);
 		}
 	}
 

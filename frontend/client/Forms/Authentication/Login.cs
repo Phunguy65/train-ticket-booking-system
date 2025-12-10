@@ -4,12 +4,12 @@ using sdk_client;
 using sdk_client.Exceptions;
 using sdk_client.Services;
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Resources;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.ComponentModel;
 
 namespace client.Forms.Authentication
 {

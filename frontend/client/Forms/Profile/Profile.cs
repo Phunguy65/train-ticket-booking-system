@@ -18,18 +18,18 @@ namespace client.Forms.Profile
 		private readonly Color _clrTextGray = Color.FromArgb(148, 163, 184);
 		private readonly Color _clrItemBg = Color.FromArgb(30, 41, 59);
 
-		private readonly Color ClrSuccess = Color.FromArgb(34, 197, 94);
-		private readonly Color ClrWarning = Color.FromArgb(249, 115, 22);
-		private readonly Color ClrError = Color.FromArgb(239, 68, 68);
+		private readonly Color _clrSuccess = Color.FromArgb(34, 197, 94);
+		private readonly Color _clrWarning = Color.FromArgb(249, 115, 22);
+		private readonly Color _clrError = Color.FromArgb(239, 68, 68);
 
 		// Các biến UI Control
-		private Panel pnlContent;
-		private Label btnTabHistory, btnTabProfile;
-		private Panel lineActiveTab;
-		private bool isMaximized = false;
+		private Panel _pnlContent;
+		private Label _btnTabHistory, _btnTabProfile;
+		private Panel _lineActiveTab;
+		private bool _isMaximized;
 
 		// Cấu hình cột: [Mã vé, Tàu, Ngày đi, Trạng thái, Giá tiền]
-		private readonly int[] colWidths = { 200, 350, 250, 250, 200 };
+		private readonly int[] _colWidths = [200, 350, 250, 250, 200];
 
 		public Profile()
 		{
@@ -88,25 +88,25 @@ namespace client.Forms.Profile
 
 			// TABS
 			Panel pnlTabs = new Panel { Dock = DockStyle.Top, Height = 50, Padding = new Padding(50, 0, 50, 0) };
-			btnTabHistory = CreateTabButton("Lịch sử đặt vé", 50);
-			btnTabHistory.Click += (_, _) => SwitchTab("HISTORY");
-			pnlTabs.Controls.Add(btnTabHistory);
+			_btnTabHistory = CreateTabButton("Lịch sử đặt vé", 50);
+			_btnTabHistory.Click += (_, _) => SwitchTab("HISTORY");
+			pnlTabs.Controls.Add(_btnTabHistory);
 
-			btnTabProfile = CreateTabButton("Hồ sơ cá nhân", 250);
-			btnTabProfile.Click += (_, _) => SwitchTab("PROFILE");
-			pnlTabs.Controls.Add(btnTabProfile);
+			_btnTabProfile = CreateTabButton("Hồ sơ cá nhân", 250);
+			_btnTabProfile.Click += (_, _) => SwitchTab("PROFILE");
+			pnlTabs.Controls.Add(_btnTabProfile);
 
-			lineActiveTab = new Panel
+			_lineActiveTab = new Panel
 			{
 				Height = 4, BackColor = _clrTabActive, Location = new Point(50, 46), Size = new Size(100, 4)
 			};
-			pnlTabs.Controls.Add(lineActiveTab);
+			pnlTabs.Controls.Add(_lineActiveTab);
 
 			// CONTENT
-			pnlContent = new Panel { Dock = DockStyle.Fill, Padding = new Padding(50, 20, 50, 30) };
+			_pnlContent = new Panel { Dock = DockStyle.Fill, Padding = new Padding(50, 20, 50, 30) };
 
 			// Thứ tự Add quan trọng cho Dock: Content trước -> Tabs -> Title -> Header
-			this.Controls.Add(pnlContent);
+			this.Controls.Add(_pnlContent);
 			this.Controls.Add(pnlTabs);
 			this.Controls.Add(pnlPageTitle);
 			this.Controls.Add(pnlHeader);
@@ -114,22 +114,22 @@ namespace client.Forms.Profile
 
 		private void SwitchTab(string tabName)
 		{
-			pnlContent.Controls.Clear();
+			_pnlContent.Controls.Clear();
 
 			if (tabName == "HISTORY")
 			{
-				btnTabHistory.ForeColor = _clrText;
-				btnTabProfile.ForeColor = _clrTextGray;
-				lineActiveTab.Location = btnTabHistory.Location with { Y = 46 };
-				lineActiveTab.Width = btnTabHistory.Width;
+				_btnTabHistory.ForeColor = _clrText;
+				_btnTabProfile.ForeColor = _clrTextGray;
+				_lineActiveTab.Location = _btnTabHistory.Location with { Y = 46 };
+				_lineActiveTab.Width = _btnTabHistory.Width;
 				LoadHistoryContent();
 			}
 			else
 			{
-				btnTabHistory.ForeColor = _clrTextGray;
-				btnTabProfile.ForeColor = _clrText;
-				lineActiveTab.Location = btnTabProfile.Location with { Y = 46 };
-				lineActiveTab.Width = btnTabProfile.Width;
+				_btnTabHistory.ForeColor = _clrTextGray;
+				_btnTabProfile.ForeColor = _clrText;
+				_lineActiveTab.Location = _btnTabProfile.Location with { Y = 46 };
+				_lineActiveTab.Width = _btnTabProfile.Width;
 				LoadProfileContent();
 			}
 		}
@@ -157,12 +157,12 @@ namespace client.Forms.Profile
 					ForeColor = _clrTextGray,
 					Font = new Font("Segoe UI", 10, FontStyle.Bold),
 					AutoSize = false,
-					Size = new Size(colWidths[i], 40),
+					Size = new Size(_colWidths[i], 40),
 					Location = new Point(curX, 10),
 					TextAlign = ContentAlignment.MiddleLeft
 				};
 				pnlTableHeader.Controls.Add(lblH);
-				curX += colWidths[i];
+				curX += _colWidths[i];
 			}
 
 			// 2. Container danh sách
@@ -179,10 +179,10 @@ namespace client.Forms.Profile
 			// --- [QUAN TRỌNG: SỬA LẠI THỨ TỰ ADD CONTROL] ---
 
 			// Bước 1: Add Header vào trước
-			pnlContent.Controls.Add(pnlTableHeader);
+			_pnlContent.Controls.Add(pnlTableHeader);
 
 			// Bước 2: Add List vào sau
-			pnlContent.Controls.Add(flowList);
+			_pnlContent.Controls.Add(flowList);
 
 			// Bước 3: Đảo ngược quyền ưu tiên Docking
 			// SendToBack() -> Đẩy xuống đáy danh sách quản lý -> Được ưu tiên xếp Layout ĐẦU TIÊN
@@ -191,15 +191,15 @@ namespace client.Forms.Profile
 			flowList.BringToFront();
 
 			// 3. Thêm dữ liệu mẫu (Giữ nguyên)
-			AddHistoryItem(flowList, "#VE12345", "Tàu SE1 - Toa 5 (Ghế 12A)", "15/08/2024", "Đã hoàn tất", ClrSuccess,
+			AddHistoryItem(flowList, "#VE12345", "Tàu SE1 - Toa 5 (Ghế 12A)", "15/08/2024", "Đã hoàn tất", _clrSuccess,
 				"450,000đ");
-			AddHistoryItem(flowList, "#VE67890", "Tàu TN2 - Toa 3 (Ghế 05B)", "22/09/2024", "Sắp tới", ClrWarning,
+			AddHistoryItem(flowList, "#VE67890", "Tàu TN2 - Toa 3 (Ghế 05B)", "22/09/2024", "Sắp tới", _clrWarning,
 				"500,000đ");
-			AddHistoryItem(flowList, "#VE13579", "Tàu SE7 - Toa 1 (Ghế 01C)", "01/07/2024", "Đã hủy", ClrError,
+			AddHistoryItem(flowList, "#VE13579", "Tàu SE7 - Toa 1 (Ghế 01C)", "01/07/2024", "Đã hủy", _clrError,
 				"380,000đ");
-			AddHistoryItem(flowList, "#VE99999", "Tàu HN1 - Toa VIP", "30/12/2024", "Sắp tới", ClrWarning,
+			AddHistoryItem(flowList, "#VE99999", "Tàu HN1 - Toa VIP", "30/12/2024", "Sắp tới", _clrWarning,
 				"1,200,000đ");
-			AddHistoryItem(flowList, "#VE88888", "Tàu SE3 - Toa 2", "10/01/2025", "Sắp tới", ClrWarning, "600,000đ");
+			AddHistoryItem(flowList, "#VE88888", "Tàu SE3 - Toa 2", "10/01/2025", "Sắp tới", _clrWarning, "600,000đ");
 		}
 
 		private void AddHistoryItem(FlowLayoutPanel parent, string code, string train, string date, string status,
@@ -224,11 +224,11 @@ namespace client.Forms.Profile
 
 			int curX = 20;
 			pnlItem.Controls.Add(CreateLabel(code, 11, FontStyle.Bold, _clrText, curX, 25));
-			curX += colWidths[0];
+			curX += _colWidths[0];
 			pnlItem.Controls.Add(CreateLabel(train, 11, FontStyle.Regular, _clrText, curX, 25));
-			curX += colWidths[1];
+			curX += _colWidths[1];
 			pnlItem.Controls.Add(CreateLabel(date, 11, FontStyle.Regular, _clrTextGray, curX, 25));
-			curX += colWidths[2];
+			curX += _colWidths[2];
 			Label lblStatus = new Label
 			{
 				Text = status,
@@ -238,7 +238,7 @@ namespace client.Forms.Profile
 				Location = new Point(curX, 25)
 			};
 			pnlItem.Controls.Add(lblStatus);
-			curX += colWidths[3];
+			curX += _colWidths[3];
 			pnlItem.Controls.Add(CreateLabel(price, 12, FontStyle.Bold, _clrText, curX, 23));
 
 			parent.Controls.Add(pnlItem);
@@ -325,7 +325,7 @@ namespace client.Forms.Profile
 			btnUpdate.Click += (_, _) => MessageBox.Show(@"Cập nhật thông tin thành công!", @"Hệ thống");
 			pnlProfile.Controls.Add(btnUpdate);
 
-			pnlContent.Controls.Add(pnlProfile);
+			_pnlContent.Controls.Add(pnlProfile);
 		}
 
 		// =========================================================
@@ -373,7 +373,7 @@ namespace client.Forms.Profile
 		{
 			int btnSize = 45;
 			int startX = parent.Width - (btnSize * 3) - 10;
-			Label btnClose = CreateWindowButton("✕", startX + (btnSize * 2), ClrError);
+			Label btnClose = CreateWindowButton("✕", startX + (btnSize * 2), _clrError);
 			btnClose.Click += (_, _) => this.Close();
 			btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			parent.Controls.Add(btnClose);
@@ -407,7 +407,7 @@ namespace client.Forms.Profile
 
 		private void ToggleMaximize()
 		{
-			if (isMaximized)
+			if (_isMaximized)
 			{
 				this.WindowState = FormWindowState.Normal;
 				this.Size = new Size(1500, 850);
@@ -415,7 +415,7 @@ namespace client.Forms.Profile
 			}
 			else { this.WindowState = FormWindowState.Maximized; }
 
-			isMaximized = !isMaximized;
+			_isMaximized = !_isMaximized;
 		}
 
 		private Label CreateTabButton(string text, int x)
