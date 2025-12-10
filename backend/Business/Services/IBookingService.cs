@@ -17,6 +17,18 @@ public interface IBookingService
 
 	Task<(bool Success, string Message)> CancelBookingAsync(int bookingId, int userId, bool isAdmin);
 	Task<IEnumerable<Booking>> GetBookingHistoryAsync(int userId);
+	Task<List<BookingHistory>> GetBookingHistoryDetailedAsync(int userId);
+
+	/// <summary>
+	/// Gets paginated detailed booking history for a user.
+	/// Returns enriched booking information with train and seat details.
+	/// </summary>
+	/// <param name="userId">User ID to retrieve bookings for</param>
+	/// <param name="pageNumber">Page number (1-based)</param>
+	/// <param name="pageSize">Number of items per page</param>
+	/// <returns>Paginated result containing booking history items and pagination metadata</returns>
+	Task<PagedResult<BookingHistory>> GetBookingHistoryDetailedAsync(int userId, int pageNumber, int pageSize);
+
 	Task<IEnumerable<Booking>> GetAllBookingsAsync();
 	Task<PagedResult<Booking>> GetAllBookingsAsync(int pageNumber, int pageSize);
 	Task<Booking?> GetBookingByIdAsync(int bookingId);

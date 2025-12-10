@@ -32,4 +32,23 @@ public interface IBookingRepository
 	/// <param name="userId">User ID to verify ownership</param>
 	/// <returns>List of booking details with seat and train information</returns>
 	Task<List<BookingDetail>> GetBookingDetailsAsync(List<int> bookingIds, int userId);
+
+	/// <summary>
+	/// Gets enriched booking history with complete train and seat information.
+	/// Joins Booking, Train, and Seat tables to retrieve full booking history.
+	/// </summary>
+	/// <param name="userId">User ID to retrieve bookings for</param>
+	/// <returns>List of booking history DTOs ordered by booking date (newest first)</returns>
+	Task<List<BookingHistory>> GetBookingHistoryAsync(int userId);
+
+	/// <summary>
+	/// Gets paginated enriched booking history with complete train and seat information.
+	/// Joins Booking, Train, and Seat tables to retrieve full booking history with pagination.
+	/// </summary>
+	/// <param name="userId">User ID to retrieve bookings for</param>
+	/// <param name="pageNumber">Page number (1-based)</param>
+	/// <param name="pageSize">Number of items per page</param>
+	/// <returns>Tuple containing paginated booking history items and total count</returns>
+	Task<(List<BookingHistory> Items, int TotalCount)> GetBookingHistoryAsync(int userId, int pageNumber,
+		int pageSize);
 }

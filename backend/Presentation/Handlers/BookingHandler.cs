@@ -188,7 +188,32 @@ public class BookingHandler
 			return new Response { Success = false, ErrorMessage = "Invalid or expired session." };
 		}
 
-		var bookings = await _bookingService.GetBookingHistoryAsync(session.UserId);
+		// Check for pagination parameters
+		var pageNumber = data["PageNumber"]?.Value<int>();
+		var pageSize = data["PageSize"]?.Value<int>();
+
+		if (pageNumber.HasValue && pageSize.HasValue)
+		{
+			// Validate pagination parameters
+			if (pageNumber.Value < 1 || pageSize.Value < 1 || pageSize.Value > 100)
+			{
+				return new Response
+				{
+					Success = false,
+					ErrorMessage =
+						"Invalid pagination parameters. PageNumber must be >= 1, PageSize must be between 1 and 100."
+				};
+			}
+
+			// Return paginated result
+			var pagedBookings =
+				await _bookingService.GetBookingHistoryDetailedAsync(session.UserId, pageNumber.Value,
+					pageSize.Value);
+			return new Response { Success = true, Data = pagedBookings };
+		}
+
+		// Fallback to non-paginated result for backward compatibility
+		var bookings = await _bookingService.GetBookingHistoryDetailedAsync(session.UserId);
 		return new Response { Success = true, Data = bookings };
 	}
 

@@ -239,6 +239,21 @@ public class BookingService : IBookingService
 		return await _bookingRepository.GetByUserIdAsync(userId);
 	}
 
+	public async Task<List<BookingHistory>> GetBookingHistoryDetailedAsync(int userId)
+	{
+		return await _bookingRepository.GetBookingHistoryAsync(userId);
+	}
+
+	public async Task<PagedResult<BookingHistory>> GetBookingHistoryDetailedAsync(int userId, int pageNumber,
+		int pageSize)
+	{
+		var (items, totalCount) = await _bookingRepository.GetBookingHistoryAsync(userId, pageNumber, pageSize);
+		return new PagedResult<BookingHistory>
+		{
+			Items = items, TotalCount = totalCount, PageNumber = pageNumber, PageSize = pageSize
+		};
+	}
+
 	public async Task<IEnumerable<Booking>> GetAllBookingsAsync()
 	{
 		return await _bookingRepository.GetAllAsync();

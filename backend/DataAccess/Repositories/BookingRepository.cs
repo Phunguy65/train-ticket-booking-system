@@ -293,4 +293,157 @@ public class BookingRepository : IBookingRepository
 			new { BookingIds = bookingIds, UserId = userId }, _unitOfWork.Transaction);
 		return details.ToList();
 	}
+
+	/// <summary>
+	/// Gets enriched booking history with complete train and seat information.
+	/// Performs JOIN across Booking, Train, and Seat tables to retrieve full booking history.
+	/// Returns all bookings for the user ordered by booking date (newest first).
+	/// </summary>
+	public async Task<List<BookingHistory>> GetBookingHistoryAsync(int userId)
+	{
+		using var connection = _context.CreateConnection();
+		var sql = @"
+			SELECT
+				b.BookingId,
+				b.TrainId,
+				t.TrainNumber,
+				t.TrainName,
+				t.DepartureStation,
+				t.ArrivalStation,
+				t.DepartureTime,
+				s.SeatNumber,
+				b.BookingDate,
+				b.BookingStatus,
+				b.PaymentStatus,
+				b.TotalAmount,
+				b.CancelledAt
+			FROM Booking b
+			INNER JOIN Train t ON b.TrainId = t.TrainId
+			INNER JOIN Seat s ON b.SeatId = s.SeatId
+			WHERE b.UserId = @UserId
+			ORDER BY b.BookingDate DESC";
+
+		var results = await connection.QueryAsync<dynamic>(sql, new { UserId = userId });
+
+		// Group by BookingId to handle potential multiple seats per booking
+		var grouped = results.GroupBy(r => (int)r.BookingId);
+
+		var bookingHistory = new List<BookingHistory>();
+		foreach (var group in grouped)
+		{
+			var first = group.First();
+			bookingHistory.Add(new BookingHistory
+			{
+				BookingId = first.BookingId,
+				TrainId = first.TrainId,
+				TrainNumber = first.TrainNumber,
+				TrainName = first.TrainName,
+				DepartureStation = first.DepartureStation,
+				ArrivalStation = first.ArrivalStation,
+				DepartureTime = first.DepartureTime,
+				SeatNumbers = group.Select(g => (string)g.SeatNumber).ToList(),
+				BookingDate = first.BookingDate,
+				BookingStatus = first.BookingStatus,
+				PaymentStatus = first.PaymentStatus,
+				TotalAmount = first.TotalAmount,
+				CancelledAt = first.CancelledAt
+			});
+		}
+
+		return bookingHistory;
+	}
+
+	/// <summary>
+	/// Gets paginated enriched booking history with complete train and seat information.
+	/// Performs JOIN across Booking, Train, and Seat tables to retrieve full booking history.
+	/// Uses OFFSET/FETCH NEXT for efficient server-side pagination.
+	/// Returns paginated bookings for the user ordered by booking date (newest first).
+	/// </summary>
+	public async Task<(List<BookingHistory> Items, int TotalCount)> GetBookingHistoryAsync(int userId, int pageNumber,
+		int pageSize)
+	{
+		using var connection = _context.CreateConnection();
+
+		// Count total distinct bookings for this user
+		var countSql = @"
+            SELECT COUNT(DISTINCT b.BookingId)
+            FROM Booking b
+            WHERE b.UserId = @UserId";
+
+		var totalCount = await connection.ExecuteScalarAsync<int>(countSql, new { UserId = userId });
+
+		// Get paginated booking IDs first (to handle grouping properly)
+		var offset = (pageNumber - 1) * pageSize;
+		var bookingIdsSql = @"
+            SELECT DISTINCT b.BookingId
+            FROM Booking b
+            WHERE b.UserId = @UserId
+            ORDER BY b.BookingDate DESC
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY";
+
+		var bookingIds = (await connection.QueryAsync<int>(bookingIdsSql,
+			new { UserId = userId, Offset = offset, PageSize = pageSize })).ToList();
+
+		if (!bookingIds.Any())
+		{
+			return (new List<BookingHistory>(), totalCount);
+		}
+
+		// Fetch full details for paginated booking IDs
+		var sql = @"
+            SELECT
+                b.BookingId,
+                b.TrainId,
+                t.TrainNumber,
+                t.TrainName,
+                t.DepartureStation,
+                t.ArrivalStation,
+                t.DepartureTime,
+                s.SeatNumber,
+                b.BookingDate,
+                b.BookingStatus,
+                b.PaymentStatus,
+                b.TotalAmount,
+                b.CancelledAt
+            FROM Booking b
+            INNER JOIN Train t ON b.TrainId = t.TrainId
+            INNER JOIN Seat s ON b.SeatId = s.SeatId
+            WHERE b.BookingId IN @BookingIds
+            ORDER BY b.BookingDate DESC";
+
+		var results = await connection.QueryAsync<dynamic>(sql, new { BookingIds = bookingIds });
+
+		// Group by BookingId to handle potential multiple seats per booking
+		var grouped = results.GroupBy(r => (int)r.BookingId);
+
+		var bookingHistory = new List<BookingHistory>();
+		foreach (var group in grouped)
+		{
+			var first = group.First();
+			bookingHistory.Add(new BookingHistory
+			{
+				BookingId = first.BookingId,
+				TrainId = first.TrainId,
+				TrainNumber = first.TrainNumber,
+				TrainName = first.TrainName,
+				DepartureStation = first.DepartureStation,
+				ArrivalStation = first.ArrivalStation,
+				DepartureTime = first.DepartureTime,
+				SeatNumbers = group.Select(g => (string)g.SeatNumber).ToList(),
+				BookingDate = first.BookingDate,
+				BookingStatus = first.BookingStatus,
+				PaymentStatus = first.PaymentStatus,
+				TotalAmount = first.TotalAmount,
+				CancelledAt = first.CancelledAt
+			});
+		}
+
+		// Ensure order is preserved from the paginated query
+		var orderedHistory = bookingHistory
+			.OrderByDescending(b => b.BookingDate)
+			.ToList();
+
+		return (orderedHistory, totalCount);
+	}
 }
