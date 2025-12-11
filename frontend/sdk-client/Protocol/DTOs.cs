@@ -53,6 +53,22 @@ namespace sdk_client.Protocol
 		public int Version { get; set; }
 	}
 
+	/// <summary>
+	/// Represents a user account with profile information.
+	/// Used for profile display and updates.
+	/// </summary>
+	public class User
+	{
+		public int UserId { get; set; }
+		public string Username { get; set; } = string.Empty;
+		public string FullName { get; set; } = string.Empty;
+		public string Email { get; set; } = string.Empty;
+		public string? PhoneNumber { get; set; }
+		public string Role { get; set; } = string.Empty;
+		public DateTime CreatedAt { get; set; }
+		public bool IsActive { get; set; }
+	}
+
 	public class RegisterRequest
 	{
 		public string Username { get; set; } = string.Empty;
@@ -285,7 +301,7 @@ namespace sdk_client.Protocol
 	/// Used for displaying booking history in client applications.
 	/// All DateTime properties are in local timezone (converted by BookingService).
 	/// </summary>
-	public class BookingHistoryDTO
+	public class BookingHistory
 	{
 		public int BookingId { get; set; }
 		public int TrainId { get; set; }

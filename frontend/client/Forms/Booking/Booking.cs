@@ -1,4 +1,4 @@
-using client.Forms.Authentication;
+using client.Components;
 using client.Services;
 using Newtonsoft.Json;
 using sdk_client.Protocol;

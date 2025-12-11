@@ -15,7 +15,7 @@ public class SessionManager
 
 	public SessionManager(IConfiguration configuration)
 	{
-		_sessionTimeoutMinutes = configuration.GetValue<int>("Security:SessionTimeout", 30);
+		_sessionTimeoutMinutes = configuration.GetValue("Security:SessionTimeout", 30);
 	}
 
 	public string CreateSession(int userId, string username, string role)

@@ -1,6 +1,5 @@
-using client.Forms.Authentication; // Sử dụng lại RoundedButton & ModernTextBox
+using client.Components; // Sử dụng lại RoundedButton & ModernTextBox
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
@@ -48,6 +47,14 @@ namespace client.Forms.Profile
 		private Label _lblPageInfo;
 		private RoundedButton _btnPrevious, _btnNext;
 		private FlowLayoutPanel _flowList;
+
+		// Profile form controls
+		private ModernTextBox _txtFullName;
+		private ModernTextBox _txtEmail;
+		private ModernTextBox _txtPhoneNumber;
+		private User _originalUserData;
+		private bool _isLoadingProfile;
+		private bool _isSavingProfile;
 
 		public Profile()
 		{
@@ -252,7 +259,7 @@ namespace client.Forms.Profile
 
 				// Deserialize to PagedResult
 				var jsonString = JsonConvert.SerializeObject(response);
-				var pagedResult = JsonConvert.DeserializeObject<PagedResult<BookingHistoryDTO>>(jsonString);
+				var pagedResult = JsonConvert.DeserializeObject<PagedResult<BookingHistory>>(jsonString);
 
 				if (pagedResult == null || !pagedResult.Items.Any())
 				{
@@ -354,8 +361,6 @@ namespace client.Forms.Profile
 
 		private void UpdatePaginationControls()
 		{
-			if (_lblPageInfo == null || _btnPrevious == null || _btnNext == null) return;
-
 			_lblPageInfo.Text = $"Trang {_currentPage}/{_totalPages} ({_totalCount} vé)";
 			_btnPrevious.Enabled = _currentPage > 1;
 			_btnNext.Enabled = _currentPage < _totalPages;
@@ -363,76 +368,6 @@ namespace client.Forms.Profile
 			// Visual feedback for disabled buttons
 			_btnPrevious.BackColor = _btnPrevious.Enabled ? _clrItemBg : Color.FromArgb(20, 30, 45);
 			_btnNext.BackColor = _btnNext.Enabled ? _clrTabActive : Color.FromArgb(20, 50, 100);
-		}
-
-		private async Task LoadBookingHistoryDataAsync(FlowLayoutPanel flowList)
-		{
-			try
-			{
-				// Show loading indicator
-				Label lblLoading = new Label
-				{
-					Text = "⏳ Đang tải lịch sử đặt vé...",
-					Font = new Font("Segoe UI", 12, FontStyle.Regular),
-					ForeColor = _clrTextGray,
-					AutoSize = true,
-					Location = new Point(20, 20)
-				};
-				flowList.Controls.Add(lblLoading);
-
-				// Get API client from session manager
-				var apiClient = SessionManager.Instance.ApiClient;
-				if (apiClient == null)
-				{
-					ShowErrorMessage(flowList, "Không thể kết nối đến máy chủ. Vui lòng đăng nhập lại.");
-					return;
-				}
-
-				// Create booking service and fetch history
-				var bookingService = new sdk_client.Services.BookingService(apiClient);
-				var response = await bookingService.GetBookingHistoryAsync();
-
-				// Remove loading indicator
-				flowList.Controls.Remove(lblLoading);
-
-				// Parse response
-				if (response == null)
-				{
-					ShowEmptyState(flowList);
-					return;
-				}
-
-				var bookingHistory = ParseBookingHistory(response);
-
-				if (bookingHistory == null || bookingHistory.Count == 0)
-				{
-					ShowEmptyState(flowList);
-					return;
-				}
-
-				// Render booking history items
-				foreach (var booking in bookingHistory)
-				{
-					AddHistoryItemFromData(flowList, booking);
-				}
-			}
-			catch (Exception ex)
-			{
-				ShowErrorMessage(flowList, $"Lỗi khi tải lịch sử: {ex.Message}");
-			}
-		}
-
-		private List<BookingHistoryDTO>? ParseBookingHistory(object response)
-		{
-			try
-			{
-				var jsonString = JsonConvert.SerializeObject(response);
-				return JsonConvert.DeserializeObject<List<BookingHistoryDTO>>(jsonString);
-			}
-			catch
-			{
-				return null;
-			}
 		}
 
 		private void ShowEmptyState(FlowLayoutPanel flowList)
@@ -505,7 +440,7 @@ namespace client.Forms.Profile
 			parent.Controls.Add(pnlItem);
 		}
 
-		private void AddHistoryItemFromData(FlowLayoutPanel parent, BookingHistoryDTO booking)
+		private void AddHistoryItemFromData(FlowLayoutPanel parent, BookingHistory booking)
 		{
 			// Format booking code
 			string code = $"#VE{booking.BookingId:00000}";
@@ -548,7 +483,7 @@ namespace client.Forms.Profile
 		}
 
 		// =========================================================
-		// 4. TAB HỒ SƠ (GIỮ NGUYÊN)
+		// 4. TAB HỒ SƠ (REFACTORED WITH DATA LOADING)
 		// =========================================================
 		private void LoadProfileContent()
 		{
@@ -577,7 +512,7 @@ namespace client.Forms.Profile
 			pnlProfile.Controls.Add(CreateLabel("Số điện thoại", 10, FontStyle.Regular, _clrTextGray, 420, yPos));
 			yPos += 30;
 
-			ModernTextBox txtName = new ModernTextBox
+			_txtFullName = new ModernTextBox
 			{
 				Location = new Point(0, yPos),
 				Size = new Size(380, 50),
@@ -586,8 +521,9 @@ namespace client.Forms.Profile
 				ForeColor = _clrText,
 				IconText = "👤"
 			};
-			pnlProfile.Controls.Add(txtName);
-			ModernTextBox txtPhone = new ModernTextBox
+			pnlProfile.Controls.Add(_txtFullName);
+
+			_txtPhoneNumber = new ModernTextBox
 			{
 				Location = new Point(420, yPos),
 				Size = new Size(380, 50),
@@ -596,12 +532,13 @@ namespace client.Forms.Profile
 				ForeColor = _clrText,
 				IconText = "📞"
 			};
-			pnlProfile.Controls.Add(txtPhone);
+			pnlProfile.Controls.Add(_txtPhoneNumber);
 			yPos += 70;
 
 			pnlProfile.Controls.Add(CreateLabel("Địa chỉ Email", 10, FontStyle.Regular, _clrTextGray, 0, yPos));
 			yPos += 30;
-			ModernTextBox txtEmail = new ModernTextBox
+
+			_txtEmail = new ModernTextBox
 			{
 				Location = new Point(0, yPos),
 				Size = new Size(800, 50),
@@ -610,7 +547,7 @@ namespace client.Forms.Profile
 				ForeColor = _clrText,
 				IconText = "📧"
 			};
-			pnlProfile.Controls.Add(txtEmail);
+			pnlProfile.Controls.Add(_txtEmail);
 			yPos += 90;
 
 			RoundedButton btnUpdate = new RoundedButton
@@ -625,10 +562,180 @@ namespace client.Forms.Profile
 				FlatStyle = FlatStyle.Flat
 			};
 			btnUpdate.FlatAppearance.BorderSize = 0;
-			btnUpdate.Click += (_, _) => MessageBox.Show(@"Cập nhật thông tin thành công!", @"Hệ thống");
+			btnUpdate.Click += async (_, _) => await HandleSaveProfileAsync();
 			pnlProfile.Controls.Add(btnUpdate);
 
 			_pnlContent.Controls.Add(pnlProfile);
+
+			// Load user data asynchronously
+			Task.Run(async () => await LoadUserDataAsync());
+		}
+
+		private async Task LoadUserDataAsync()
+		{
+			if (_isLoadingProfile) return;
+
+			_isLoadingProfile = true;
+
+			try
+			{
+				var apiClient = SessionManager.Instance.ApiClient;
+				if (apiClient == null)
+				{
+					this.Invoke((MethodInvoker)delegate
+					{
+						MessageBox.Show(@"Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", @"Lỗi",
+							MessageBoxButtons.OK, MessageBoxIcon.Error);
+					});
+					return;
+				}
+
+				var userService = new sdk_client.Services.UserService(apiClient);
+				var user = await userService.GetCurrentUserAsync();
+
+				if (user == null)
+				{
+					this.Invoke((MethodInvoker)delegate
+					{
+						MessageBox.Show(@"Không thể tải thông tin người dùng.", @"Lỗi",
+							MessageBoxButtons.OK, MessageBoxIcon.Error);
+					});
+					return;
+				}
+
+				// Store original user data for change detection
+				_originalUserData = user;
+
+				// Update UI controls with user data
+				this.Invoke((MethodInvoker)delegate
+				{
+					_txtFullName.SetText(user.FullName);
+					_txtEmail.SetText(user.Email);
+					_txtPhoneNumber.SetText(user.PhoneNumber ?? string.Empty);
+				});
+			}
+			catch (Exception ex)
+			{
+				this.Invoke((MethodInvoker)delegate
+				{
+					MessageBox.Show($@"Lỗi khi tải thông tin người dùng: {ex.Message}", @"Lỗi",
+						MessageBoxButtons.OK, MessageBoxIcon.Error);
+				});
+			}
+			finally
+			{
+				_isLoadingProfile = false;
+			}
+		}
+
+		private async Task HandleSaveProfileAsync()
+		{
+			if (_isSavingProfile) return;
+
+			// Validate input fields
+			string fullName = _txtFullName.GetText().Trim();
+			string email = _txtEmail.GetText().Trim();
+			string phoneNumber = _txtPhoneNumber.GetText().Trim();
+
+			// Validation: Full Name is required
+			if (string.IsNullOrEmpty(fullName))
+			{
+				MessageBox.Show(@"Họ và tên không được để trống.", @"Lỗi", MessageBoxButtons.OK,
+					MessageBoxIcon.Warning);
+				return;
+			}
+
+			// Validation: Email is required and must be valid format
+			if (string.IsNullOrEmpty(email))
+			{
+				MessageBox.Show(@"Địa chỉ email không được để trống.", @"Lỗi", MessageBoxButtons.OK,
+					MessageBoxIcon.Warning);
+				return;
+			}
+
+			if (!IsValidEmail(email))
+			{
+				MessageBox.Show(@"Địa chỉ email không hợp lệ.", @"Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				return;
+			}
+
+			// Phone number is optional, but if provided, validate format
+			if (!string.IsNullOrEmpty(phoneNumber) && !IsValidPhoneNumber(phoneNumber))
+			{
+				MessageBox.Show(
+					@"Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (ví dụ: 0909123456).", @"Lỗi",
+					MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				return;
+			}
+
+			// Check if any changes were made
+			bool hasChanges = fullName != _originalUserData.FullName ||
+			                  email != _originalUserData.Email ||
+			                  phoneNumber != (_originalUserData.PhoneNumber ?? string.Empty);
+
+			if (!hasChanges)
+			{
+				MessageBox.Show(@"Không có thay đổi nào để lưu.", @"Thông báo", MessageBoxButtons.OK,
+					MessageBoxIcon.Information);
+				return;
+			}
+
+			_isSavingProfile = true;
+
+			try
+			{
+				var apiClient = SessionManager.Instance.ApiClient;
+				if (apiClient == null)
+				{
+					MessageBox.Show(@"Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", @"Lỗi",
+						MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
+
+				var userService = new sdk_client.Services.UserService(apiClient);
+				await userService.UpdateUserProfileAsync(fullName, email,
+					string.IsNullOrEmpty(phoneNumber) ? null : phoneNumber);
+
+				// Update original data after successful save
+				_originalUserData = new User { FullName = fullName, Email = email, PhoneNumber = phoneNumber };
+
+				MessageBox.Show(@"Cập nhật thông tin thành công!", @"Thành công", MessageBoxButtons.OK,
+					MessageBoxIcon.Information);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($@"Lỗi khi cập nhật thông tin: {ex.Message}", @"Lỗi",
+					MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+			finally
+			{
+				_isSavingProfile = false;
+			}
+		}
+
+		private bool IsValidEmail(string email)
+		{
+			if (string.IsNullOrWhiteSpace(email))
+				return false;
+
+			try
+			{
+				var addr = new System.Net.Mail.MailAddress(email);
+				return addr.Address == email;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+
+		private bool IsValidPhoneNumber(string phoneNumber)
+		{
+			if (string.IsNullOrWhiteSpace(phoneNumber))
+				return true; // Optional field
+
+			// Vietnamese phone number validation: starts with 0 and has 10 digits
+			return System.Text.RegularExpressions.Regex.IsMatch(phoneNumber, @"^0\d{9}$");
 		}
 
 		// =========================================================
