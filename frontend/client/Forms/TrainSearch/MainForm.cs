@@ -91,350 +91,340 @@ namespace client.Forms.TrainSearch
 				Font = new Font("Segoe UI", 14, FontStyle.Bold),
 				ForeColor = _clrAccent,
 				AutoSize = true,
-				Location = new Point(20, 15)
+				Location = new Point(20, 15),
+				Anchor = AnchorStyles.Top | AnchorStyles.Left
 			};
 			pnlHeader.Controls.Add(lblLogo);
 			AddWindowControls(pnlHeader); // Nút điều khiển cửa sổ
 
-			// Display username from session
+			// Consolidated Account Button (Username + Profile Access)
 			var currentUser = SessionManager.Instance.CurrentUser;
 			if (currentUser != null)
 			{
-				Label lblUsername = new Label
+				Label lblAccount = new Label
 				{
-					Text = $"👤 {currentUser.Username}",
+					Text = $"👤 {currentUser.Username} ▼",
 					Font = new Font("Segoe UI", 10, FontStyle.Bold),
 					ForeColor = _clrAccent,
 					AutoSize = true,
+					Cursor = Cursors.Hand,
 					Anchor = AnchorStyles.Top | AnchorStyles.Right
 				};
-				lblUsername.Location = new Point(pnlHeader.Width - 280, 20);
-				pnlHeader.Controls.Add(lblUsername);
+				lblAccount.Location = new Point(pnlHeader.Width - 290, 20);
+				lblAccount.MouseEnter += (_, _) => lblAccount.ForeColor = Color.White;
+				lblAccount.MouseLeave += (_, _) => lblAccount.ForeColor = _clrAccent;
+				lblAccount.Click += (_, _) =>
+				{
+					this.Hide();
+					var profileForm = new client.Forms.Profile.Profile();
+					profileForm.ShowDialog();
+					this.Show();
+				};
+				pnlHeader.Controls.Add(lblAccount);
 			}
 
-			string[] menuItems = { "Đăng xuất", "Tài khoản" };
-			int menuX = pnlHeader.Width - 160;
-			foreach (var item in menuItems)
+			// Logout Button
+			Label lblLogout = new Label
 			{
-				Label lblMenu = new Label
+				Text = "Đăng xuất",
+				Font = new Font("Segoe UI", 10, FontStyle.Regular),
+				ForeColor = _clrTextGray,
+				AutoSize = true,
+				Cursor = Cursors.Hand,
+				Anchor = AnchorStyles.Top | AnchorStyles.Right
+			};
+			lblLogout.Location = new Point(pnlHeader.Width - 170, 20);
+			lblLogout.MouseEnter += (_, _) => lblLogout.ForeColor = _clrAccent;
+			lblLogout.MouseLeave += (_, _) => lblLogout.ForeColor = _clrTextGray;
+			lblLogout.Click += HandleLogout;
+			pnlHeader.Controls.Add(lblLogout);
+
+			// Add header to form (outside loop)
+			this.Controls.Add(pnlHeader);
+
+			// --- SIDEBAR ---
+			int sidebarW = 320;
+			Panel pnlSearch = new Panel
+			{
+				Size = new Size(sidebarW, 600),
+				Location = new Point(30, 80),
+				BackColor = Color.Transparent,
+				Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Bottom
+			};
+			pnlSearch.Paint += (_, e) =>
+			{
+				e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+				using GraphicsPath path = GetRoundedPath(
+					new Rectangle(0, 0, pnlSearch.Width, pnlSearch.Height - 20),
+					15);
+				using SolidBrush brush = new SolidBrush(_clrSidebar);
+				e.Graphics.FillPath(brush, path);
+			};
+			this.Controls.Add(pnlSearch);
+
+			int yPos = 30;
+			int xMargin = 25;
+			int inputW = sidebarW - (xMargin * 2);
+			pnlSearch.Controls.Add(CreateLabel("Tìm chuyến tàu", 14, FontStyle.Bold, _clrText, xMargin, yPos));
+			yPos += 40;
+
+			Label lblInstruction = new Label
+			{
+				Text = "Nhập thông tin để tìm kiếm hoặc để trống để xem tất cả",
+				Font = new Font("Segoe UI", 8, FontStyle.Italic),
+				ForeColor = _clrTextGray,
+				AutoSize = false,
+				Size = new Size(inputW, 30),
+				Location = new Point(xMargin, yPos),
+				TextAlign = ContentAlignment.TopLeft
+			};
+			pnlSearch.Controls.Add(lblInstruction);
+			yPos += 40;
+
+			pnlSearch.Controls.Add(CreateLabel("Ga đi (tùy chọn)", 10, FontStyle.Regular, _clrTextGray, xMargin,
+				yPos));
+			yPos += 30;
+			_txtDepStation = new ModernTextBox
+			{
+				Location = new Point(xMargin, yPos),
+				Size = new Size(inputW, 45),
+				PlaceholderText = "VD: Sài Gòn, Hà Nội...",
+				IconText = "🚉",
+				BackColor = _clrBackground,
+				ForeColor = _clrText
+			};
+			_txtDepStation.InputKeyDown += SearchField_KeyDown;
+			pnlSearch.Controls.Add(_txtDepStation);
+			yPos += 70;
+
+			pnlSearch.Controls.Add(CreateLabel("Ga đến (tùy chọn)", 10, FontStyle.Regular, _clrTextGray, xMargin,
+				yPos));
+			yPos += 30;
+			_txtArrStation = new ModernTextBox
+			{
+				Location = new Point(xMargin, yPos),
+				Size = new Size(inputW, 45),
+				PlaceholderText = "VD: Đà Nẵng, Nha Trang...",
+				IconText = "🏁",
+				BackColor = _clrBackground,
+				ForeColor = _clrText
+			};
+			_txtArrStation.InputKeyDown += SearchField_KeyDown;
+			pnlSearch.Controls.Add(_txtArrStation);
+			yPos += 70;
+
+			pnlSearch.Controls.Add(CreateLabel("Ngày đi (tùy chọn)", 10, FontStyle.Regular, _clrTextGray, xMargin,
+				yPos));
+			yPos += 30;
+			_txtDate = new ModernTextBox
+			{
+				Location = new Point(xMargin, yPos),
+				Size = new Size(inputW, 45),
+				PlaceholderText = "VD: 24/12/2025",
+				IconText = "📅",
+				BackColor = _clrBackground,
+				ForeColor = _clrText
+			};
+			_txtDate.InputKeyDown += SearchField_KeyDown;
+			pnlSearch.Controls.Add(_txtDate);
+			yPos += 80;
+
+			RoundedButton btnSearch = new RoundedButton
+			{
+				Text = "🔍 TÌM KIẾM",
+				Size = new Size(inputW, 50),
+				Location = new Point(xMargin, yPos),
+				BackColor = _clrAccent,
+				ForeColor = Color.White,
+				Font = new Font("Segoe UI", 11, FontStyle.Bold),
+				Cursor = Cursors.Hand,
+				FlatStyle = FlatStyle.Flat
+			};
+			btnSearch.FlatAppearance.BorderSize = 0;
+			btnSearch.Click += BtnSearch_Click;
+			pnlSearch.Controls.Add(btnSearch);
+			yPos += 60;
+
+			// Clear filters button
+			_btnClearFilters = new RoundedButton
+			{
+				Text = "🗑️ Xóa bộ lọc",
+				Size = new Size(inputW, 45),
+				Location = new Point(xMargin, yPos),
+				BackColor = Color.FromArgb(51, 65, 85),
+				ForeColor = _clrTextGray,
+				Font = new Font("Segoe UI", 10, FontStyle.Regular),
+				Cursor = Cursors.Hand,
+				FlatStyle = FlatStyle.Flat,
+				Visible = false
+			};
+			_btnClearFilters.FlatAppearance.BorderSize = 0;
+			_btnClearFilters.Click += BtnClearFilters_Click;
+			pnlSearch.Controls.Add(_btnClearFilters);
+			yPos += 55;
+
+			// Filter count label
+			_lblFilterCount = new Label
+			{
+				Text = "",
+				Font = new Font("Segoe UI", 9, FontStyle.Regular),
+				ForeColor = _clrTextGray,
+				AutoSize = true,
+				Location = new Point(xMargin, yPos),
+				Visible = false
+			};
+			pnlSearch.Controls.Add(_lblFilterCount);
+
+			// --- KẾT QUẢ TÌM KIẾM ---
+			int contentX = 370;
+			int contentW = this.Width - 400;
+			_lblResultTitle = new Label
+			{
+				Text = "Tất cả chuyến tàu",
+				Font = new Font("Segoe UI", 15, FontStyle.Bold),
+				ForeColor = _clrText,
+				AutoSize = true,
+				Location = new Point(contentX, 80)
+			};
+			this.Controls.Add(_lblResultTitle);
+
+			// Refresh button
+			_btnRefresh = new RoundedButton
+			{
+				Text = "🔄 Làm mới",
+				Size = new Size(130, 40),
+				Location = new Point(this.Width - 180, 75),
+				BackColor = _clrAccent,
+				ForeColor = Color.White,
+				Font = new Font("Segoe UI", 9, FontStyle.Bold),
+				Cursor = Cursors.Hand,
+				FlatStyle = FlatStyle.Flat,
+				Anchor = AnchorStyles.Top | AnchorStyles.Right
+			};
+			_btnRefresh.FlatAppearance.BorderSize = 0;
+			_btnRefresh.Click += BtnRefresh_Click;
+			this.Controls.Add(_btnRefresh);
+
+			Panel pnlTableHeader = new Panel
+			{
+				Size = new Size(contentW, 40),
+				Location = new Point(contentX, 130),
+				BackColor = Color.Transparent,
+				Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+			};
+			string[] headers =
+			[
+				"MÃ TÀU", "TÊN TÀU", "GA ĐI", "GA ĐẾN", "GIỜ ĐI", "GIỜ ĐẾN", "THỜI GIAN", "GIÁ VÉ",
+				"TRẠNG THÁI", ""
+			];
+			int[] colWidths = { 90, 140, 110, 110, 90, 90, 130, 130, 110, 130 };
+			int curX = 20;
+			for (int i = 0; i < headers.Length; i++)
+			{
+				Label lblH = new Label
 				{
-					Text = item,
-					Font = new Font("Segoe UI", 10, FontStyle.Regular),
+					Text = headers[i],
 					ForeColor = _clrTextGray,
-					AutoSize = true,
-					Cursor = Cursors.Hand,
-					Anchor = AnchorStyles.Top | AnchorStyles.Right
-				};
-				lblMenu.Location = new Point(menuX - 80, 20);
-				lblMenu.MouseEnter += (_, _) => lblMenu.ForeColor = _clrAccent;
-				lblMenu.MouseLeave += (_, _) => lblMenu.ForeColor = _clrTextGray;
-
-				if (item == "Đăng xuất")
-				{
-					lblMenu.Click += HandleLogout;
-				}
-				else if (item == "Tài khoản")
-				{
-					lblMenu.Click += (_, _) =>
-					{
-						this.Hide();
-						var profileForm = new client.Forms.Profile.Profile();
-						profileForm.ShowDialog();
-						// 3. Khi user đóng Profile, dòng này mới chạy -> Hiện lại form chính
-						this.Show();
-					};
-					// -------------------------
-
-					pnlHeader.Controls.Add(lblMenu);
-					menuX -= 100;
-				}
-
-				this.Controls.Add(pnlHeader);
-
-				// --- SIDEBAR ---
-				int sidebarW = 320;
-				Panel pnlSearch = new Panel
-				{
-					Size = new Size(sidebarW, 600),
-					Location = new Point(30, 80),
-					BackColor = Color.Transparent,
-					Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Bottom
-				};
-				pnlSearch.Paint += (_, e) =>
-				{
-					e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-					using GraphicsPath path = GetRoundedPath(
-						new Rectangle(0, 0, pnlSearch.Width, pnlSearch.Height - 20),
-						15);
-					using SolidBrush brush = new SolidBrush(_clrSidebar);
-					e.Graphics.FillPath(brush, path);
-				};
-				this.Controls.Add(pnlSearch);
-
-				int yPos = 30;
-				int xMargin = 25;
-				int inputW = sidebarW - (xMargin * 2);
-				pnlSearch.Controls.Add(CreateLabel("Tìm chuyến tàu", 14, FontStyle.Bold, _clrText, xMargin, yPos));
-				yPos += 40;
-
-				Label lblInstruction = new Label
-				{
-					Text = "Nhập thông tin để tìm kiếm hoặc để trống để xem tất cả",
-					Font = new Font("Segoe UI", 8, FontStyle.Italic),
-					ForeColor = _clrTextGray,
+					Font = new Font("Segoe UI", 9, FontStyle.Bold),
 					AutoSize = false,
-					Size = new Size(inputW, 30),
-					Location = new Point(xMargin, yPos),
-					TextAlign = ContentAlignment.TopLeft
+					Size = new Size(colWidths[i], 30),
+					Location = new Point(curX, 5),
+					TextAlign = ContentAlignment.MiddleLeft
 				};
-				pnlSearch.Controls.Add(lblInstruction);
-				yPos += 40;
-
-				pnlSearch.Controls.Add(CreateLabel("Ga đi (tùy chọn)", 10, FontStyle.Regular, _clrTextGray, xMargin,
-					yPos));
-				yPos += 30;
-				_txtDepStation = new ModernTextBox
-				{
-					Location = new Point(xMargin, yPos),
-					Size = new Size(inputW, 45),
-					PlaceholderText = "VD: Sài Gòn, Hà Nội...",
-					IconText = "🚉",
-					BackColor = _clrBackground,
-					ForeColor = _clrText
-				};
-				_txtDepStation.InputKeyDown += SearchField_KeyDown;
-				pnlSearch.Controls.Add(_txtDepStation);
-				yPos += 70;
-
-				pnlSearch.Controls.Add(CreateLabel("Ga đến (tùy chọn)", 10, FontStyle.Regular, _clrTextGray, xMargin,
-					yPos));
-				yPos += 30;
-				_txtArrStation = new ModernTextBox
-				{
-					Location = new Point(xMargin, yPos),
-					Size = new Size(inputW, 45),
-					PlaceholderText = "VD: Đà Nẵng, Nha Trang...",
-					IconText = "🏁",
-					BackColor = _clrBackground,
-					ForeColor = _clrText
-				};
-				_txtArrStation.InputKeyDown += SearchField_KeyDown;
-				pnlSearch.Controls.Add(_txtArrStation);
-				yPos += 70;
-
-				pnlSearch.Controls.Add(CreateLabel("Ngày đi (tùy chọn)", 10, FontStyle.Regular, _clrTextGray, xMargin,
-					yPos));
-				yPos += 30;
-				_txtDate = new ModernTextBox
-				{
-					Location = new Point(xMargin, yPos),
-					Size = new Size(inputW, 45),
-					PlaceholderText = "VD: 24/12/2025",
-					IconText = "📅",
-					BackColor = _clrBackground,
-					ForeColor = _clrText
-				};
-				_txtDate.InputKeyDown += SearchField_KeyDown;
-				pnlSearch.Controls.Add(_txtDate);
-				yPos += 80;
-
-				RoundedButton btnSearch = new RoundedButton
-				{
-					Text = "🔍 TÌM KIẾM",
-					Size = new Size(inputW, 50),
-					Location = new Point(xMargin, yPos),
-					BackColor = _clrAccent,
-					ForeColor = Color.White,
-					Font = new Font("Segoe UI", 11, FontStyle.Bold),
-					Cursor = Cursors.Hand,
-					FlatStyle = FlatStyle.Flat
-				};
-				btnSearch.FlatAppearance.BorderSize = 0;
-				btnSearch.Click += BtnSearch_Click;
-				pnlSearch.Controls.Add(btnSearch);
-				yPos += 60;
-
-				// Clear filters button
-				_btnClearFilters = new RoundedButton
-				{
-					Text = "🗑️ Xóa bộ lọc",
-					Size = new Size(inputW, 45),
-					Location = new Point(xMargin, yPos),
-					BackColor = Color.FromArgb(51, 65, 85),
-					ForeColor = _clrTextGray,
-					Font = new Font("Segoe UI", 10, FontStyle.Regular),
-					Cursor = Cursors.Hand,
-					FlatStyle = FlatStyle.Flat,
-					Visible = false
-				};
-				_btnClearFilters.FlatAppearance.BorderSize = 0;
-				_btnClearFilters.Click += BtnClearFilters_Click;
-				pnlSearch.Controls.Add(_btnClearFilters);
-				yPos += 55;
-
-				// Filter count label
-				_lblFilterCount = new Label
-				{
-					Text = "",
-					Font = new Font("Segoe UI", 9, FontStyle.Regular),
-					ForeColor = _clrTextGray,
-					AutoSize = true,
-					Location = new Point(xMargin, yPos),
-					Visible = false
-				};
-				pnlSearch.Controls.Add(_lblFilterCount);
-
-				// --- KẾT QUẢ TÌM KIẾM ---
-				int contentX = 370;
-				int contentW = this.Width - 400;
-				_lblResultTitle = new Label
-				{
-					Text = "Tất cả chuyến tàu",
-					Font = new Font("Segoe UI", 15, FontStyle.Bold),
-					ForeColor = _clrText,
-					AutoSize = true,
-					Location = new Point(contentX, 80)
-				};
-				this.Controls.Add(_lblResultTitle);
-
-				// Refresh button
-				_btnRefresh = new RoundedButton
-				{
-					Text = "🔄 Làm mới",
-					Size = new Size(130, 40),
-					Location = new Point(this.Width - 180, 75),
-					BackColor = _clrAccent,
-					ForeColor = Color.White,
-					Font = new Font("Segoe UI", 9, FontStyle.Bold),
-					Cursor = Cursors.Hand,
-					FlatStyle = FlatStyle.Flat,
-					Anchor = AnchorStyles.Top | AnchorStyles.Right
-				};
-				_btnRefresh.FlatAppearance.BorderSize = 0;
-				_btnRefresh.Click += BtnRefresh_Click;
-				this.Controls.Add(_btnRefresh);
-
-				Panel pnlTableHeader = new Panel
-				{
-					Size = new Size(contentW, 40),
-					Location = new Point(contentX, 130),
-					BackColor = Color.Transparent,
-					Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
-				};
-				string[] headers =
-				[
-					"MÃ TÀU", "TÊN TÀU", "GA ĐI", "GA ĐẾN", "GIỜ ĐI", "GIỜ ĐẾN", "THỜI GIAN", "GIÁ VÉ",
-					"TRẠNG THÁI", ""
-				];
-				int[] colWidths = { 90, 140, 110, 110, 90, 90, 130, 130, 110, 130 };
-				int curX = 20;
-				for (int i = 0; i < headers.Length; i++)
-				{
-					Label lblH = new Label
-					{
-						Text = headers[i],
-						ForeColor = _clrTextGray,
-						Font = new Font("Segoe UI", 9, FontStyle.Bold),
-						AutoSize = false,
-						Size = new Size(colWidths[i], 30),
-						Location = new Point(curX, 5),
-						TextAlign = ContentAlignment.MiddleLeft
-					};
-					pnlTableHeader.Controls.Add(lblH);
-					curX += colWidths[i];
-				}
-
-				this.Controls.Add(pnlTableHeader);
-
-				_flowResults = new FlowLayoutPanel
-				{
-					Location = new Point(contentX, 170),
-					Size = new Size(contentW + 50, this.Height - 280),
-					FlowDirection = FlowDirection.LeftToRight,
-					WrapContents = true,
-					AutoScroll = true,
-					BackColor = Color.Transparent,
-					Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
-				};
-				this.Controls.Add(_flowResults);
-
-				// --- PAGINATION CONTROLS ---
-				Panel pnlPagination = new Panel
-				{
-					Location = new Point(contentX, this.Height - 100),
-					Size = new Size(contentW, 60),
-					BackColor = Color.Transparent,
-					Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
-				};
-
-				_btnPrevious = new RoundedButton
-				{
-					Text = "◀ Trang trước",
-					Size = new Size(130, 40),
-					Location = new Point(0, 10),
-					BackColor = _clrAccent,
-					ForeColor = Color.White,
-					Font = new Font("Segoe UI", 9, FontStyle.Bold),
-					Cursor = Cursors.Hand,
-					FlatStyle = FlatStyle.Flat
-				};
-				_btnPrevious.FlatAppearance.BorderSize = 0;
-				_btnPrevious.Click += BtnPrevious_Click;
-				pnlPagination.Controls.Add(_btnPrevious);
-
-				_lblPageInfo = new Label
-				{
-					Text = "Trang 1 / 1",
-					Font = new Font("Segoe UI", 10, FontStyle.Regular),
-					ForeColor = _clrTextGray,
-					AutoSize = true,
-					Location = new Point(150, 20),
-					TextAlign = ContentAlignment.MiddleCenter
-				};
-				pnlPagination.Controls.Add(_lblPageInfo);
-
-				_btnNext = new RoundedButton
-				{
-					Text = "Trang sau ▶",
-					Size = new Size(130, 40),
-					Location = new Point(300, 10),
-					BackColor = _clrAccent,
-					ForeColor = Color.White,
-					Font = new Font("Segoe UI", 9, FontStyle.Bold),
-					Cursor = Cursors.Hand,
-					FlatStyle = FlatStyle.Flat
-				};
-				_btnNext.FlatAppearance.BorderSize = 0;
-				_btnNext.Click += BtnNext_Click;
-				pnlPagination.Controls.Add(_btnNext);
-
-				this.Controls.Add(pnlPagination);
-
-				// --- LOADING INDICATOR ---
-				_pnlLoading = new Panel
-				{
-					Location = new Point(contentX, 170),
-					Size = new Size(contentW + 50, this.Height - 280),
-					BackColor = Color.FromArgb(200, 15, 23, 42),
-					Visible = false,
-					Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
-				};
-
-				Label lblLoading = new Label
-				{
-					Text = "⏳ Đang tải dữ liệu...",
-					Font = new Font("Segoe UI", 14, FontStyle.Bold),
-					ForeColor = _clrText,
-					AutoSize = true
-				};
-				lblLoading.Location = new Point(
-					(_pnlLoading.Width - lblLoading.Width) / 2,
-					(_pnlLoading.Height - lblLoading.Height) / 2
-				);
-				_pnlLoading.Controls.Add(lblLoading);
-				this.Controls.Add(_pnlLoading);
-				//_pnlLoading.BringToFront();
+				pnlTableHeader.Controls.Add(lblH);
+				curX += colWidths[i];
 			}
+
+			this.Controls.Add(pnlTableHeader);
+
+			_flowResults = new FlowLayoutPanel
+			{
+				Location = new Point(contentX, 170),
+				Size = new Size(contentW + 50, this.Height - 280),
+				FlowDirection = FlowDirection.LeftToRight,
+				WrapContents = true,
+				AutoScroll = true,
+				BackColor = Color.Transparent,
+				Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
+			};
+			this.Controls.Add(_flowResults);
+
+			// --- PAGINATION CONTROLS ---
+			Panel pnlPagination = new Panel
+			{
+				Location = new Point(contentX, this.Height - 100),
+				Size = new Size(contentW, 60),
+				BackColor = Color.Transparent,
+				Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
+			};
+
+			_btnPrevious = new RoundedButton
+			{
+				Text = "◀ Trang trước",
+				Size = new Size(130, 40),
+				Location = new Point(0, 10),
+				BackColor = _clrAccent,
+				ForeColor = Color.White,
+				Font = new Font("Segoe UI", 9, FontStyle.Bold),
+				Cursor = Cursors.Hand,
+				FlatStyle = FlatStyle.Flat
+			};
+			_btnPrevious.FlatAppearance.BorderSize = 0;
+			_btnPrevious.Click += BtnPrevious_Click;
+			pnlPagination.Controls.Add(_btnPrevious);
+
+			_lblPageInfo = new Label
+			{
+				Text = "Trang 1 / 1",
+				Font = new Font("Segoe UI", 10, FontStyle.Regular),
+				ForeColor = _clrTextGray,
+				AutoSize = true,
+				Location = new Point(150, 20),
+				TextAlign = ContentAlignment.MiddleCenter
+			};
+			pnlPagination.Controls.Add(_lblPageInfo);
+
+			_btnNext = new RoundedButton
+			{
+				Text = "Trang sau ▶",
+				Size = new Size(130, 40),
+				Location = new Point(300, 10),
+				BackColor = _clrAccent,
+				ForeColor = Color.White,
+				Font = new Font("Segoe UI", 9, FontStyle.Bold),
+				Cursor = Cursors.Hand,
+				FlatStyle = FlatStyle.Flat
+			};
+			_btnNext.FlatAppearance.BorderSize = 0;
+			_btnNext.Click += BtnNext_Click;
+			pnlPagination.Controls.Add(_btnNext);
+
+			this.Controls.Add(pnlPagination);
+
+			// --- LOADING INDICATOR ---
+			_pnlLoading = new Panel
+			{
+				Location = new Point(contentX, 170),
+				Size = new Size(contentW + 50, this.Height - 280),
+				BackColor = Color.FromArgb(200, 15, 23, 42),
+				Visible = false,
+				Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
+			};
+
+			Label lblLoading = new Label
+			{
+				Text = "⏳ Đang tải dữ liệu...",
+				Font = new Font("Segoe UI", 14, FontStyle.Bold),
+				ForeColor = _clrText,
+				AutoSize = true
+			};
+			lblLoading.Location = new Point(
+				(_pnlLoading.Width - lblLoading.Width) / 2,
+				(_pnlLoading.Height - lblLoading.Height) / 2
+			);
+			_pnlLoading.Controls.Add(lblLoading);
+			this.Controls.Add(_pnlLoading);
+			//_pnlLoading.BringToFront();
 		}
 
 
