@@ -2,10 +2,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="admin.App"
              xmlns:local="using:admin"
-             xmlns:semi="https://irihi.tech/semi">
+             xmlns:semi="https://irihi.tech/semi"
+             xmlns:u-Semi="https://irihi.tech/ursa/themes/semi">
 
 	<Application.Styles>
-		<semi:SemiTheme/>
+		<semi:SemiTheme Locale="en-US"/>
+		<semi:SemiPopupAnimations/>
+		<u-Semi:SemiTheme Locale="en-US"/>
 		<StyleInclude Source="avares://Semi.Avalonia.DataGrid/Index.axaml"></StyleInclude>
 	</Application.Styles>
 

@@ -1,6 +1,6 @@
 using admin.ViewModels;
-using ReactiveUI.Avalonia;
 using ReactiveUI;
+using ReactiveUI.Avalonia;
 
 namespace admin.Views;
 

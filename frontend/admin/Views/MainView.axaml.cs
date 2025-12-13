@@ -1,10 +1,9 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+using admin.ViewModels;
+using ReactiveUI.Avalonia;
 
 namespace admin.Views
 {
-	public partial class MainView : UserControl
+	public partial class MainView : ReactiveUserControl<MainViewViewModel>
 	{
 		public MainView()
 		{

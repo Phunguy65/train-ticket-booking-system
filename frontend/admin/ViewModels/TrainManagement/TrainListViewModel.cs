@@ -15,14 +15,14 @@ public class TrainListViewModel : ViewModelBase, IRoutableViewModel
 	public TrainListViewModel(IScreen screen)
 	{
 		HostScreen = screen;
-		NavigateToTrainForm = ReactiveCommand.CreateFromObservable(
-			() => HostScreen.Router.Navigate.Execute(new TrainFormViewModel(HostScreen))
+		NavigateToTrainForm = ReactiveCommand.CreateFromObservable(() =>
+			HostScreen.Router.Navigate.Execute(new TrainFormViewModel(HostScreen))
 		);
-		NavigateToUserList = ReactiveCommand.CreateFromObservable(
-			() => HostScreen.Router.Navigate.Execute(new UserManagement.UserListViewModel(HostScreen))
+		NavigateToUserList = ReactiveCommand.CreateFromObservable(() =>
+			HostScreen.Router.Navigate.Execute(new UserManagement.UserListViewModel(HostScreen))
 		);
-		NavigateToAuditLog = ReactiveCommand.CreateFromObservable(
-			() => HostScreen.Router.Navigate.Execute(new AuditLogs.AuditLogViewModel(HostScreen))
+		NavigateToAuditLog = ReactiveCommand.CreateFromObservable(() =>
+			HostScreen.Router.Navigate.Execute(new AuditLogs.AuditLogViewModel(HostScreen))
 		);
 	}
 }

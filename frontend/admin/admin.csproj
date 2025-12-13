@@ -36,12 +36,20 @@
 			<IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
 			<PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
 		</PackageReference>
+		<PackageReference Include="Irihi.Ursa" Version="1.14.0" />
+		<PackageReference Include="Irihi.Ursa.Themes.Semi" Version="1.14.0" />
 		<PackageReference Include="Material.Icons.Avalonia" Version="2.4.1" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="ReactiveUI.Avalonia" Version="11.3.8" />
+		<PackageReference Include="ReactiveUI.Avalonia.Microsoft.Extensions.DependencyInjection" Version="11.3.8" />
 		<PackageReference Include="Semi.Avalonia" Version="11.3.7.1" />
 		<PackageReference Include="Semi.Avalonia.DataGrid" Version="11.3.7.1" />
+		<PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="17.1.1" />
 	</ItemGroup>
 
 	<ItemGroup>

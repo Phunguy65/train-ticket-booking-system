@@ -14,10 +14,7 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <rxui:RoutedViewHost Router="{Binding Router}" PageTransition="{x:Null}">
-        <rxui:RoutedViewHost.DefaultContent>
-            <TextBlock Text="Loading..." HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        </rxui:RoutedViewHost.DefaultContent>
-    </rxui:RoutedViewHost>
+    <rxui:RoutedViewHost Router="{Binding Router}"
+                         Name="RoutedViewHost"/>
 
 </Window>
