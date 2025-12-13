@@ -16,10 +16,10 @@
 			"path": "frontend/client",
 			"name": "client-ui"
 		},
-        {
-            "path": "frontend/sdk-client",
-            "name": "sdk-client"
-        },
+		{
+			"path": "frontend/sdk-client",
+			"name": "sdk-client"
+		},
 		{
 			"path": "database",
 			"name": "database"
@@ -32,11 +32,14 @@
 		"editor.indentSize": "tabSize",
 		"editor.detectIndentation": false,
 		"editor.formatOnSave": true,
-        "[scminput]": {
-            "editor.rulers": [72, 80],
-            "editor.wordWrap": "wordWrapColumn",
-            "editor.wordWrapColumn": 80
-        },
+		"[scminput]": {
+			"editor.rulers": [
+				72,
+				80
+			],
+			"editor.wordWrap": "wordWrapColumn",
+			"editor.wordWrapColumn": 80
+		},
 		"[csharp]": {
 			"editor.maxTokenizationLineLength": 2500,
 			"editor.formatOnPaste": true,
