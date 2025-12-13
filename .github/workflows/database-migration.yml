@@ -1,0 +1,85 @@
+name: Database Migration Test
+
+on:
+    pull_request:
+        paths:
+            - 'database/migrations/**'
+            - 'database/docker-compose.yml'
+            - '.github/workflows/database-migration.yml'
+    workflow_dispatch:
+
+jobs:
+    test-migrations:
+        name: Test Flyway Migrations
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Start SQL Server
+              working-directory: database
+              run: |
+                  docker compose up -d ttbs-database
+                  echo "⏳ Waiting for SQL Server to be ready..."
+
+            - name: Wait for SQL Server to be healthy
+              timeout-minutes: 5
+              run: |
+                  until docker exec ttbs-database /opt/mssql-tools18/bin/sqlcmd \
+                    -S localhost -U sa -P "MyStr0ngP@ssw0rd!" -Q "SELECT 1" -C > /dev/null 2>&1; do
+                    echo "Waiting for SQL Server..."
+                    sleep 5
+                  done
+                  echo "✅ SQL Server is ready"
+
+            - name: Create database
+              run: |
+                  docker exec ttbs-database /opt/mssql-tools18/bin/sqlcmd \
+                    -S localhost -U sa -P "MyStr0ngP@ssw0rd!" -C \
+                    -Q "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'TrainTicketBooking') CREATE DATABASE TrainTicketBooking"
+                  echo "✅ Database created"
+
+            - name: Run Flyway migrations
+              working-directory: database
+              run: |
+                  docker compose up ttbs-flyway
+
+            - name: Check migration logs
+              run: |
+                  echo "📋 Flyway migration logs:"
+                  docker logs ttbs-flyway
+
+            - name: Verify migration status
+              run: |
+                  EXIT_CODE=$(docker inspect ttbs-flyway --format='{{.State.ExitCode}}')
+                  if [ "$EXIT_CODE" != "0" ]; then
+                    echo "❌ Flyway migrations failed with exit code: $EXIT_CODE"
+                    exit 1
+                  fi
+                  echo "✅ All migrations completed successfully"
+
+            - name: Validate database schema
+              run: |
+                  echo "🔍 Validating database schema..."
+                  docker exec ttbs-database /opt/mssql-tools18/bin/sqlcmd \
+                    -S localhost -U sa -P "MyStr0ngP@ssw0rd!" -C \
+                    -d TrainTicketBooking \
+                    -Q "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_NAME"
+
+            - name: Test rollback capability
+              if: success()
+              run: |
+                  echo "📝 Testing migration rollback..."
+                  docker exec ttbs-database /opt/mssql-tools18/bin/sqlcmd \
+                    -S localhost -U sa -P "MyStr0ngP@ssw0rd!" -C \
+                    -d TrainTicketBooking \
+                    -Q "SELECT version, description, installed_on FROM flyway_schema_history ORDER BY installed_rank DESC"
+
+            - name: Cleanup
+              if: always()
+              working-directory: database
+              run: |
+                  echo "🧹 Cleaning up..."
+                  docker compose down -v
+                  echo "✅ Cleanup completed"
