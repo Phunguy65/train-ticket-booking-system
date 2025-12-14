@@ -19,12 +19,22 @@ export default {
 				"frontend/sdk-client/sdk-client.csproj",
 				"frontend/admin/admin.csproj"
 			];
-			const dotnetFormatCommands = subProjetcs.map(
-				(proj) =>
-					`dotnet format ${proj} style --include ${filteredFiles.join(" ")}`
+			const dotnetFormatCommands = subProjetcs.map((proj) => {
+				// Only include files that belong to the current project
+				const projectFiles = filteredFiles.filter((file) =>
+					file.includes(proj.replace(".csproj", ""))
+				);
+				if (projectFiles.length > 0) {
+					return `dotnet format ${proj} style --include ${projectFiles.join(" ")}`;
+				}
+				return null;
+			});
+
+			const filteredCommands = dotnetFormatCommands.filter(
+				(command) => command !== null
 			);
 
-			return [...dotnetFormatCommands, jbCommand];
+			return [...filteredCommands, jbCommand];
 		}
 		// On windows, format all files
 		return [
