@@ -1,5 +1,5 @@
-using client.Configuration;
 using client.Components;
+using client.Configuration;
 using client.Services;
 using sdk_client.Exceptions;
 using sdk_client.Services;
