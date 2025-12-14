@@ -10,11 +10,11 @@ using backend.Infrastructure.Services;
 using backend.Presentation;
 using backend.Presentation.Handlers;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Newtonsoft.Json for UTC timezone handling
 JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 {
 	DateTimeZoneHandling = DateTimeZoneHandling.Utc, DateFormatHandling = DateFormatHandling.IsoDateFormat
@@ -60,6 +60,7 @@ var signalRPort = builder.Configuration.GetValue("SignalR:Port", 5001);
 app.Urls.Add($"http://{signalRHost}:{signalRPort}");
 
 app.MapHub<BookingHub>("/bookingHub");
+app.MapGet("/health", () => Results.Ok("Healthy"));
 
 var enableSeeding = builder.Configuration.GetValue<bool>("Database:EnableSeeding");
 if (enableSeeding)

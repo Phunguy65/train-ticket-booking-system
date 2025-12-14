@@ -1,4 +1,5 @@
 using System;
+using System.Configuration;
 
 namespace client.Configuration
 {
@@ -16,7 +17,7 @@ namespace client.Configuration
 					return host;
 				}
 
-				host = Properties.Settings.Default.ApiHost;
+				host = ConfigurationManager.AppSettings["ApiHost"];
 				return string.IsNullOrWhiteSpace(host) ? DefaultHost : host;
 			}
 		}
@@ -31,9 +32,8 @@ namespace client.Configuration
 					return int.Parse(portEnv);
 				}
 
-				var portConfig = Properties.Settings.Default.ApiPort;
-
-				return portConfig;
+				var portConfig = ConfigurationManager.AppSettings["ApiPort"];
+				return int.Parse(portConfig ?? "5000");
 			}
 		}
 
@@ -47,9 +47,8 @@ namespace client.Configuration
 					return int.Parse(timeoutEnv);
 				}
 
-				var timeoutConfig = Properties.Settings.Default.ApiConnectionTimeout;
-
-				return timeoutConfig;
+				var timeoutConfig = ConfigurationManager.AppSettings["ApiConnectionTimeout"];
+				return int.Parse(timeoutConfig ?? "30");
 			}
 		}
 
@@ -63,38 +62,23 @@ namespace client.Configuration
 					return int.Parse(timeoutEnv);
 				}
 
-				var timeoutConfig = Properties.Settings.Default.ApiRequestTimeout;
-
-				return timeoutConfig;
+				var timeoutConfig = ConfigurationManager.AppSettings["ApiRequestTimeout"];
+				return int.Parse(timeoutConfig ?? "30");
 			}
 		}
 
-		public static string SignalRHost
+		public static string SignalRUrl
 		{
 			get
 			{
-				var host = Environment.GetEnvironmentVariable("SIGNALR_HOST");
-				if (!string.IsNullOrWhiteSpace(host))
+				var url = Environment.GetEnvironmentVariable("SIGNALR_URL");
+				if (!string.IsNullOrWhiteSpace(url))
 				{
-					return host;
+					return url;
 				}
 
-				host = Properties.Settings.Default.SignalRHost;
-				return string.IsNullOrWhiteSpace(host) ? DefaultHost : host;
-			}
-		}
-
-		public static int SignalRPort
-		{
-			get
-			{
-				var portEnv = Environment.GetEnvironmentVariable("SIGNALR_PORT");
-				if (!string.IsNullOrWhiteSpace(portEnv))
-				{
-					return int.Parse(portEnv);
-				}
-
-				return Properties.Settings.Default.SignalRPort;
+				url = ConfigurationManager.AppSettings["SignalRUrl"];
+				return string.IsNullOrWhiteSpace(url) ? "http://127.0.0.1:5001" : url;
 			}
 		}
 	}
