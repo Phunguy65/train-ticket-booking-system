@@ -4,17 +4,26 @@
         xmlns:rxui="http://reactiveui.net"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="admin.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Train Ticket Booking - Admin">
+        Title="Train Ticket Booking - Admin"
+        Width="1200" Height="800"
+        WindowStartupLocation="CenterScreen">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <rxui:RoutedViewHost Router="{Binding Router}"
-                         Name="RoutedViewHost"/>
+    <rxui:RoutedViewHost Router="{Binding Router}">
+        <rxui:RoutedViewHost.DefaultContent>
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="⏳ Đang tải..."
+                          FontSize="18"
+                          HorizontalAlignment="Center"/>
+            </StackPanel>
+        </rxui:RoutedViewHost.DefaultContent>
+    </rxui:RoutedViewHost>
 
 </Window>

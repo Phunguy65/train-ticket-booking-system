@@ -16,6 +16,10 @@
 		<Compile Remove="node_modules\**" />
 		<EmbeddedResource Remove="node_modules\**" />
 		<None Remove="node_modules\**" />
+		<Compile Update="Views\LoginView.axaml.cs">
+			<DependentUpon>LoginView.axaml</DependentUpon>
+			<SubType>Code</SubType>
+		</Compile>
 	</ItemGroup>
 
 	<ItemGroup>

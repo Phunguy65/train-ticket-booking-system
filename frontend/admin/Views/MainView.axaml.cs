@@ -1,4 +1,5 @@
 using admin.ViewModels;
+using ReactiveUI;
 using ReactiveUI.Avalonia;
 
 namespace admin.Views
@@ -8,6 +9,11 @@ namespace admin.Views
 		public MainView()
 		{
 			InitializeComponent();
+
+			this.WhenActivated(disposables =>
+			{
+				// View activation logic can be added here if needed
+			});
 		}
 	}
 }
