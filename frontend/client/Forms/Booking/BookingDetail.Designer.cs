@@ -1,6 +1,6 @@
-﻿namespace client.Forms.Authentication
+namespace client.Forms.Booking
 {
-    partial class Register
+    partial class BookingDetail
     {
         /// <summary>
         /// Required designer variable.
@@ -17,7 +17,6 @@
             {
                 components.Dispose();
             }
-
             base.Dispose(disposing);
         }
 
@@ -29,12 +28,19 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            this.SuspendLayout();
+            // 
+            // BookingDetail
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1500, 850);
-            this.Text = "Register";
+            this.ClientSize = new System.Drawing.Size(700, 700);
+            this.Name = "BookingDetail";
+            this.Text = "BookingDetail";
+            this.ResumeLayout(false);
         }
 
         #endregion
     }
 }
+
