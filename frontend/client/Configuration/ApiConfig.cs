@@ -1,4 +1,5 @@
 using System;
+using System.Configuration;
 
 namespace client.Configuration
 {
@@ -16,7 +17,7 @@ namespace client.Configuration
 					return host;
 				}
 
-				host = Properties.Settings.Default.ApiHost;
+				host = ConfigurationManager.AppSettings["ApiHost"];
 				return string.IsNullOrWhiteSpace(host) ? DefaultHost : host;
 			}
 		}
@@ -31,9 +32,8 @@ namespace client.Configuration
 					return int.Parse(portEnv);
 				}
 
-				var portConfig = Properties.Settings.Default.ApiPort;
-
-				return portConfig;
+				var portConfig = ConfigurationManager.AppSettings["ApiPort"];
+				return int.Parse(portConfig ?? "5000");
 			}
 		}
 
@@ -47,9 +47,8 @@ namespace client.Configuration
 					return int.Parse(timeoutEnv);
 				}
 
-				var timeoutConfig = Properties.Settings.Default.ApiConnectionTimeout;
-
-				return timeoutConfig;
+				var timeoutConfig = ConfigurationManager.AppSettings["ApiConnectionTimeout"];
+				return int.Parse(timeoutConfig ?? "30");
 			}
 		}
 
@@ -63,9 +62,8 @@ namespace client.Configuration
 					return int.Parse(timeoutEnv);
 				}
 
-				var timeoutConfig = Properties.Settings.Default.ApiRequestTimeout;
-
-				return timeoutConfig;
+				var timeoutConfig = ConfigurationManager.AppSettings["ApiRequestTimeout"];
+				return int.Parse(timeoutConfig ?? "30");
 			}
 		}
 
@@ -79,7 +77,7 @@ namespace client.Configuration
 					return host;
 				}
 
-				host = Properties.Settings.Default.SignalRHost;
+				host = ConfigurationManager.AppSettings["SignalRHost"];
 				return string.IsNullOrWhiteSpace(host) ? DefaultHost : host;
 			}
 		}
@@ -94,7 +92,8 @@ namespace client.Configuration
 					return int.Parse(portEnv);
 				}
 
-				return Properties.Settings.Default.SignalRPort;
+				var portConfig = ConfigurationManager.AppSettings["SignalRPort"];
+				return int.Parse(portConfig ?? "5001");
 			}
 		}
 	}
