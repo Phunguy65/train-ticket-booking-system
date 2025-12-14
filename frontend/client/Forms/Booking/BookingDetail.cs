@@ -131,8 +131,7 @@ namespace client.Forms.Booking
 
 			if (_booking.CancelledAt.HasValue)
 			{
-				yPos = AddInfoRow(pnlContent, "Ngày hủy:", _booking.CancelledAt.Value.ToString("dd/MM/yyyy HH:mm"),
-					yPos);
+				AddInfoRow(pnlContent, "Ngày hủy:", _booking.CancelledAt.Value.ToString("dd/MM/yyyy HH:mm"), yPos);
 			}
 
 			this.Controls.Add(pnlContent);
@@ -216,9 +215,9 @@ namespace client.Forms.Booking
 			yPos = AddCardRow(panel, "Tàu:", $"{_booking.TrainNumber} - {_booking.TrainName}", yPos);
 			yPos = AddCardRow(panel, "Tuyến:", $"{_booking.DepartureStation} → {_booking.ArrivalStation}", yPos);
 			yPos = AddCardRow(panel, "Khởi hành:", _booking.DepartureTime.ToString("dd/MM/yyyy HH:mm"), yPos);
-			yPos = AddCardRow(panel, "Đến nơi:", _booking.DepartureTime.ToString("dd/MM/yyyy HH:mm"), yPos);
+			yPos = AddCardRow(panel, "Đến nơi:", _booking.ArrivalTime.ToString("dd/MM/yyyy HH:mm"), yPos);
 
-			TimeSpan duration = _booking.DepartureTime.AddHours(24) - _booking.DepartureTime;
+			TimeSpan duration = _booking.ArrivalTime - _booking.DepartureTime;
 			string durationText = $"{(int)duration.TotalHours}h {duration.Minutes}m";
 			AddCardRow(panel, "Thời gian:", durationText, yPos);
 
