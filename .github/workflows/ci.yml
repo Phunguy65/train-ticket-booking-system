@@ -1,0 +1,209 @@
+name: CI - Build and Test
+
+on:
+    push:
+        branches:
+            - main
+            - develop
+            - 'release/**'
+    pull_request:
+        branches:
+            - main
+            - develop
+    workflow_dispatch:
+
+env:
+    DOTNET_VERSION: '9.0.x'
+    NODE_VERSION: '20.x'
+    PNPM_VERSION: '10.23.0'
+
+jobs:
+    code-quality:
+        name: Code Quality Checks
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: ${{ env.PNPM_VERSION }}
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: 'pnpm'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Run Biome lint
+              run: pnpm biome check "**/*.{js,ts,jsx,tsx,json}"
+
+            - name: Run Prettier check
+              run: pnpm prettier --check "**/*.{json,yaml,yml,sql,md}"
+
+            - name: Run Markdownlint
+              run: pnpm markdownlint-cli2 "**/*.md"
+
+    dotnet-format:
+        name: .NET Format Check
+        runs-on: windows-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: ${{ env.DOTNET_VERSION }}
+
+            - name: Restore dependencies
+              run: dotnet restore train-ticket-booking-system.slnx
+
+            - name: Check .NET formatting
+              run:
+                  dotnet format train-ticket-booking-system.slnx
+                  --verify-no-changes
+
+    build-backend:
+        name: Build Backend
+        runs-on: ubuntu-latest
+        needs: [code-quality, dotnet-format]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: ${{ env.DOTNET_VERSION }}
+
+            - name: Restore dependencies
+              run: dotnet restore backend/backend.csproj
+
+            - name: Build backend
+              run:
+                  dotnet build backend/backend.csproj --configuration Release
+                  --no-restore
+
+            - name: Test backend
+              run: |
+                  if [ -d "backend.tests" ]; then
+                    dotnet test backend.tests/*.csproj --configuration Release --no-build --verbosity normal
+                  else
+                    echo "No tests found, skipping test step"
+                  fi
+
+    build-sdk-client:
+        name: Build SDK Client
+        runs-on: ubuntu-latest
+        needs: [code-quality, dotnet-format]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: ${{ env.DOTNET_VERSION }}
+
+            - name: Restore dependencies
+              run: dotnet restore frontend/sdk-client/sdk-client.csproj
+
+            - name: Build SDK client
+              run:
+                  dotnet build frontend/sdk-client/sdk-client.csproj
+                  --configuration Release --no-restore
+
+    build-windows-clients:
+        name: Build Windows Clients
+        runs-on: windows-latest
+        needs: [code-quality, dotnet-format]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: ${{ env.DOTNET_VERSION }}
+
+            - name: Restore solution dependencies
+              run: dotnet restore train-ticket-booking-system.slnx
+
+            - name: Build Admin client (Avalonia)
+              run:
+                  dotnet build frontend/admin/admin.csproj --configuration
+                  Release --no-restore
+
+            - name: Build Customer client (WinForms)
+              run:
+                  dotnet build frontend/client/client.csproj --configuration
+                  Release --no-restore
+
+    database-validation:
+        name: Database Migration Validation
+        runs-on: ubuntu-latest
+        needs: [code-quality]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Start SQL Server container
+              working-directory: database
+              run: |
+                  docker compose up -d ttbs-database
+                  echo "Waiting for SQL Server to be ready..."
+                  sleep 30
+
+            - name: Verify SQL Server is running
+              run: |
+                  docker ps | grep ttbs-database
+
+            - name: Run Flyway migrations
+              working-directory: database
+              run: |
+                  docker compose up ttbs-flyway
+
+            - name: Check migration status
+              run: |
+                  docker logs ttbs-flyway
+
+            - name: Cleanup
+              if: always()
+              working-directory: database
+              run: docker compose down -v
+
+    build-status:
+        name: Build Status
+        runs-on: ubuntu-latest
+        needs:
+            [
+                build-backend,
+                build-sdk-client,
+                build-windows-clients,
+                database-validation
+            ]
+        if: always()
+
+        steps:
+            - name: Check build results
+              run: |
+                  if [ "${{ needs.build-backend.result }}" != "success" ] || \
+                     [ "${{ needs.build-sdk-client.result }}" != "success" ] || \
+                     [ "${{ needs.build-windows-clients.result }}" != "success" ] || \
+                     [ "${{ needs.database-validation.result }}" != "success" ]; then
+                    echo "❌ One or more builds failed"
+                    exit 1
+                  else
+                    echo "✅ All builds passed successfully"
+                  fi

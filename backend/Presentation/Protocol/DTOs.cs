@@ -75,6 +75,72 @@ public class CancelBookingRequest
 	public int BookingId { get; set; }
 }
 
+public class HoldSeatsRequest
+{
+	public string SessionToken { get; set; } = string.Empty;
+	public int TrainId { get; set; }
+	public List<int> SeatIds { get; set; } = new List<int>();
+}
+
+public class ConfirmHeldSeatsRequest
+{
+	public string SessionToken { get; set; } = string.Empty;
+	public List<int> BookingIds { get; set; } = new List<int>();
+}
+
+public class ReleaseHeldSeatsRequest
+{
+	public string SessionToken { get; set; } = string.Empty;
+	public List<int> BookingIds { get; set; } = new List<int>();
+}
+
+/// <summary>
+/// Response DTO for confirmed booking details.
+/// Contains aggregated information about confirmed seats including seat numbers, pricing, and train details.
+/// </summary>
+public class ConfirmBookingResponse
+{
+	/// <summary>
+	/// List of confirmed seat numbers (e.g., ["A1", "A2", "B3"]).
+	/// </summary>
+	public List<string> SeatNumbers { get; set; } = new List<string>();
+
+	/// <summary>
+	/// Total amount for all confirmed bookings.
+	/// </summary>
+	public decimal TotalAmount { get; set; }
+
+	/// <summary>
+	/// Train number (e.g., "SE1").
+	/// </summary>
+	public string TrainNumber { get; set; } = string.Empty;
+
+	/// <summary>
+	/// Train name (e.g., "Thống Nhất").
+	/// </summary>
+	public string TrainName { get; set; } = string.Empty;
+
+	/// <summary>
+	/// Number of bookings confirmed.
+	/// </summary>
+	public int BookingCount { get; set; }
+
+	/// <summary>
+	/// List of confirmed booking IDs.
+	/// </summary>
+	public List<int> BookingIds { get; set; } = new List<int>();
+
+	/// <summary>
+	/// Departure station name.
+	/// </summary>
+	public string DepartureStation { get; set; } = string.Empty;
+
+	/// <summary>
+	/// Arrival station name.
+	/// </summary>
+	public string ArrivalStation { get; set; } = string.Empty;
+}
+
 public class UpdateUserRequest
 {
 	public string SessionToken { get; set; } = string.Empty;

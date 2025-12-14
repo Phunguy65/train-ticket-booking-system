@@ -1,4 +1,4 @@
-using client.Forms.Authentication;
+using client.Components;
 using client.Services;
 using Newtonsoft.Json;
 using sdk_client.Protocol;
@@ -23,6 +23,8 @@ namespace client.Forms.Booking
 		private readonly Color _clrAccent = Color.FromArgb(37, 99, 235);
 		private readonly Color _clrSeatEmpty = Color.FromArgb(30, 41, 59);
 		private readonly Color _clrSeatSold = Color.FromArgb(51, 65, 85);
+		private readonly Color _clrSeatHeldByMe = Color.FromArgb(251, 146, 60);
+		private readonly Color _clrWarning = Color.FromArgb(239, 68, 68);
 
 		private FlowLayoutPanel _flowSeats;
 		private Label _lblTotalPrice;
@@ -34,7 +36,7 @@ namespace client.Forms.Booking
 		private readonly ISignalRService? _signalRService;
 
 		private List<Seat> _allSeats = new List<Seat>();
-		private Dictionary<int, string> _selectedSeatInfo = new Dictionary<int, string>();
+		private readonly Dictionary<int, string> _selectedSeatInfo = new Dictionary<int, string>();
 		private int _currentPage = 1;
 		private readonly int _pageSize = 10;
 		private int _totalPages;
@@ -43,6 +45,17 @@ namespace client.Forms.Booking
 		private RoundedButton _btnPreviousPage;
 		private RoundedButton _btnNextPage;
 		private Label _lblSeatPageInfo;
+
+		private List<int> _heldBookingIds = new List<int>();
+		private DateTime? _holdExpiresAt;
+		private Timer? _countdownTimer;
+		private bool _isHoldMode;
+		private Label? _lblCountdown;
+		private RoundedButton? _btnHoldSeats;
+		private RoundedButton? _btnConfirmBooking;
+		private RoundedButton? _btnCancelHold;
+		private bool _isCleaningUp;
+		private readonly HashSet<int> _heldSeatIds = new HashSet<int>();
 
 		public Booking(Train train)
 		{
@@ -81,6 +94,7 @@ namespace client.Forms.Booking
 			{
 				_signalRService.SeatBooked += OnSeatBooked;
 				_signalRService.SeatReleased += OnSeatReleased;
+				_signalRService.SeatHeld += OnSeatHeld;
 
 				if (!_signalRService.IsConnected)
 				{
@@ -98,6 +112,25 @@ namespace client.Forms.Booking
 
 		private async void Booking_FormClosing(object? sender, FormClosingEventArgs e)
 		{
+			if (_heldBookingIds.Any() && !_isCleaningUp)
+			{
+				var result = MessageBox.Show(
+					"Bạn đang giữ ghế. Đóng cửa sổ sẽ hủy giữ ghế. Bạn có chắc chắn?",
+					"Xác nhận",
+					MessageBoxButtons.YesNo,
+					MessageBoxIcon.Warning);
+
+				if (result == DialogResult.No)
+				{
+					e.Cancel = true;
+					return;
+				}
+
+				e.Cancel = true;
+				await ReleaseHoldsAndCloseAsync();
+				return;
+			}
+
 			if (_signalRService != null && !_isCleaningUp)
 			{
 				e.Cancel = true;
@@ -107,7 +140,23 @@ namespace client.Forms.Booking
 			}
 		}
 
-		private bool _isCleaningUp = false;
+		private async Task ReleaseHoldsAndCloseAsync()
+		{
+			try
+			{
+				await _bookingService.ReleaseHeldSeatsAsync(_heldBookingIds);
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Failed to release holds: {ex.Message}");
+			}
+			finally
+			{
+				_isCleaningUp = true;
+				await CleanupSignalRAsync();
+				Close();
+			}
+		}
 
 		private async Task CleanupSignalRAsync()
 		{
@@ -119,6 +168,7 @@ namespace client.Forms.Booking
 			{
 				_signalRService.SeatBooked -= OnSeatBooked;
 				_signalRService.SeatReleased -= OnSeatReleased;
+				_signalRService.SeatHeld -= OnSeatHeld;
 
 				if (_signalRService.IsConnected)
 				{
@@ -333,8 +383,9 @@ namespace client.Forms.Booking
 			CreateLegendItem(pnlRight, "Trống", _clrSeatEmpty, legendY + 30);
 			CreateLegendItem(pnlRight, "Đang chọn", _clrAccent, legendY + 60);
 			CreateLegendItem(pnlRight, "Đã bán", _clrSeatSold, legendY + 90);
+			CreateLegendItem(pnlRight, "Đang giữ", _clrSeatHeldByMe, legendY + 120);
 
-			int seatListY = legendY + 140;
+			int seatListY = legendY + 170;
 			pnlRight.Controls.Add(new Label
 			{
 				Text = "Ghế đang chọn",
@@ -355,7 +406,20 @@ namespace client.Forms.Booking
 			};
 			pnlRight.Controls.Add(_lblSelectedList);
 
-			int footerY = 500;
+			_lblCountdown = new Label
+			{
+				Text = "",
+				Font = new Font("Segoe UI", 10, FontStyle.Bold),
+				ForeColor = _clrWarning,
+				AutoSize = false,
+				Size = new Size(360, 25),
+				Location = new Point(0, seatListY + 60),
+				TextAlign = ContentAlignment.MiddleCenter,
+				Visible = false
+			};
+			pnlRight.Controls.Add(_lblCountdown);
+
+			int footerY = 530;
 			pnlRight.Controls.Add(new Label
 			{
 				Text = "Tổng cộng", ForeColor = _clrTextGray, Location = new Point(0, footerY), AutoSize = true
@@ -371,20 +435,55 @@ namespace client.Forms.Booking
 			};
 			pnlRight.Controls.Add(_lblTotalPrice);
 
-			RoundedButton btnConfirm = new RoundedButton
+			_btnHoldSeats = new RoundedButton
 			{
-				Text = "Xác nhận đặt vé",
+				Text = "Giữ ghế",
 				BackColor = _clrAccent,
 				ForeColor = Color.White,
 				Size = new Size(360, 50),
 				Location = new Point(0, footerY + 50),
 				Font = new Font("Segoe UI", 11, FontStyle.Bold),
 				Cursor = Cursors.Hand,
-				FlatStyle = FlatStyle.Flat
+				FlatStyle = FlatStyle.Flat,
+				Visible = true
 			};
-			btnConfirm.FlatAppearance.BorderSize = 0;
-			btnConfirm.Click += BtnConfirm_Click;
-			pnlRight.Controls.Add(btnConfirm);
+			_btnHoldSeats.FlatAppearance.BorderSize = 0;
+			_btnHoldSeats.Click += BtnHoldSeats_Click;
+			pnlRight.Controls.Add(_btnHoldSeats);
+
+			_btnConfirmBooking = new RoundedButton
+			{
+				Text = "Xác nhận đặt vé",
+				BackColor = Color.FromArgb(34, 197, 94),
+				ForeColor = Color.White,
+				Size = new Size(175, 50),
+				Location = new Point(0, footerY + 50),
+				Font = new Font("Segoe UI", 10, FontStyle.Bold),
+				Cursor = Cursors.Hand,
+				FlatStyle = FlatStyle.Flat,
+				Visible = false
+			};
+			_btnConfirmBooking.FlatAppearance.BorderSize = 0;
+			_btnConfirmBooking.Click += BtnConfirmBooking_Click;
+			pnlRight.Controls.Add(_btnConfirmBooking);
+
+			_btnCancelHold = new RoundedButton
+			{
+				Text = "Hủy giữ ghế",
+				BackColor = _clrWarning,
+				ForeColor = Color.White,
+				Size = new Size(175, 50),
+				Location = new Point(185, footerY + 50),
+				Font = new Font("Segoe UI", 10, FontStyle.Bold),
+				Cursor = Cursors.Hand,
+				FlatStyle = FlatStyle.Flat,
+				Visible = false
+			};
+			_btnCancelHold.FlatAppearance.BorderSize = 0;
+			_btnCancelHold.Click += BtnCancelHold_Click;
+			pnlRight.Controls.Add(_btnCancelHold);
+
+			InitializeCountdownTimer();
 		}
 
 		private async Task LoadSeatsAsync()
@@ -472,6 +571,33 @@ namespace client.Forms.Booking
 			DisplayCurrentPage();
 		}
 
+		private void OnSeatHeld(object? sender, SeatHeldEvent e)
+		{
+			if (e.TrainId != _train.TrainId) return;
+
+			if (InvokeRequired)
+			{
+				Invoke(() => OnSeatHeld(sender, e));
+				return;
+			}
+
+			foreach (var seatId in e.SeatIds)
+			{
+				var seat = _allSeats.FirstOrDefault(s => s.SeatId == seatId);
+				if (seat != null)
+				{
+					seat.IsAvailable = false;
+
+					if (_selectedSeatInfo.Remove(seatId))
+					{
+						UpdateSummary();
+					}
+				}
+			}
+
+			DisplayCurrentPage();
+		}
+
 		private void DisplayCurrentPage()
 		{
 			int startIndex = (_currentPage - 1) * _pageSize;
@@ -486,6 +612,7 @@ namespace client.Forms.Booking
 			foreach (var seat in seats)
 			{
 				bool isSelected = _selectedSeatInfo.ContainsKey(seat.SeatId);
+				bool isHeldByMe = _isHoldMode && _heldSeatIds.Contains(seat.SeatId);
 				bool isSold = !seat.IsAvailable;
 
 				RoundedButton btnSeat = new RoundedButton
@@ -495,27 +622,48 @@ namespace client.Forms.Booking
 					Margin = new Padding(15),
 					Font = new Font("Segoe UI", 11, FontStyle.Bold),
 					FlatStyle = FlatStyle.Flat,
-					Cursor = isSold ? Cursors.No : Cursors.Hand,
+					Cursor = (isSold || isHeldByMe || _isHoldMode) ? Cursors.No : Cursors.Hand,
 					Tag = seat.SeatId
 				};
 				btnSeat.FlatAppearance.BorderSize = 0;
 
-				if (isSold)
+				if (isHeldByMe)
+				{
+					btnSeat.BackColor = _clrSeatHeldByMe;
+					btnSeat.ForeColor = _clrText;
+					btnSeat.Enabled = false;
+				}
+				else if (isSold)
 				{
 					btnSeat.BackColor = _clrSeatSold;
 					btnSeat.ForeColor = Color.FromArgb(100, 116, 139);
+					btnSeat.Enabled = false;
 				}
 				else if (isSelected)
 				{
 					btnSeat.BackColor = _clrAccent;
 					btnSeat.ForeColor = _clrText;
-					btnSeat.Click += Seat_Click;
+					if (!_isHoldMode)
+					{
+						btnSeat.Click += Seat_Click;
+					}
+					else
+					{
+						btnSeat.Enabled = false;
+					}
 				}
 				else
 				{
 					btnSeat.BackColor = _clrSeatEmpty;
 					btnSeat.ForeColor = _clrText;
-					btnSeat.Click += Seat_Click;
+					if (!_isHoldMode)
+					{
+						btnSeat.Click += Seat_Click;
+					}
+					else
+					{
+						btnSeat.Enabled = false;
+					}
 				}
 
 				_flowSeats.Controls.Add(btnSeat);
@@ -524,6 +672,9 @@ namespace client.Forms.Booking
 
 		private void Seat_Click(object? sender, EventArgs? e)
 		{
+			if (_isHoldMode)
+				return;
+
 			if (sender is not RoundedButton btn || btn.Tag == null)
 				return;
 
@@ -649,7 +800,46 @@ namespace client.Forms.Booking
 			parent.Controls.Add(lblText);
 		}
 
-		private async void BtnConfirm_Click(object? sender, EventArgs? e)
+		private void InitializeCountdownTimer()
+		{
+			_countdownTimer = new Timer { Interval = 1000 };
+			_countdownTimer.Tick += CountdownTimer_Tick;
+		}
+
+		private void CountdownTimer_Tick(object? sender, EventArgs e)
+		{
+			if (!_holdExpiresAt.HasValue || _lblCountdown == null) return;
+
+			TimeSpan remaining = _holdExpiresAt.Value - DateTime.Now;
+
+			if (remaining.TotalSeconds <= 0)
+			{
+				HandleHoldExpiration();
+				return;
+			}
+
+			_lblCountdown.Text = $"⏱️ Thời gian còn lại: {remaining:mm\\:ss}";
+
+			if (remaining.TotalMinutes < 1)
+			{
+				_lblCountdown.ForeColor = _clrWarning;
+			}
+		}
+
+		private async void HandleHoldExpiration()
+		{
+			_countdownTimer?.Stop();
+
+			MessageBox.Show(
+				"Hết thời gian giữ ghế. Vui lòng chọn lại.",
+				"Thông báo",
+				MessageBoxButtons.OK,
+				MessageBoxIcon.Warning);
+
+			await ResetToInitialStateAsync();
+		}
+
+		private async void BtnHoldSeats_Click(object? sender, EventArgs? e)
 		{
 			if (_selectedSeatInfo.Count == 0)
 			{
@@ -661,26 +851,223 @@ namespace client.Forms.Booking
 			try
 			{
 				var seatIds = _selectedSeatInfo.Keys.ToList();
-				var response = await _bookingService.BookMultipleTicketsAsync(_train.TrainId, seatIds);
+				var response = await _bookingService.HoldSeatsAsync(_train.TrainId, seatIds);
 
-				if (response.Success)
+				if (!response.Success)
 				{
 					MessageBox.Show(
-						$"Đặt vé thành công cho tàu {_train.TrainNumber}!\n" +
-						$"Ghế: {_lblSelectedList.Text}\n" +
-						$"Tổng tiền: {_lblTotalPrice.Text}",
-						"Thành công",
+						$"Không thể giữ ghế: {response.ErrorMessage}",
+						"Lỗi",
 						MessageBoxButtons.OK,
-						MessageBoxIcon.Information);
-
-					this.DialogResult = DialogResult.OK;
-					this.Close();
+						MessageBoxIcon.Error);
+					return;
 				}
+
+				var data = (dynamic)response.Data!;
+				_heldBookingIds = ((System.Collections.IEnumerable)data.BookingIds)
+					.Cast<object>()
+					.Select(Convert.ToInt32)
+					.ToList();
+
+				_holdExpiresAt = DateTime.Parse(data.ExpiresAt.ToString());
+
+				SwitchToHoldMode();
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"Lỗi đặt vé: {ex.Message}", "Lỗi",
+				MessageBox.Show(
+					$"Lỗi kết nối: {ex.Message}",
+					"Lỗi",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Error);
+			}
+		}
+
+		private async void BtnConfirmBooking_Click(object? sender, EventArgs? e)
+		{
+			try
+			{
+				var response = await _bookingService.ConfirmHeldSeatsAsync(_heldBookingIds);
+
+				if (!response.Success)
+				{
+					if (response.ErrorMessage?.Contains("expired") == true)
+					{
+						MessageBox.Show(
+							"Hết thời gian giữ ghế. Vui lòng chọn lại.",
+							"Thông báo",
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Warning);
+						await ResetToInitialStateAsync();
+					}
+					else
+					{
+						MessageBox.Show(
+							$"Không thể xác nhận: {response.ErrorMessage}",
+							"Lỗi",
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Error);
+					}
+
+					return;
+				}
+
+				_countdownTimer?.Stop();
+				_heldBookingIds.Clear();
+				_isCleaningUp = true;
+
+				// Parse booking details from server response
+				string seatList = "";
+				string totalPrice = "0 VNĐ";
+				string trainNumber = _train.TrainNumber;
+
+				if (response.Data != null)
+				{
+					try
+					{
+						// Deserialize the response data to ConfirmBookingResponse
+						var jsonData = JsonConvert.SerializeObject(response.Data);
+						var bookingDetails = JsonConvert.DeserializeObject<ConfirmBookingResponse>(jsonData);
+
+						if (bookingDetails != null)
+						{
+							seatList = string.Join(", ", bookingDetails.SeatNumbers);
+							totalPrice = $"{bookingDetails.TotalAmount:N0} VNĐ";
+							trainNumber = bookingDetails.TrainNumber;
+						}
+					}
+					catch
+					{
+						// Fallback to empty values if parsing fails
+						seatList = "N/A";
+						totalPrice = "N/A";
+					}
+				}
+
+				MessageBox.Show(
+					$"Đặt vé thành công cho tàu {trainNumber}!\n" +
+					$"Ghế: {seatList}\n" +
+					$"Tổng tiền: {totalPrice}",
+					"Thành công",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Information);
+
+				this.DialogResult = DialogResult.OK;
+				this.Close();
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi",
 					MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		private async void BtnCancelHold_Click(object? sender, EventArgs? e)
+		{
+			var result = MessageBox.Show(
+				"Bạn có chắc chắn muốn hủy giữ ghế?",
+				"Xác nhận",
+				MessageBoxButtons.YesNo,
+				MessageBoxIcon.Question);
+
+			if (result != DialogResult.Yes) return;
+
+			try
+			{
+				var response = await _bookingService.ReleaseHeldSeatsAsync(_heldBookingIds);
+
+				if (!response.Success)
+				{
+					MessageBox.Show(
+						$"Không thể hủy giữ ghế: {response.ErrorMessage}",
+						"Lỗi",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Error);
+					return;
+				}
+
+				await ResetToInitialStateAsync();
+
+				MessageBox.Show(
+					"Đã hủy giữ ghế thành công.",
+					"Thông báo",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Information);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi",
+					MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		private void SwitchToHoldMode()
+		{
+			_isHoldMode = true;
+
+			_heldSeatIds.Clear();
+			foreach (var seatId in _selectedSeatInfo.Keys)
+			{
+				_heldSeatIds.Add(seatId);
+			}
+
+			if (_btnHoldSeats != null) _btnHoldSeats.Visible = false;
+			if (_btnConfirmBooking != null) _btnConfirmBooking.Visible = true;
+			if (_btnCancelHold != null) _btnCancelHold.Visible = true;
+			if (_lblCountdown != null) _lblCountdown.Visible = true;
+
+			DisableSeatSelection();
+
+			DisplayCurrentPage();
+
+			_countdownTimer?.Start();
+		}
+
+		private async Task ResetToInitialStateAsync()
+		{
+			_isHoldMode = false;
+			_heldBookingIds.Clear();
+			_heldSeatIds.Clear();
+			_holdExpiresAt = null;
+
+			_countdownTimer?.Stop();
+
+			if (_btnHoldSeats != null) _btnHoldSeats.Visible = true;
+			if (_btnConfirmBooking != null) _btnConfirmBooking.Visible = false;
+			if (_btnCancelHold != null) _btnCancelHold.Visible = false;
+			if (_lblCountdown != null)
+			{
+				_lblCountdown.Visible = false;
+				_lblCountdown.Text = "";
+			}
+
+			_selectedSeatInfo.Clear();
+			UpdateSummary();
+
+			EnableSeatSelection();
+
+			await LoadSeatsAsync();
+		}
+
+		private void DisableSeatSelection()
+		{
+			foreach (Control control in _flowSeats.Controls)
+			{
+				if (control is RoundedButton btn)
+				{
+					btn.Enabled = false;
+				}
+			}
+		}
+
+		private void EnableSeatSelection()
+		{
+			foreach (Control control in _flowSeats.Controls)
+			{
+				if (control is RoundedButton btn)
+				{
+					btn.Enabled = true;
+				}
 			}
 		}
 

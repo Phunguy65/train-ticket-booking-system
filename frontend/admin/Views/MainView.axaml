@@ -1,0 +1,135 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:admin.ViewModels"
+             xmlns:rxui="http://reactiveui.net"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="admin.Views.MainView"
+             x:DataType="vm:MainViewViewModel">
+
+    <Grid ColumnDefinitions="250,*">
+        <!-- Left: Navigation Sidebar -->
+        <Border Grid.Column="0"
+                Background="#1e293b"
+                BorderBrush="#334155"
+                BorderThickness="0,0,1,0"
+                Padding="20">
+            <StackPanel Spacing="10">
+
+                <!-- Header -->
+                <StackPanel Spacing="8" Margin="0,0,0,20">
+                    <TextBlock Text="🚄"
+                              FontSize="32"
+                              HorizontalAlignment="Center"/>
+                    <TextBlock Text="Quản Trị Hệ Thống"
+                              FontSize="16"
+                              FontWeight="Bold"
+                              Foreground="White"
+                              HorizontalAlignment="Center"/>
+                    <TextBlock Text="Đặt vé tàu hỏa"
+                              FontSize="11"
+                              Foreground="#64748b"
+                              HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Navigation Menu -->
+                <Button Content="🚂 Quản lý tàu"
+                       Command="{Binding NavigateToTrainList}"
+                       Height="45"
+                       HorizontalAlignment="Stretch"
+                       HorizontalContentAlignment="Left"
+                       Padding="15,0">
+                    <Button.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="#cbd5e1"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                        </Style>
+                        <Style Selector="Button:pointerover">
+                            <Setter Property="Background" Value="#334155"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Style>
+                    </Button.Styles>
+                </Button>
+
+                <Button Content="👥 Quản lý người dùng"
+                       Command="{Binding NavigateToUserList}"
+                       Height="45"
+                       HorizontalAlignment="Stretch"
+                       HorizontalContentAlignment="Left"
+                       Padding="15,0">
+                    <Button.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="#cbd5e1"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                        </Style>
+                        <Style Selector="Button:pointerover">
+                            <Setter Property="Background" Value="#334155"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Style>
+                    </Button.Styles>
+                </Button>
+
+                <Button Content="📋 Nhật ký hoạt động"
+                       Command="{Binding NavigateToAuditLog}"
+                       Height="45"
+                       HorizontalAlignment="Stretch"
+                       HorizontalContentAlignment="Left"
+                       Padding="15,0">
+                    <Button.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="#cbd5e1"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                        </Style>
+                        <Style Selector="Button:pointerover">
+                            <Setter Property="Background" Value="#334155"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Style>
+                    </Button.Styles>
+                </Button>
+
+                <!-- Spacer -->
+                <Border Height="20"/>
+
+                <!-- Logout Button -->
+                <Button Content="🚪 Đăng xuất"
+                       Command="{Binding Logout}"
+                       Height="45"
+                       HorizontalAlignment="Stretch"
+                       HorizontalContentAlignment="Left"
+                       Padding="15,0">
+                    <Button.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="#f87171"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                        </Style>
+                        <Style Selector="Button:pointerover">
+                            <Setter Property="Background" Value="#7f1d1d"/>
+                            <Setter Property="Foreground" Value="#fecaca"/>
+                        </Style>
+                    </Button.Styles>
+                </Button>
+
+            </StackPanel>
+        </Border>
+
+        <!-- Right: Content Area (Nested Router) -->
+        <Panel Grid.Column="1" Background="#0f172a">
+            <rxui:RoutedViewHost Router="{Binding Router}"
+                                Margin="20">
+                <rxui:RoutedViewHost.DefaultContent>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="⏳ Đang tải nội dung..."
+                                  FontSize="16"
+                                  Foreground="#94a3b8"/>
+                    </StackPanel>
+                </rxui:RoutedViewHost.DefaultContent>
+            </rxui:RoutedViewHost>
+        </Panel>
+    </Grid>
+</UserControl>
+

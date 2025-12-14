@@ -1,0 +1,143 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:admin.ViewModels.Authentication"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="admin.Views.LoginView"
+             x:DataType="vm:LoginViewModel">
+
+    <Panel>
+        <!-- Background gradient -->
+        <Panel.Background>
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#0f172a" Offset="0.0"/>
+                <GradientStop Color="#1e293b" Offset="1.0"/>
+            </LinearGradientBrush>
+        </Panel.Background>
+
+        <!-- Login Card -->
+        <Border Width="450"
+                Height="550"
+                CornerRadius="12"
+                Background="#1e293b"
+                BorderBrush="#334155"
+                BorderThickness="1"
+                BoxShadow="0 10 50 0 #00000040"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+
+            <StackPanel Margin="40" Spacing="20">
+
+                <!-- Logo/Title Section -->
+                <StackPanel Spacing="8" HorizontalAlignment="Center">
+                    <TextBlock Text="🚄"
+                              FontSize="48"
+                              HorizontalAlignment="Center"/>
+                    <TextBlock Text="HỆ THỐNG QUẢN TRỊ"
+                              FontSize="24"
+                              FontWeight="Bold"
+                              Foreground="White"
+                              HorizontalAlignment="Center"/>
+                    <TextBlock Text="Đặt vé tàu hỏa"
+                              FontSize="14"
+                              Foreground="#94a3b8"
+                              HorizontalAlignment="Center"
+                              Margin="0,0,0,20"/>
+                </StackPanel>
+
+                <!-- Username Field -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Tên đăng nhập"
+                              FontSize="13"
+                              Foreground="#cbd5e1"
+                              FontWeight="Medium"/>
+                    <TextBox x:Name="UsernameTextBox"
+                            Watermark="Nhập tên đăng nhập"
+                            Height="45"
+                            FontSize="14"
+                            Padding="12,0"
+                            CornerRadius="8"
+                            Background="#0f172a"
+                            Foreground="White"
+                            BorderBrush="#334155"
+                            BorderThickness="1"/>
+                </StackPanel>
+
+                <!-- Password Field -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Mật khẩu"
+                              FontSize="13"
+                              Foreground="#cbd5e1"
+                              FontWeight="Medium"/>
+                    <TextBox x:Name="PasswordTextBox"
+                            Watermark="Nhập mật khẩu"
+                            PasswordChar="●"
+                            Height="45"
+                            FontSize="14"
+                            Padding="12,0"
+                            CornerRadius="8"
+                            Background="#0f172a"
+                            Foreground="White"
+                            BorderBrush="#334155"
+                            BorderThickness="1"/>
+                </StackPanel>
+
+                <!-- Error Message -->
+                <Border x:Name="ErrorBorder"
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       Background="#7f1d1d"
+                       BorderBrush="#dc2626"
+                       BorderThickness="1"
+                       CornerRadius="6"
+                       Padding="12">
+                    <TextBlock x:Name="ErrorTextBlock"
+                              Text="{Binding ErrorMessage}"
+                              Foreground="#fecaca"
+                              TextWrapping="Wrap"
+                              FontSize="13"/>
+                </Border>
+
+                <!-- Login Button -->
+                <Button x:Name="LoginButton"
+                       Content="ĐĂNG NHẬP"
+                       Height="50"
+                       FontSize="15"
+                       FontWeight="Bold"
+                       CornerRadius="8"
+                       HorizontalAlignment="Stretch"
+                       HorizontalContentAlignment="Center"
+                       Foreground="White">
+                    <Button.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Background" Value="#3b82f6"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                        </Style>
+                        <Style Selector="Button:pointerover">
+                            <Setter Property="Background" Value="#2563eb"/>
+                        </Style>
+                        <Style Selector="Button:pressed">
+                            <Setter Property="Background" Value="#1d4ed8"/>
+                        </Style>
+                        <Style Selector="Button:disabled">
+                            <Setter Property="Background" Value="#475569"/>
+                            <Setter Property="Foreground" Value="#94a3b8"/>
+                        </Style>
+                    </Button.Styles>
+                </Button>
+
+                <!-- Loading Indicator -->
+                <StackPanel Orientation="Horizontal"
+                           HorizontalAlignment="Center"
+                           Spacing="10"
+                           IsVisible="{Binding IsLoading}">
+                    <TextBlock Text="⏳" FontSize="16"/>
+                    <TextBlock Text="Đang đăng nhập..."
+                              FontSize="13"
+                              Foreground="#94a3b8"/>
+                </StackPanel>
+
+            </StackPanel>
+        </Border>
+    </Panel>
+</UserControl>

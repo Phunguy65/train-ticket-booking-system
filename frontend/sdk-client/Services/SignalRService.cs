@@ -17,6 +17,7 @@ namespace sdk_client.Services
 
 		public event EventHandler<SeatBookedEvent>? SeatBooked;
 		public event EventHandler<SeatReleasedEvent>? SeatReleased;
+		public event EventHandler<SeatHeldEvent>? SeatHeld;
 		public event EventHandler<string>? ConnectionStateChanged;
 
 		public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
@@ -108,6 +109,11 @@ namespace sdk_client.Services
 			_hubConnection.On<SeatReleasedEvent>("SeatReleased", (eventData) =>
 			{
 				SeatReleased?.Invoke(this, eventData);
+			});
+
+			_hubConnection.On<SeatHeldEvent>("SeatHeld", (eventData) =>
+			{
+				SeatHeld?.Invoke(this, eventData);
 			});
 		}
 

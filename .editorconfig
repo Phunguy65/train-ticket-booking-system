@@ -238,3 +238,12 @@ dotnet_naming_style.begins_with_i.required_prefix = I
 dotnet_naming_style.begins_with_i.required_suffix = 
 dotnet_naming_style.begins_with_i.word_separator = 
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
+
+#### Axaml Coding Conventions ####
+[*.{axaml, xaml}]
+xml_attribute_style = first_attribute_on_single_line
+xml_attribute_indent = align_by_first_attribute
+xml_linebreaks_inside_tags_for_elements_with_child_elements = true
+xml_spaces_inside_tags = false
+xml_indent_child_elements = one_indent
+xml_spaces_around_eq_in_pi_attribute = false

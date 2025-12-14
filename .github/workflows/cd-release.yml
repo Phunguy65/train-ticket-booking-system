@@ -1,0 +1,212 @@
+name: CD - Release
+
+on:
+    push:
+        tags:
+            - 'v*.*.*'
+    workflow_dispatch:
+        inputs:
+            version:
+                description: 'Version to release (e.g., 1.0.0)'
+                required: true
+                type: string
+
+env:
+    DOTNET_VERSION: '9.0.x'
+
+permissions:
+    contents: write
+    packages: write
+
+jobs:
+    create-release:
+        name: Create GitHub Release
+        runs-on: windows-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: ${{ env.DOTNET_VERSION }}
+
+            - name: Extract version from tag
+              id: version
+              shell: pwsh
+              run: |
+                  if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+                    $version = "${{ github.event.inputs.version }}"
+                  } else {
+                    $version = "${{ github.ref }}" -replace 'refs/tags/v', ''
+                  }
+                  echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+                  echo "Version: $version"
+
+            - name: Restore dependencies
+              run: dotnet restore train-ticket-booking-system.slnx
+
+            - name: Build Backend
+              run: |
+                  dotnet publish backend/backend.csproj `
+                    --configuration Release `
+                    --runtime win-x64 `
+                    --self-contained true `
+                    -p:PublishSingleFile=true `
+                    -p:Version=${{ steps.version.outputs.VERSION }} `
+                    --output ./artifacts/backend
+
+            - name: Build Admin Client (Avalonia)
+              run: |
+                  dotnet publish frontend/admin/admin.csproj `
+                    --configuration Release `
+                    --runtime win-x64 `
+                    --self-contained true `
+                    -p:PublishSingleFile=true `
+                    -p:Version=${{ steps.version.outputs.VERSION }} `
+                    --output ./artifacts/admin
+
+            - name: Build Customer Client (WinForms)
+              run: |
+                  dotnet publish frontend/client/client.csproj `
+                    --configuration Release `
+                    --runtime win-x64 `
+                    --self-contained true `
+                    -p:PublishSingleFile=true `
+                    -p:Version=${{ steps.version.outputs.VERSION }} `
+                    --output ./artifacts/client
+
+            - name: Copy configuration files
+              shell: pwsh
+              run: |
+                  Copy-Item backend/appsettings.json artifacts/backend/ -Force
+                  Copy-Item frontend/admin/appsettings.json artifacts/admin/ -Force
+
+            - name: Package Backend
+              shell: pwsh
+              run: |
+                  Compress-Archive -Path artifacts/backend/* `
+                    -DestinationPath "backend-v${{ steps.version.outputs.VERSION }}-win-x64.zip"
+
+            - name: Package Admin Client
+              shell: pwsh
+              run: |
+                  Compress-Archive -Path artifacts/admin/* `
+                    -DestinationPath "admin-client-v${{ steps.version.outputs.VERSION }}-win-x64.zip"
+
+            - name: Package Customer Client
+              shell: pwsh
+              run: |
+                  Compress-Archive -Path artifacts/client/* `
+                    -DestinationPath "customer-client-v${{ steps.version.outputs.VERSION }}-win-x64.zip"
+
+            - name: Package Database Migrations
+              shell: pwsh
+              run: |
+                  Compress-Archive -Path database/migrations/* `
+                    -DestinationPath "database-migrations-v${{ steps.version.outputs.VERSION }}.zip"
+
+            - name: Generate Release Notes
+              id: release_notes
+              shell: pwsh
+              run: |
+                  $version = "${{ steps.version.outputs.VERSION }}"
+                  $notes = @"
+                  ## Train Ticket Booking System v$version
+
+                  ### 📦 Release Artifacts
+
+                  - **Backend Server** (`backend-v$version-win-x64.zip`)
+                    - .NET 9 Background Service with TCP/Socket + SignalR
+                    - Self-contained executable for Windows x64
+                    
+                  - **Admin Client** (`admin-client-v$version-win-x64.zip`)
+                    - Avalonia UI desktop application
+                    - Self-contained executable for Windows x64
+                    
+                  - **Customer Client** (`customer-client-v$version-win-x64.zip`)
+                    - Windows Forms desktop application
+                    - Self-contained executable for Windows x64
+                    
+                  - **Database Migrations** (`database-migrations-v$version.zip`)
+                    - Flyway migration scripts
+                    - SQL schema updates
+
+                  ### 🚀 Installation
+
+                  1. Download the appropriate ZIP file for your component
+                  2. Extract to your desired location
+                  3. Run the executable
+                  4. Refer to the documentation for configuration details
+
+                  ### 📋 Prerequisites
+
+                  - Windows 10/11 (x64)
+                  - SQL Server 2022 (for backend)
+                  - No .NET runtime required (self-contained)
+
+                  ### 🔗 Documentation
+
+                  - [Setup Guide](https://github.com/${{ github.repository }}/blob/main/CLAUDE.md)
+                  - [Contributing](https://github.com/${{ github.repository }}/blob/main/.github/CONTRIBUTING.md)
+                  "@
+                  $notes | Out-File -FilePath release_notes.md -Encoding utf8
+                  echo "NOTES_FILE=release_notes.md" >> $env:GITHUB_OUTPUT
+
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: v${{ steps.version.outputs.VERSION }}
+                  name: Release v${{ steps.version.outputs.VERSION }}
+                  body_path: release_notes.md
+                  draft: false
+                  prerelease: false
+                  files: |
+                      backend-v${{ steps.version.outputs.VERSION }}-win-x64.zip
+                      admin-client-v${{ steps.version.outputs.VERSION }}-win-x64.zip
+                      customer-client-v${{ steps.version.outputs.VERSION }}-win-x64.zip
+                      database-migrations-v${{ steps.version.outputs.VERSION }}.zip
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    build-docker-image:
+        name: Build and Push Docker Image
+        runs-on: ubuntu-latest
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Extract version from tag
+              id: version
+              run: |
+                  VERSION=${GITHUB_REF#refs/tags/v}
+                  echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+                  echo "Version: $VERSION"
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Log in to GitHub Container Registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build and push Docker image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: ./Dockerfile
+                  push: true
+                  tags: |
+                      ghcr.io/${{ github.repository }}/backend:${{ steps.version.outputs.VERSION }}
+                      ghcr.io/${{ github.repository }}/backend:latest
+                  platforms: linux/amd64,linux/arm64
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max

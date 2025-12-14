@@ -41,6 +41,16 @@ namespace sdk_client.Services
 		}
 
 		/// <summary>
+		/// Retrieves the current authenticated user's profile.
+		/// Requires an active session token for authentication.
+		/// </summary>
+		/// <returns>User profile or null if not found</returns>
+		public async Task<User?> GetCurrentUserAsync()
+		{
+			return await _apiClient.SendRequestAsync<User>("User.GetCurrentUser").ConfigureAwait(false);
+		}
+
+		/// <summary>
 		/// Updates the profile information for the current authenticated user.
 		/// Requires an active session token for authentication.
 		/// </summary>

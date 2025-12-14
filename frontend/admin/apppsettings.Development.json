@@ -1,0 +1,19 @@
+{
+	"Logging": {
+		"LogLevel": {
+			"Default": "Information",
+			"Microsoft": "Warning",
+			"Microsoft.Hosting.Lifetime": "Information"
+		}
+	},
+	"SignalR": {
+		"Host": "http://127.0.0.1",
+		"Port": "5001"
+	},
+	"Api": {
+		"Host": "http://127.0.0.1",
+		"Port": "5000",
+		"RequestTimeout": "30",
+		"ConnectTimeout": "30"
+	}
+}

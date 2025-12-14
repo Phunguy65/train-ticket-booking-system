@@ -24,6 +24,7 @@ public class UserHandler
 		return action switch
 		{
 			"GetAllUsers" => await HandleGetAllUsersAsync(data),
+			"GetCurrentUser" => await HandleGetCurrentUserAsync(data),
 			"UpdateUserProfile" => await HandleUpdateUserProfileAsync(data),
 			"LockUnlockUser" => await HandleLockUnlockUserAsync(data),
 			_ => new Response { Success = false, ErrorMessage = "Unknown user action." }
@@ -70,6 +71,49 @@ public class UserHandler
 
 		var users = await _userService.GetAllUsersAsync();
 		return new Response { Success = true, Data = users };
+	}
+
+	private async Task<Response> HandleGetCurrentUserAsync(JObject? data)
+	{
+		if (data == null)
+		{
+			return new Response { Success = false, ErrorMessage = "Invalid request data." };
+		}
+
+		var request = data.ToObject<AuthenticatedRequest>();
+		if (request == null || string.IsNullOrEmpty(request.SessionToken))
+		{
+			return new Response { Success = false, ErrorMessage = "Session token is required." };
+		}
+
+		var session = await _authenticationService.ValidateSessionAsync(request.SessionToken);
+		if (session == null)
+		{
+			return new Response { Success = false, ErrorMessage = "Invalid or expired session." };
+		}
+
+		var user = await _userService.GetUserByIdAsync(session.UserId);
+		if (user == null)
+		{
+			return new Response { Success = false, ErrorMessage = "User not found." };
+		}
+
+		// Return user profile without password hash
+		return new Response
+		{
+			Success = true,
+			Data = new
+			{
+				user.UserId,
+				user.Username,
+				user.FullName,
+				user.Email,
+				user.PhoneNumber,
+				user.Role,
+				user.CreatedAt,
+				user.IsActive
+			}
+		};
 	}
 
 	private async Task<Response> HandleUpdateUserProfileAsync(JObject? data)

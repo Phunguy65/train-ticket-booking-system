@@ -1,6 +1,6 @@
 using client.Configuration;
 using client.Services;
-using sdk_client;
+using client.Components;
 using sdk_client.Exceptions;
 using sdk_client.Services;
 using System;
@@ -102,15 +102,15 @@ Chi tiết: {ex.Message}",
 			// 1. Tạo thanh tiêu đề điều khiển (Header)
 			SetupWindowControls();
 
-			// 2. PANEL CARD TRUNG TÂM
+			// 2. PANEL CARD TRUNG TÂM - Increased height for better content fit
 			int cardW = 550;
-			int cardH = 800;
+			int cardH = 820; // Increased from 800 to 820 for better spacing
 
 			_pnlCard = new Panel()
 			{
 				Size = new Size(cardW, cardH),
 				BackColor = _clrCard,
-				Location = new Point((this.Width - cardW) / 2, (this.Height - cardH) / 2 + 15),
+				Location = new Point((this.Width - cardW) / 2, (this.Height - cardH) / 2 + 10), // Adjusted offset
 			};
 			_pnlCard.Paint += (s, e) => DrawRoundedPanel(s, e, 25);
 			this.Controls.Add(_pnlCard);
@@ -162,7 +162,7 @@ Chi tiết: {ex.Message}",
 				IsPasswordChar = false
 			};
 			_pnlCard.Controls.Add(_txtUsername);
-			yPos += 70;
+			yPos += 65; // Reduced from 70 to 65 for optimized spacing
 
 			// 6. Full Name Input
 			_pnlCard.Controls.Add(CreateLabel("Họ và tên", xMargin, yPos));
@@ -178,7 +178,7 @@ Chi tiết: {ex.Message}",
 				IsPasswordChar = false
 			};
 			_pnlCard.Controls.Add(_txtFullName);
-			yPos += 70;
+			yPos += 65; // Reduced from 70 to 65
 
 			// 7. Email Input
 			_pnlCard.Controls.Add(CreateLabel("Email", xMargin, yPos));
@@ -194,7 +194,7 @@ Chi tiết: {ex.Message}",
 				IsPasswordChar = false
 			};
 			_pnlCard.Controls.Add(_txtEmail);
-			yPos += 70;
+			yPos += 65; // Reduced from 70 to 65
 
 			// 8. Phone Number Input (Optional)
 			_pnlCard.Controls.Add(CreateLabel("Số điện thoại (tùy chọn)", xMargin, yPos));
@@ -210,7 +210,7 @@ Chi tiết: {ex.Message}",
 				IsPasswordChar = false
 			};
 			_pnlCard.Controls.Add(_txtPhoneNumber);
-			yPos += 70;
+			yPos += 65; // Reduced from 70 to 65
 
 			// 9. Password Input
 			_pnlCard.Controls.Add(CreateLabel("Mật khẩu", xMargin, yPos));
@@ -226,7 +226,7 @@ Chi tiết: {ex.Message}",
 				IsPasswordChar = true
 			};
 			_pnlCard.Controls.Add(_txtPassword);
-			yPos += 70;
+			yPos += 65; // Reduced from 70 to 65
 
 			// 10. Confirm Password Input
 			_pnlCard.Controls.Add(CreateLabel("Xác nhận mật khẩu", xMargin, yPos));
@@ -242,9 +242,9 @@ Chi tiết: {ex.Message}",
 				IsPasswordChar = true
 			};
 			_pnlCard.Controls.Add(_txtConfirmPass);
-			yPos += 75;
+			yPos += 70; // Keep spacing before button
 
-			// 8. Nút Đăng ký
+			// 11. Nút Đăng ký
 			_btnRegister = new RoundedButton
 			{
 				Text = @"ĐĂNG KÝ",
@@ -261,9 +261,9 @@ Chi tiết: {ex.Message}",
 			_btnRegister.MouseEnter += (_, _) => _btnRegister.BackColor = _clrPrimaryHover;
 			_btnRegister.MouseLeave += (_, _) => _btnRegister.BackColor = _clrPrimary;
 			_pnlCard.Controls.Add(_btnRegister);
-			yPos += 70;
+			yPos += 65; // Reduced from 70 to 65
 
-			// 9. Footer: Link quay lại Đăng nhập
+			// 12. Footer: Link quay lại Đăng nhập
 			Label lblLogin = new Label
 			{
 				Text = "", // Sẽ vẽ bằng tay bên dưới
@@ -299,7 +299,7 @@ Chi tiết: {ex.Message}",
 			};
 			_pnlCard.Controls.Add(lblLogin);
 
-			// 10. Copyright
+			// 13. Copyright - Adjusted position for new card height
 			Label lblCopy = new Label
 			{
 				Text = @"© 2024 VNR. All rights reserved.",
@@ -307,7 +307,7 @@ Chi tiết: {ex.Message}",
 				ForeColor = Color.Gray,
 				AutoSize = false,
 				Size = new Size(cardW, 30),
-				Location = new Point(0, cardH - 35),
+				Location = new Point(0, cardH - 30), // Adjusted from cardH - 35 to cardH - 30
 				TextAlign = ContentAlignment.MiddleCenter
 			};
 			_pnlCard.Controls.Add(lblCopy);

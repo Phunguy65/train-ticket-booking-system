@@ -1,0 +1,71 @@
+version: 2
+updates:
+    - package-ecosystem: 'nuget'
+      directory: '/backend'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+      open-pull-requests-limit: 5
+      labels:
+          - 'dependencies'
+          - 'dotnet'
+
+    - package-ecosystem: 'nuget'
+      directory: '/frontend/admin'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+      open-pull-requests-limit: 5
+      labels:
+          - 'dependencies'
+          - 'dotnet'
+
+    - package-ecosystem: 'nuget'
+      directory: '/frontend/client'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+      open-pull-requests-limit: 5
+      labels:
+          - 'dependencies'
+          - 'dotnet'
+
+    - package-ecosystem: 'nuget'
+      directory: '/frontend/sdk-client'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+      open-pull-requests-limit: 5
+      labels:
+          - 'dependencies'
+          - 'dotnet'
+
+    - package-ecosystem: 'npm'
+      directory: '/'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+      open-pull-requests-limit: 5
+      labels:
+          - 'dependencies'
+          - 'javascript'
+
+    - package-ecosystem: 'docker'
+      directory: '/database'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+      open-pull-requests-limit: 3
+      labels:
+          - 'dependencies'
+          - 'docker'
+
+    - package-ecosystem: 'github-actions'
+      directory: '/'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+      open-pull-requests-limit: 5
+      labels:
+          - 'dependencies'
+          - 'github-actions'
