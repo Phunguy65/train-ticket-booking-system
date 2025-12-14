@@ -41,7 +41,9 @@ jobs:
               run: pnpm install --frozen-lockfile
 
             - name: Run Biome lint
-              run: pnpm biome check "**/*.{js,ts,jsx,tsx,json}"
+              run:
+                  pnpm biome check --no-errors-on-unmatched *.{js,ts,json}
+                  **/*.{js,ts,jsx,tsx,json}
 
             - name: Run Prettier check
               run: pnpm prettier --check "**/*.{json,yaml,yml,sql,md}"
