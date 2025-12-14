@@ -22,14 +22,16 @@ namespace sdk_client.Services
 
 		public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
 
-		/// <summary>
-		/// Initializes a new instance of SignalRService with the SignalR hub URL.
-		/// </summary>
-		/// <param name="signalRHost">SignalR server hostname or IP address</param>
-		/// <param name="signalRPort">SignalR server port number</param>
-		public SignalRService(string signalRHost = "127.0.0.1", int signalRPort = 5001)
+		public SignalRService(string signalRUrl = "http://127.0.0.1:5001")
 		{
-			_hubUrl = $"http://{signalRHost}:{signalRPort}/bookingHub";
+			if (!Uri.TryCreate(signalRUrl, UriKind.Absolute, out var uri) ||
+			    (uri.Scheme != "http" && uri.Scheme != "https"))
+			{
+				throw new ArgumentException("Invalid SignalR URL format. Must be http:// or https://",
+					nameof(signalRUrl));
+			}
+
+			_hubUrl = signalRUrl.TrimEnd('/') + "/bookingHub";
 		}
 
 		public async Task StartAsync()

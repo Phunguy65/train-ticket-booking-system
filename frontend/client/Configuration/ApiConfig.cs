@@ -67,33 +67,18 @@ namespace client.Configuration
 			}
 		}
 
-		public static string SignalRHost
+		public static string SignalRUrl
 		{
 			get
 			{
-				var host = Environment.GetEnvironmentVariable("SIGNALR_HOST");
-				if (!string.IsNullOrWhiteSpace(host))
+				var url = Environment.GetEnvironmentVariable("SIGNALR_URL");
+				if (!string.IsNullOrWhiteSpace(url))
 				{
-					return host;
+					return url;
 				}
 
-				host = ConfigurationManager.AppSettings["SignalRHost"];
-				return string.IsNullOrWhiteSpace(host) ? DefaultHost : host;
-			}
-		}
-
-		public static int SignalRPort
-		{
-			get
-			{
-				var portEnv = Environment.GetEnvironmentVariable("SIGNALR_PORT");
-				if (!string.IsNullOrWhiteSpace(portEnv))
-				{
-					return int.Parse(portEnv);
-				}
-
-				var portConfig = ConfigurationManager.AppSettings["SignalRPort"];
-				return int.Parse(portConfig ?? "5001");
+				url = ConfigurationManager.AppSettings["SignalRUrl"];
+				return string.IsNullOrWhiteSpace(url) ? "http://127.0.0.1:5001" : url;
 			}
 		}
 	}

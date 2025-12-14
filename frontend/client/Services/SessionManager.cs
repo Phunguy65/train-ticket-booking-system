@@ -17,8 +17,7 @@ namespace client.Services
 		private int _currentPort;
 		private int _currentConnectionTimeout;
 		private int _currentRequestTimeout;
-		private string? _currentSignalRHost;
-		private int _currentSignalRPort;
+		private string? _currentSignalRUrl;
 
 		private SessionManager()
 		{
@@ -35,25 +34,20 @@ namespace client.Services
 		public bool IsAuthenticated => _currentUser != null && !string.IsNullOrEmpty(_currentUser.SessionToken);
 
 		public void Initialize(string host, int port, int connectionTimeout = 30, int requestTimeout = 30,
-			string? signalRHost = null, int? signalRPort = null)
+			string? signalRUrl = null)
 		{
-			var effectiveSignalRHost = signalRHost ?? host;
-			var effectiveSignalRPort = signalRPort ?? 5001;
+			var effectiveSignalRUrl = signalRUrl ?? "http://127.0.0.1:5001";
 
-			// Only reinitialize if parameters changed or ApiClient doesn't exist
 			if (_apiClient != null &&
 			    _currentHost == host &&
 			    _currentPort == port &&
 			    _currentConnectionTimeout == connectionTimeout &&
 			    _currentRequestTimeout == requestTimeout &&
-			    _currentSignalRHost == effectiveSignalRHost &&
-			    _currentSignalRPort == effectiveSignalRPort)
+			    _currentSignalRUrl == effectiveSignalRUrl)
 			{
-				// Already initialized with same parameters, skip reinitialization
 				return;
 			}
 
-			// Dispose old clients only if parameters changed (synchronous fallback)
 			if (_apiClient != null)
 			{
 				_apiClient.Dispose();
@@ -65,36 +59,30 @@ namespace client.Services
 			}
 
 			_apiClient = new ApiClient(host, port, connectionTimeout, requestTimeout);
-			_signalRService = new SignalRService(effectiveSignalRHost, effectiveSignalRPort);
+			_signalRService = new SignalRService(effectiveSignalRUrl);
 
 			_currentHost = host;
 			_currentPort = port;
 			_currentConnectionTimeout = connectionTimeout;
 			_currentRequestTimeout = requestTimeout;
-			_currentSignalRHost = effectiveSignalRHost;
-			_currentSignalRPort = effectiveSignalRPort;
+			_currentSignalRUrl = effectiveSignalRUrl;
 		}
 
 		public async Task InitializeAsync(string host, int port, int connectionTimeout = 30, int requestTimeout = 30,
-			string? signalRHost = null, int? signalRPort = null)
+			string? signalRUrl = null)
 		{
-			var effectiveSignalRHost = signalRHost ?? host;
-			var effectiveSignalRPort = signalRPort ?? 5001;
+			var effectiveSignalRUrl = signalRUrl ?? "http://127.0.0.1:5001";
 
-			// Only reinitialize if parameters changed or ApiClient doesn't exist
 			if (_apiClient != null &&
 			    _currentHost == host &&
 			    _currentPort == port &&
 			    _currentConnectionTimeout == connectionTimeout &&
 			    _currentRequestTimeout == requestTimeout &&
-			    _currentSignalRHost == effectiveSignalRHost &&
-			    _currentSignalRPort == effectiveSignalRPort)
+			    _currentSignalRUrl == effectiveSignalRUrl)
 			{
-				// Already initialized with same parameters, skip reinitialization
 				return;
 			}
 
-			// Dispose old clients only if parameters changed (async disposal)
 			if (_apiClient != null)
 			{
 				_apiClient.Dispose();
@@ -106,14 +94,13 @@ namespace client.Services
 			}
 
 			_apiClient = new ApiClient(host, port, connectionTimeout, requestTimeout);
-			_signalRService = new SignalRService(effectiveSignalRHost, effectiveSignalRPort);
+			_signalRService = new SignalRService(effectiveSignalRUrl);
 
 			_currentHost = host;
 			_currentPort = port;
 			_currentConnectionTimeout = connectionTimeout;
 			_currentRequestTimeout = requestTimeout;
-			_currentSignalRHost = effectiveSignalRHost;
-			_currentSignalRPort = effectiveSignalRPort;
+			_currentSignalRUrl = effectiveSignalRUrl;
 		}
 
 		public void SetSession(LoginResponse loginResponse)
