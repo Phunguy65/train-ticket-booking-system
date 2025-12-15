@@ -24,7 +24,17 @@ public class App : Application
 
 	public override void Initialize()
 	{
+		var args = Environment.GetCommandLineArgs();
 		var host = Host.CreateDefaultBuilder()
+			.ConfigureAppConfiguration((context, builder) =>
+			{
+				builder.SetBasePath(AppContext.BaseDirectory);
+				builder.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+				builder.AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true,
+					reloadOnChange: true);
+				builder.AddEnvironmentVariables();
+				builder.AddCommandLine(args);
+			})
 			.ConfigureServices((context, services) =>
 			{
 				services.UseMicrosoftDependencyResolver();

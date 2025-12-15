@@ -3,6 +3,7 @@
              xmlns:vm="using:admin.ViewModels.Authentication"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:u="https://irihi.tech/ursa"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="admin.Views.LoginView"
              x:DataType="vm:LoginViewModel">
@@ -47,41 +48,23 @@
                 </StackPanel>
 
                 <!-- Username Field -->
-                <StackPanel Spacing="8">
-                    <TextBlock Text="Tên đăng nhập"
-                              FontSize="13"
-                              Foreground="#cbd5e1"
-                              FontWeight="Medium"/>
-                    <TextBox x:Name="UsernameTextBox"
-                            Watermark="Nhập tên đăng nhập"
-                            Height="45"
-                            FontSize="14"
-                            Padding="12,0"
-                            CornerRadius="8"
-                            Background="#0f172a"
-                            Foreground="White"
-                            BorderBrush="#334155"
-                            BorderThickness="1"/>
-                </StackPanel>
+                <u:FormItem Label="Tên đăng nhập">
+                    <DataValidationErrors>
+                        <TextBox x:Name="UsernameTextBox"
+                                Watermark="Nhập tên đăng nhập"
+                                Height="45"/>
+                    </DataValidationErrors>
+                </u:FormItem>
 
                 <!-- Password Field -->
-                <StackPanel Spacing="8">
-                    <TextBlock Text="Mật khẩu"
-                              FontSize="13"
-                              Foreground="#cbd5e1"
-                              FontWeight="Medium"/>
-                    <TextBox x:Name="PasswordTextBox"
-                            Watermark="Nhập mật khẩu"
-                            PasswordChar="●"
-                            Height="45"
-                            FontSize="14"
-                            Padding="12,0"
-                            CornerRadius="8"
-                            Background="#0f172a"
-                            Foreground="White"
-                            BorderBrush="#334155"
-                            BorderThickness="1"/>
-                </StackPanel>
+                <u:FormItem Label="Mật khẩu">
+                    <DataValidationErrors>
+                        <TextBox x:Name="PasswordTextBox"
+                                Watermark="Nhập mật khẩu"
+                                PasswordChar="●"
+                                Height="45"/>
+                    </DataValidationErrors>
+                </u:FormItem>
 
                 <!-- Error Message -->
                 <Border x:Name="ErrorBorder"
