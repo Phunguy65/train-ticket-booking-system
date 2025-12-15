@@ -5,7 +5,7 @@
 -- NULL value indicates permanent booking (Confirmed status)
 -- Non-NULL value indicates temporary hold (Pending status)
 -- All datetime values stored in UTC timezone
-ALTER TABLE Booking
+ALTER TABLE [Booking]
 ADD HoldExpiresAt DATETIME2 NULL;
 
 GO
@@ -13,7 +13,7 @@ GO
 -- Filtered index only includes rows with non-NULL HoldExpiresAt (active holds)
 -- Enables fast queries: WHERE BookingStatus = 'Pending' AND HoldExpiresAt < GETUTCDATE()
 CREATE NONCLUSTERED
-INDEX IX_Booking_HoldExpiresAt ON Booking (HoldExpiresAt)
+INDEX IX_Booking_HoldExpiresAt ON [Booking] (HoldExpiresAt)
 WHERE
 	HoldExpiresAt IS NOT NULL;
 
@@ -21,6 +21,6 @@ GO
 -- Add index for user-specific hold queries
 -- Enables fast queries: WHERE UserId = @UserId AND BookingStatus = 'Pending'
 CREATE NONCLUSTERED
-INDEX IX_Booking_UserId_Status ON Booking (UserId, BookingStatus) INCLUDE (HoldExpiresAt, TrainId, SeatId);
+INDEX IX_Booking_UserId_Status ON [Booking] (UserId, BookingStatus) INCLUDE (HoldExpiresAt, TrainId, SeatId);
 
 GO

@@ -33,9 +33,9 @@ IF EXISTS (
 		sys.default_constraints
 	WHERE
 		name = 'DF_Train_CreatedAt'
-		AND parent_object_id = OBJECT_ID('Train')
+		AND parent_object_id = OBJECT_ID('[Train]')
 ) BEGIN
-ALTER TABLE Train DROP CONSTRAINT DF_Train_CreatedAt;
+ALTER TABLE [Train] DROP CONSTRAINT DF_Train_CreatedAt;
 
 PRINT 'Dropped constraint DF_Train_CreatedAt';
 
@@ -43,7 +43,7 @@ END ELSE BEGIN PRINT 'Constraint DF_Train_CreatedAt does not exist';
 
 END
 GO
-ALTER TABLE Train
+ALTER TABLE [Train]
 ADD CONSTRAINT DF_Train_CreatedAt DEFAULT (GETUTCDATE()) FOR CreatedAt;
 
 PRINT 'Created constraint DF_Train_CreatedAt with GETUTCDATE()';
@@ -57,9 +57,9 @@ IF EXISTS (
 		sys.default_constraints
 	WHERE
 		name = 'DF_Booking_BookingDate'
-		AND parent_object_id = OBJECT_ID('Booking')
+		AND parent_object_id = OBJECT_ID('[Booking]')
 ) BEGIN
-ALTER TABLE Booking DROP CONSTRAINT DF_Booking_BookingDate;
+ALTER TABLE [Booking] DROP CONSTRAINT DF_Booking_BookingDate;
 
 PRINT 'Dropped constraint DF_Booking_BookingDate';
 
@@ -67,7 +67,7 @@ END ELSE BEGIN PRINT 'Constraint DF_Booking_BookingDate does not exist';
 
 END
 GO
-ALTER TABLE Booking
+ALTER TABLE [Booking]
 ADD CONSTRAINT DF_Booking_BookingDate DEFAULT (GETUTCDATE()) FOR BookingDate;
 
 PRINT 'Created constraint DF_Booking_BookingDate with GETUTCDATE()';
@@ -81,9 +81,9 @@ IF EXISTS (
 		sys.default_constraints
 	WHERE
 		name = 'DF_AuditLog_CreatedAt'
-		AND parent_object_id = OBJECT_ID('AuditLog')
+		AND parent_object_id = OBJECT_ID('[AuditLog]')
 ) BEGIN
-ALTER TABLE AuditLog DROP CONSTRAINT DF_AuditLog_CreatedAt;
+ALTER TABLE [AuditLog] DROP CONSTRAINT DF_AuditLog_CreatedAt;
 
 PRINT 'Dropped constraint DF_AuditLog_CreatedAt';
 
@@ -91,7 +91,7 @@ END ELSE BEGIN PRINT 'Constraint DF_AuditLog_CreatedAt does not exist';
 
 END
 GO
-ALTER TABLE AuditLog
+ALTER TABLE [AuditLog]
 ADD CONSTRAINT DF_AuditLog_CreatedAt DEFAULT (GETUTCDATE()) FOR CreatedAt;
 
 PRINT 'Created constraint DF_AuditLog_CreatedAt with GETUTCDATE()';
