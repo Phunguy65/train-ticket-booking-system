@@ -11,10 +11,13 @@ namespace backend.DataAccess.Repositories;
 /// </summary>
 public class TrainRepository : ITrainRepository
 {
+
 	private readonly DapperContext _context;
+
 	private readonly IUnitOfWork _unitOfWork;
 
-	public TrainRepository(DapperContext context, IUnitOfWork unitOfWork)
+	public TrainRepository(DapperContext context,
+	                       IUnitOfWork unitOfWork)
 	{
 		_context = context;
 		_unitOfWork = unitOfWork;
@@ -24,14 +27,18 @@ public class TrainRepository : ITrainRepository
 	{
 		using var connection = _context.CreateConnection();
 		var sql = "SELECT * FROM Train WHERE TrainId = @TrainId";
-		return await connection.QueryFirstOrDefaultAsync<Train>(sql, new { TrainId = trainId });
+
+		return await connection.QueryFirstOrDefaultAsync<Train>(sql,
+		                                                        new { TrainId = trainId });
 	}
 
 	public async Task<Train?> GetByTrainNumberAsync(string trainNumber)
 	{
 		using var connection = _context.CreateConnection();
 		var sql = "SELECT * FROM Train WHERE TrainNumber = @TrainNumber";
-		return await connection.QueryFirstOrDefaultAsync<Train>(sql, new { TrainNumber = trainNumber });
+
+		return await connection.QueryFirstOrDefaultAsync<Train>(sql,
+		                                                        new { TrainNumber = trainNumber });
 	}
 
 	public async Task<IEnumerable<Train>> GetAllAsync()
@@ -41,7 +48,8 @@ public class TrainRepository : ITrainRepository
 		return await connection.QueryAsync<Train>(sql);
 	}
 
-	public async Task<(IEnumerable<Train> Items, int TotalCount)> GetAllAsync(int pageNumber, int pageSize)
+	public async Task<(IEnumerable<Train> Items, int TotalCount)> GetAllAsync(int pageNumber,
+	                                                                          int pageSize)
 	{
 		using var connection = _context.CreateConnection();
 
@@ -49,19 +57,23 @@ public class TrainRepository : ITrainRepository
 		var totalCount = await connection.ExecuteScalarAsync<int>(countSql);
 
 		var offset = (pageNumber - 1) * pageSize;
+
 		var dataSql = @"
             SELECT * FROM Train
             ORDER BY DepartureTime
             OFFSET @Offset ROWS
             FETCH NEXT @PageSize ROWS ONLY";
 
-		var items = await connection.QueryAsync<Train>(dataSql, new { Offset = offset, PageSize = pageSize });
+		var items = await connection.QueryAsync<Train>(dataSql,
+		                                               new { Offset = offset, PageSize = pageSize });
 
 		return (items, totalCount);
 	}
 
-	public async Task<IEnumerable<Train>> SearchAsync(string? departureStation, string? arrivalStation,
-		DateTime? departureDate, string? status = null)
+	public async Task<IEnumerable<Train>> SearchAsync(string? departureStation,
+	                                                  string? arrivalStation,
+	                                                  DateTime? departureDate,
+	                                                  string? status = null)
 	{
 		using var connection = _context.CreateConnection();
 		var sql = "SELECT * FROM Train WHERE 1=1";
@@ -70,7 +82,9 @@ public class TrainRepository : ITrainRepository
 		if (!string.IsNullOrEmpty(status))
 		{
 			sql += " AND [Status] = @Status";
-			parameters.Add("Status", status);
+
+			parameters.Add("Status",
+			               status);
 		}
 		else
 		{
@@ -79,29 +93,40 @@ public class TrainRepository : ITrainRepository
 
 		if (!string.IsNullOrEmpty(departureStation))
 		{
-			sql += " AND DepartureStation = @DepartureStation";
-			parameters.Add("DepartureStation", departureStation);
+			sql += " AND DepartureStation LIKE @DepartureStation COLLATE Latin1_General_CI_AI";
+
+			parameters.Add("DepartureStation",
+			               $"%{departureStation}%");
 		}
 
 		if (!string.IsNullOrEmpty(arrivalStation))
 		{
-			sql += " AND ArrivalStation = @ArrivalStation";
-			parameters.Add("ArrivalStation", arrivalStation);
+			sql += " AND ArrivalStation LIKE @ArrivalStation COLLATE Latin1_General_CI_AI";
+
+			parameters.Add("ArrivalStation",
+			               $"%{arrivalStation}%");
 		}
 
 		if (departureDate.HasValue)
 		{
 			sql += " AND CAST(DepartureTime AS DATE) = @DepartureDate";
-			parameters.Add("DepartureDate", departureDate.Value.Date);
+
+			parameters.Add("DepartureDate",
+			               departureDate.Value.Date);
 		}
 
 		sql += " ORDER BY DepartureTime";
-		return await connection.QueryAsync<Train>(sql, parameters);
+
+		return await connection.QueryAsync<Train>(sql,
+		                                          parameters);
 	}
 
 	public async Task<(IEnumerable<Train> Items, int TotalCount)> SearchAsync(string? departureStation,
-		string? arrivalStation,
-		DateTime? departureDate, int pageNumber, int pageSize, string? status = null)
+	                                                                          string? arrivalStation,
+	                                                                          DateTime? departureDate,
+	                                                                          int pageNumber,
+	                                                                          int pageSize,
+	                                                                          string? status = null)
 	{
 		using var connection = _context.CreateConnection();
 		var whereClause = "WHERE 1=1";
@@ -110,7 +135,9 @@ public class TrainRepository : ITrainRepository
 		if (!string.IsNullOrEmpty(status))
 		{
 			whereClause += " AND [Status] = @Status";
-			parameters.Add("Status", status);
+
+			parameters.Add("Status",
+			               status);
 		}
 		else
 		{
@@ -119,28 +146,40 @@ public class TrainRepository : ITrainRepository
 
 		if (!string.IsNullOrEmpty(departureStation))
 		{
-			whereClause += " AND DepartureStation = @DepartureStation";
-			parameters.Add("DepartureStation", departureStation);
+			whereClause += " AND DepartureStation LIKE @DepartureStation COLLATE Latin1_General_CI_AI";
+
+			parameters.Add("DepartureStation",
+			               $"%{departureStation}%");
 		}
 
 		if (!string.IsNullOrEmpty(arrivalStation))
 		{
-			whereClause += " AND ArrivalStation = @ArrivalStation";
-			parameters.Add("ArrivalStation", arrivalStation);
+			whereClause += " AND ArrivalStation LIKE @ArrivalStation COLLATE Latin1_General_CI_AI";
+
+			parameters.Add("ArrivalStation",
+			               $"%{arrivalStation}%");
 		}
 
 		if (departureDate.HasValue)
 		{
 			whereClause += " AND CAST(DepartureTime AS DATE) = @DepartureDate";
-			parameters.Add("DepartureDate", departureDate.Value.Date);
+
+			parameters.Add("DepartureDate",
+			               departureDate.Value.Date);
 		}
 
 		var countSql = $"SELECT COUNT(*) FROM Train {whereClause}";
-		var totalCount = await connection.ExecuteScalarAsync<int>(countSql, parameters);
+
+		var totalCount = await connection.ExecuteScalarAsync<int>(countSql,
+		                                                          parameters);
 
 		var offset = (pageNumber - 1) * pageSize;
-		parameters.Add("Offset", offset);
-		parameters.Add("PageSize", pageSize);
+
+		parameters.Add("Offset",
+		               offset);
+
+		parameters.Add("PageSize",
+		               pageSize);
 
 		var dataSql = $@"
             SELECT * FROM Train
@@ -149,7 +188,8 @@ public class TrainRepository : ITrainRepository
             OFFSET @Offset ROWS
             FETCH NEXT @PageSize ROWS ONLY";
 
-		var items = await connection.QueryAsync<Train>(dataSql, parameters);
+		var items = await connection.QueryAsync<Train>(dataSql,
+		                                               parameters);
 
 		return (items, totalCount);
 	}
@@ -157,23 +197,30 @@ public class TrainRepository : ITrainRepository
 	public async Task<int> CreateAsync(Train train)
 	{
 		using var connection = _context.CreateConnection();
+
 		var sql = @"
 			INSERT INTO Train (TrainNumber, TrainName, DepartureStation, ArrivalStation, DepartureTime, ArrivalTime, TotalSeats, TicketPrice, [Status])
 			VALUES (@TrainNumber, @TrainName, @DepartureStation, @ArrivalStation, @DepartureTime, @ArrivalTime, @TotalSeats, @TicketPrice, 'Active');
 			SELECT CAST(SCOPE_IDENTITY() as int);";
-		return await connection.ExecuteScalarAsync<int>(sql, train);
+
+		return await connection.ExecuteScalarAsync<int>(sql,
+		                                                train);
 	}
 
 	public async Task<bool> UpdateAsync(Train train)
 	{
 		using var connection = _context.CreateConnection();
+
 		var sql = @"
 			UPDATE Train
 			SET TrainNumber = @TrainNumber, TrainName = @TrainName, DepartureStation = @DepartureStation,
 				ArrivalStation = @ArrivalStation, DepartureTime = @DepartureTime, ArrivalTime = @ArrivalTime,
 				TotalSeats = @TotalSeats, TicketPrice = @TicketPrice, [Status] = @Status
 			WHERE TrainId = @TrainId";
-		var rowsAffected = await connection.ExecuteAsync(sql, train);
+
+		var rowsAffected = await connection.ExecuteAsync(sql,
+		                                                 train);
+
 		return rowsAffected > 0;
 	}
 
@@ -181,15 +228,23 @@ public class TrainRepository : ITrainRepository
 	{
 		using var connection = _context.CreateConnection();
 		var sql = "DELETE FROM Train WHERE TrainId = @TrainId";
-		var rowsAffected = await connection.ExecuteAsync(sql, new { TrainId = trainId });
+
+		var rowsAffected = await connection.ExecuteAsync(sql,
+		                                                 new { TrainId = trainId });
+
 		return rowsAffected > 0;
 	}
 
-	public async Task<bool> UpdateStatusAsync(int trainId, string status)
+	public async Task<bool> UpdateStatusAsync(int trainId,
+	                                          string status)
 	{
 		using var connection = _context.CreateConnection();
 		var sql = "UPDATE Train SET [Status] = @Status WHERE TrainId = @TrainId";
-		var rowsAffected = await connection.ExecuteAsync(sql, new { TrainId = trainId, Status = status });
+
+		var rowsAffected = await connection.ExecuteAsync(sql,
+		                                                 new { TrainId = trainId, Status = status });
+
 		return rowsAffected > 0;
 	}
+
 }
