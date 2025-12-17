@@ -19,7 +19,7 @@ CREATE TABLE [User] (
 );
 
 -- Bảng chuyến tàu
-CREATE TABLE Train (
+CREATE TABLE [Train] (
 	TrainId INT IDENTITY(1, 1) NOT NULL,
 	TrainNumber NVARCHAR(20) NOT NULL,
 	TrainName NVARCHAR(100) NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE Train (
 );
 
 -- Bảng ghế ngồi
-CREATE TABLE Seat (
+CREATE TABLE [Seat] (
 	SeatId INT IDENTITY(1, 1) NOT NULL,
 	TrainId INT NOT NULL,
 	SeatNumber NVARCHAR(10) NOT NULL,
@@ -45,11 +45,11 @@ CREATE TABLE Seat (
 	[Version] INT NOT NULL CONSTRAINT DF_Seat_Version DEFAULT (0),
 	CONSTRAINT PK_Seat PRIMARY KEY CLUSTERED (SeatId),
 	CONSTRAINT UQ_Seat_TrainId_SeatNumber UNIQUE (TrainId, SeatNumber),
-	CONSTRAINT FK_Seat_TrainId_Train FOREIGN KEY (TrainId) REFERENCES Train (TrainId)
+	CONSTRAINT FK_Seat_TrainId_Train FOREIGN KEY (TrainId) REFERENCES [Train] (TrainId)
 );
 
 -- Bảng đặt vé
-CREATE TABLE Booking (
+CREATE TABLE [Booking] (
 	BookingId INT IDENTITY(1, 1) NOT NULL,
 	UserId INT NOT NULL,
 	TrainId INT NOT NULL,
@@ -61,8 +61,8 @@ CREATE TABLE Booking (
 	CancelledAt DATETIME2 NULL,
 	CONSTRAINT PK_Booking PRIMARY KEY CLUSTERED (BookingId),
 	CONSTRAINT FK_Booking_UserId_User FOREIGN KEY (UserId) REFERENCES [User] (UserId),
-	CONSTRAINT FK_Booking_TrainId_Train FOREIGN KEY (TrainId) REFERENCES Train (TrainId),
-	CONSTRAINT FK_Booking_SeatId_Seat FOREIGN KEY (SeatId) REFERENCES Seat (SeatId),
+	CONSTRAINT FK_Booking_TrainId_Train FOREIGN KEY (TrainId) REFERENCES [Train] (TrainId),
+	CONSTRAINT FK_Booking_SeatId_Seat FOREIGN KEY (SeatId) REFERENCES [Seat] (SeatId),
 	CONSTRAINT CK_Booking_BookingStatus CHECK (
 		BookingStatus IN ('Pending', 'Confirmed', 'Cancelled')
 	),
@@ -70,7 +70,7 @@ CREATE TABLE Booking (
 );
 
 -- Bảng lịch sử giao dịch
-CREATE TABLE AuditLog (
+CREATE TABLE [AuditLog] (
 	LogId INT IDENTITY(1, 1) NOT NULL,
 	UserId INT NULL,
 	[Action] NVARCHAR(100) NOT NULL,
@@ -84,13 +84,13 @@ CREATE TABLE AuditLog (
 
 -- Index cho performance
 CREATE NONCLUSTERED
-INDEX IX_Seat_TrainId_IsAvailable ON Seat (TrainId, IsAvailable);
+INDEX IX_Seat_TrainId_IsAvailable ON [Seat] (TrainId, IsAvailable);
 
 CREATE NONCLUSTERED
-INDEX IX_Booking_UserId ON Booking (UserId);
+INDEX IX_Booking_UserId ON [Booking] (UserId);
 
 CREATE NONCLUSTERED
-INDEX IX_Booking_TrainId ON Booking (TrainId);
+INDEX IX_Booking_TrainId ON [Booking] (TrainId);
 
 CREATE NONCLUSTERED
-INDEX IX_Train_DepartureTime ON Train (DepartureTime);
+INDEX IX_Train_DepartureTime ON [Train] (DepartureTime);

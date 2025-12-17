@@ -9,9 +9,9 @@ IF EXISTS (
 		sys.foreign_keys
 	WHERE
 		name = 'FK_Booking_SeatId_Seat'
-		AND parent_object_id = OBJECT_ID('Booking')
+		AND parent_object_id = OBJECT_ID('[Booking]')
 ) BEGIN
-ALTER TABLE Booking DROP CONSTRAINT FK_Booking_SeatId_Seat;
+ALTER TABLE [Booking] DROP CONSTRAINT FK_Booking_SeatId_Seat;
 
 PRINT 'Dropped constraint FK_Booking_SeatId_Seat';
 
@@ -27,9 +27,9 @@ IF EXISTS (
 		sys.foreign_keys
 	WHERE
 		name = 'FK_Booking_TrainId_Train'
-		AND parent_object_id = OBJECT_ID('Booking')
+		AND parent_object_id = OBJECT_ID('[Booking]')
 ) BEGIN
-ALTER TABLE Booking DROP CONSTRAINT FK_Booking_TrainId_Train;
+ALTER TABLE [Booking] DROP CONSTRAINT FK_Booking_TrainId_Train;
 
 PRINT 'Dropped constraint FK_Booking_TrainId_Train';
 
@@ -45,9 +45,9 @@ IF EXISTS (
 		sys.foreign_keys
 	WHERE
 		name = 'FK_Seat_TrainId_Train'
-		AND parent_object_id = OBJECT_ID('Seat')
+		AND parent_object_id = OBJECT_ID('[Seat]')
 ) BEGIN
-ALTER TABLE Seat DROP CONSTRAINT FK_Seat_TrainId_Train;
+ALTER TABLE [Seat] DROP CONSTRAINT FK_Seat_TrainId_Train;
 
 PRINT 'Dropped constraint FK_Seat_TrainId_Train';
 
@@ -56,8 +56,8 @@ END ELSE BEGIN PRINT 'Constraint FK_Seat_TrainId_Train does not exist';
 END
 GO
 -- Step 4: Recreate Seat foreign key with CASCADE DELETE
-ALTER TABLE Seat
-ADD CONSTRAINT FK_Seat_TrainId_Train FOREIGN KEY (TrainId) REFERENCES Train (TrainId) ON DELETE CASCADE;
+ALTER TABLE [Seat]
+ADD CONSTRAINT FK_Seat_TrainId_Train FOREIGN KEY (TrainId) REFERENCES [Train] (TrainId) ON DELETE CASCADE;
 
 PRINT 'Created constraint FK_Seat_TrainId_Train with ON DELETE CASCADE';
 
@@ -65,15 +65,15 @@ GO
 -- Step 5: Recreate Booking foreign key (TrainId) with NO ACTION
 -- Note: Using NO ACTION to avoid multiple cascade paths (Train->Booking and Train->Seat->Booking)
 -- The cascade deletion will occur through the Seat table: Train -> Seat -> Booking
-ALTER TABLE Booking
-ADD CONSTRAINT FK_Booking_TrainId_Train FOREIGN KEY (TrainId) REFERENCES Train (TrainId) ON DELETE NO ACTION;
+ALTER TABLE [Booking]
+ADD CONSTRAINT FK_Booking_TrainId_Train FOREIGN KEY (TrainId) REFERENCES [Train] (TrainId) ON DELETE NO ACTION;
 
 PRINT 'Created constraint FK_Booking_TrainId_Train with ON DELETE NO ACTION';
 
 GO
 -- Step 6: Recreate Booking foreign key (SeatId) with CASCADE DELETE
-ALTER TABLE Booking
-ADD CONSTRAINT FK_Booking_SeatId_Seat FOREIGN KEY (SeatId) REFERENCES Seat (SeatId) ON DELETE CASCADE;
+ALTER TABLE [Booking]
+ADD CONSTRAINT FK_Booking_SeatId_Seat FOREIGN KEY (SeatId) REFERENCES [Seat] (SeatId) ON DELETE CASCADE;
 
 PRINT 'Created constraint FK_Booking_SeatId_Seat with ON DELETE CASCADE';
 

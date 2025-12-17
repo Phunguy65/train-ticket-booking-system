@@ -1,5 +1,6 @@
 using sdk_client;
 using sdk_client.Protocol;
+using System;
 
 namespace admin.Services;
 
@@ -7,7 +8,7 @@ namespace admin.Services;
 /// Manages user session state including authentication token and user information.
 /// Singleton pattern ensures single source of truth for session data across the application.
 /// </summary>
-public sealed class SessionManager
+public sealed class SessionManager : IDisposable
 {
 	private static SessionManager? _instance;
 	private static readonly object _lock = new object();
@@ -103,5 +104,10 @@ public sealed class SessionManager
 		{
 			ApiClient.SessionToken = null;
 		}
+	}
+
+	public void Dispose()
+	{
+		ApiClient?.Dispose();
 	}
 }

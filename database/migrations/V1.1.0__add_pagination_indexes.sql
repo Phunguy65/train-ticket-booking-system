@@ -8,9 +8,9 @@ IF NOT EXISTS (
 		sys.indexes
 	WHERE
 		name = 'IX_AuditLog_CreatedAt'
-		AND object_id = OBJECT_ID('AuditLog')
+		AND object_id = OBJECT_ID('[AuditLog]')
 ) BEGIN
-CREATE INDEX IX_AuditLog_CreatedAt ON AuditLog (CreatedAt DESC);
+CREATE INDEX IX_AuditLog_CreatedAt ON [AuditLog] (CreatedAt DESC);
 
 PRINT 'Created index IX_AuditLog_CreatedAt';
 
@@ -42,9 +42,9 @@ IF NOT EXISTS (
 		sys.indexes
 	WHERE
 		name = 'IX_Train_DepartureTime'
-		AND object_id = OBJECT_ID('Train')
+		AND object_id = OBJECT_ID('[Train]')
 ) BEGIN
-CREATE INDEX IX_Train_DepartureTime ON Train (DepartureTime);
+CREATE INDEX IX_Train_DepartureTime ON [Train] (DepartureTime);
 
 PRINT 'Created index IX_Train_DepartureTime';
 
@@ -58,9 +58,9 @@ GO IF NOT EXISTS (
 		sys.indexes
 	WHERE
 		name = 'IX_Booking_BookingDate'
-		AND object_id = OBJECT_ID('Booking')
+		AND object_id = OBJECT_ID('[Booking]')
 ) BEGIN
-CREATE INDEX IX_Booking_BookingDate ON Booking (BookingDate DESC);
+CREATE INDEX IX_Booking_BookingDate ON [Booking] (BookingDate DESC);
 
 PRINT 'Created index IX_Booking_BookingDate';
 

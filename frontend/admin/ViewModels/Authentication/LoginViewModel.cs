@@ -1,6 +1,8 @@
 using admin.Services;
 using admin.Views;
 using ReactiveUI;
+using ReactiveUI.Validation.Extensions;
+using ReactiveUI.Validation.Helpers;
 using sdk_client.Exceptions;
 using sdk_client.Services;
 using Splat;
@@ -10,12 +12,10 @@ using System.Reactive.Linq;
 
 namespace admin.ViewModels.Authentication;
 
-public class LoginViewModel : ViewModelBase, IRoutableViewModel
+public class LoginViewModel : ReactiveValidationObject, IRoutableViewModel
 {
 	public IScreen HostScreen { get; }
 	public string UrlPathSegment => nameof(LoginView);
-
-	// Input properties
 	private string _username = string.Empty;
 
 	public string Username
@@ -32,7 +32,6 @@ public class LoginViewModel : ViewModelBase, IRoutableViewModel
 		set => this.RaiseAndSetIfChanged(ref _password, value);
 	}
 
-	// UI state properties
 	private bool _isLoading;
 
 	public bool IsLoading
@@ -49,22 +48,38 @@ public class LoginViewModel : ViewModelBase, IRoutableViewModel
 		set => this.RaiseAndSetIfChanged(ref _errorMessage, value);
 	}
 
-	// Commands
 	public ReactiveCommand<Unit, IRoutableViewModel> LoginCommand { get; }
 
 	public LoginViewModel(IScreen? screen)
 	{
 		HostScreen = screen ?? Locator.Current.GetService<IScreen>() ?? throw new ArgumentNullException(nameof(screen));
 
-		// Create login command with validation
+		this.ValidationRule(
+			vm => vm.Username,
+			username => !string.IsNullOrWhiteSpace(username),
+			"Tên đăng nhập không được để trống");
+
+		this.ValidationRule(
+			vm => vm.Username,
+			username => string.IsNullOrWhiteSpace(username) || username.Length >= 3,
+			"Tên đăng nhập phải có ít nhất 3 ký tự");
+
+		this.ValidationRule(
+			vm => vm.Password,
+			password => !string.IsNullOrWhiteSpace(password),
+			"Mật khẩu không được để trống");
+
+		this.ValidationRule(
+			vm => vm.Password,
+			password => string.IsNullOrWhiteSpace(password) || password.Length >= 6,
+			"Mật khẩu phải có ít nhất 6 ký tự");
+
 		var canLogin = this.WhenAnyValue(
-			x => x.Username,
-			x => x.Password,
 			x => x.IsLoading,
-			(username, password, loading) =>
-				!string.IsNullOrWhiteSpace(username) &&
-				!string.IsNullOrWhiteSpace(password) &&
-				!loading
+			loading => !loading
+		).CombineLatest(
+			this.IsValid(),
+			(notLoading, isValid) => notLoading && isValid
 		);
 
 		LoginCommand = ReactiveCommand.CreateFromObservable(
@@ -72,7 +87,6 @@ public class LoginViewModel : ViewModelBase, IRoutableViewModel
 			canLogin
 		);
 
-		// Handle errors from LoginCommand
 		LoginCommand.ThrownExceptions.Subscribe(ex =>
 		{
 			ErrorMessage = ex is ApiException apiEx
@@ -101,13 +115,11 @@ public class LoginViewModel : ViewModelBase, IRoutableViewModel
 					throw new InvalidOperationException("API client not initialized");
 				}
 
-				// Connect to server if not already connected
 				if (!apiClient.IsConnected)
 				{
 					await apiClient.ConnectAsync();
 				}
 
-				// Call authentication service
 				var authService = new AuthenticationService(apiClient);
 				var loginResponse = await authService.LoginAsync(Username, Password);
 
@@ -116,18 +128,16 @@ public class LoginViewModel : ViewModelBase, IRoutableViewModel
 					throw new InvalidOperationException("Login response is null");
 				}
 
-				// Store session
 				SessionManager.Instance.SetSession(loginResponse);
 
 				IsLoading = false;
 
-				// Navigate to MainView
 				return (IRoutableViewModel)new MainViewViewModel(HostScreen);
 			}
 			catch (Exception)
 			{
 				IsLoading = false;
-				throw; // Re-throw to be handled by ThrownExceptions
+				throw;
 			}
 		});
 	}

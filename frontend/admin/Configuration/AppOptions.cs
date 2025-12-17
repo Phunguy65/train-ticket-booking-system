@@ -12,13 +12,12 @@ namespace admin.Configuration
 
 	public sealed class ApiConfig
 	{
-		public string Host { get; set; } = "http://localhost:5000";
+		public string Host { get; set; } = "localhost";
 		public int Port { get; set; } = 5000;
 	}
 
 	public sealed class SignalRConfig
 	{
-		public string Host { get; set; } = "http://localhost:5001";
-		public int Port { get; set; } = 5001;
+		public string Url { get; set; } = "http://127.0.0.1:5001";
 	}
 }
