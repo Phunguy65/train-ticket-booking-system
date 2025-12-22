@@ -11,7 +11,7 @@
 	"license": "ISC",
 	"packageManager": "pnpm@10.23.0",
 	"devDependencies": {
-		"@biomejs/biome": "^2.3.7",
+		"@biomejs/biome": "^2.3.8",
 		"@github/markdownlint-github": "^0.8.0",
 		"@prettier/plugin-xml": "^3.4.2",
 		"markdownlint-cli2": "^0.19.1",
