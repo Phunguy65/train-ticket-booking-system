@@ -27,7 +27,7 @@
 		<ProjectReference Include="..\sdk-client\sdk-client.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.2" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 	</ItemGroup>
 </Project>
